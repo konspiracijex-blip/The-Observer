@@ -41,11 +41,12 @@
             display: flex;
             flex-direction: column;
             
-            /* KLJUČNO: Podrazumevano Vertikalno Centriranje za boot i title screen */
+            /* KLJUČNO: Podrazumevano Vertikalno Centriranje za POČETNI ekran */
             justify-content: center; 
             
             align-items: flex-start; 
             
+            /* Obezbeđujemo minimalnu visinu, ali dozvoljavamo rast */
             min-height: 100vh; 
             height: auto; 
             
@@ -57,6 +58,7 @@
             padding-bottom: 50px; 
         }
         
+        /* KLJUČNA IZMENA: U CLI modu, samo se menja padding/poravnanje teksta */
         .cli-mode {
             text-align: left !important;
             min-height: 100vh; 
@@ -64,7 +66,7 @@
             align-items: flex-start !important; 
             
             padding-top: 20px; 
-            padding-bottom: 70px !important; /* Dajemo prostora za fiksni input na dnu u CLI modu */
+            padding-bottom: 70px !important; /* Prostor za fiksni input */
         }
         
         #cli-log {
@@ -74,6 +76,7 @@
              margin-top: 10px;
         }
 
+        /* Centriranje wrapper za BOOT i START ekrane */
         .centered-content-wrapper {
             width: 100%;
             padding: 20px 0;
@@ -121,29 +124,16 @@
             padding-left: 0; 
         }
         
-        /* STIL ZA SUBTILNI TEKST */
-        .subtle-clue-text {
-            font-size: 0.6em; 
-            color: #008000; 
-            opacity: 0.7; 
-            padding: 0 5px; 
-            text-align: center; 
-            
-            /* Centriranje bloka */
-            width: 85%; 
-            margin: 30px auto 0 auto; 
-        }
-
-        /* KLJUČNO: Fiksiramo input bar na dnu (koristi se SAMO u CLI modu) */
+        /* Input SADA JESTE FIKSAN, da bi uvek bio dostupan na dnu ekrana */
         #input-container {
             display: none; 
-            position: fixed; 
+            position: fixed; /* Održavamo ga fiksnim na dnu */
             bottom: 0;
             left: 0;
             right: 0;
             
             width: 100%; 
-            height: 50px; 
+            height: 50px; /* Dodajemo fiksnu visinu */
             
             padding: 0 20px; 
             box-sizing: border-box; 
@@ -182,10 +172,10 @@
             white-space: pre; 
         }
 
-        /* KLJUČNO: NEVIDLJIVI INPUT FIELD */
+        /* KLJUČNO: NEVIDLJIVI INPUT FIELD, izvan fiksnog kontejnera */
         #cli-hidden-input {
             position: absolute;
-            opacity: 0.001; /* Minimalna vidljivost */
+            opacity: 0.001; 
             width: 100%; 
             height: 100%;
             top: 0;
@@ -200,12 +190,11 @@
             background: transparent; 
             caret-color: transparent;
 
-            /* Dodatno osiguravamo da je uvek dostupan na touch uređajima */
-            pointer-events: auto; 
+            pointer-events: auto; /* Da reaguje na dodir */
         }
 
 
-        /* Kursor na početnom ekranu (temp-cursor) */
+        /* Kursor na početnom ekranu */
         #temp-cursor {
             animation: blink 1s step-start infinite;
             display: inline-block;
@@ -216,6 +205,7 @@
             50% { opacity: 0; }
         }
 
+        /* Animacija za treptanje greške */
         @keyframes blink-error-anim {
             50% { opacity: 0.3; }
         }
@@ -224,6 +214,7 @@
             animation: blink-error-anim 0.4s step-start infinite; 
         }
 
+        /* Animacija za sporo treptanje hinta */
         @keyframes slow-blink-anim {
             0%, 100% { opacity: 1; } 
             50% { opacity: 0.3; }      
@@ -233,6 +224,7 @@
             color: #00FF00;
         }
 
+        /* Stil za odbrojavanje, ako želimo da se ističe */
         #countdown-timer {
             color: red; 
             font-weight: bold;
@@ -252,6 +244,18 @@
             transition: opacity 0.1s;
             pointer-events: none; 
             z-index: 300;
+        }
+
+        /* Suptilni trag */
+        .subtle-clue-text {
+            font-size: 0.6em; 
+            color: #008000; 
+            opacity: 0.7; 
+            padding: 0 5px; 
+            text-align: center; 
+            
+            width: 85%; 
+            margin: 30px auto 0 auto; 
         }
     </style>
 </head>
@@ -343,10 +347,12 @@
             </div>
         `;
 
-
+        /**
+         * Vraća span element u koji se trenutno upisuje tekst.
+         */
         function getActiveInputSpan() {
              const tempInput = document.getElementById('temp-input-span');
-             return (gameState >= 1) ? currentInputSpan : tempInput;
+             return ((gameState === 0 || gameState === -1) && tempInput) ? tempInput : currentInputSpan;
         }
 
         function getCliLog() {
@@ -365,8 +371,11 @@
             }
         }
         
+        /**
+         * Agresivno forsiranje fokusa na nevidljivo polje.
+         * KLJUČNO za mobilne uređaje.
+         */
         function forceInputFocus() {
-             // Čak i ako je input nevidljiv, mora da bude fokusiran da bi se podigla tastatura.
              setTimeout(() => { 
                  hiddenInput.focus(); 
              }, 50); 
@@ -446,6 +455,14 @@
 
                 if (countdownEl) {
                      countdownEl.textContent = `Sistem se gasi za: ${timeLeft} sekundi.`;
+
+                     if (timeLeft <= 5) {
+                        countdownEl.style.color = 'red';
+                        countdownEl.style.animation = 'blink-error-anim 0.4s step-start infinite';
+                    } else {
+                        countdownEl.style.color = 'red'; 
+                        countdownEl.style.animation = 'none';
+                    }
                 }
                 
                 timeLeft--;
@@ -481,9 +498,11 @@
             gameState = -1; 
             typedInput = '';
             hiddenInput.value = '';
-            currentInputSpan.textContent = ''; 
             
-            forceInputFocus();
+            const activeInput = getActiveInputSpan();
+            if(activeInput) activeInput.textContent = '';
+            
+            forceInputFocus(); /* KLJUČNO: Dodato za mobilni unos */
         }
 
         function showQuestionScreen() {
@@ -512,9 +531,11 @@
             gameState = 0; 
             typedInput = '';
             hiddenInput.value = '';
-            currentInputSpan.textContent = ''; 
+            
+            const activeInput = getActiveInputSpan();
+            if(activeInput) activeInput.textContent = '';
 
-            forceInputFocus(); 
+            forceInputFocus(); /* KLJUČNO: Dodato za mobilni unos */
         }
 
         function handleError(errorMessage, doRestart = false, nextStateFunction = runInitialPasswordPrompt) {
@@ -634,9 +655,12 @@
             window.scrollTo(0, document.body.scrollHeight);
         }
         
+        /** * FIX: Sada koristi getActiveInputSpan() da bi se tekst 
+         * ispisivao u pravom spanu (temp ili current)
+         */
         hiddenInput.addEventListener('input', () => {
             typedInput = hiddenInput.value;
-            const activeSpan = getActiveInputSpan();
+            const activeSpan = getActiveInputSpan(); 
             if(activeSpan) activeSpan.textContent = typedInput;
         });
 
@@ -730,35 +754,38 @@
 
             if (gameState <= 0 || gameState === -1) { 
                  
+                 // Ako se ne pritisne Enter, ne želimo preventDefault() jer nam treba NATIVNI unos teksta
                  if (char === 'Enter') {
                      e.preventDefault();
+                 } else {
+                     // Ipak pozivamo focus, jer neki browseri i dalje gube fokus čim korisnik dodirne ekran
+                     forceInputFocus();
+                     return; // Pustamo native input event da radi posao, ne radimo nista ovde
                  }
                  
-                 
-                 if (char === 'Enter') {
-                     const cleanInput = typedInput.toLowerCase().replace(/[^a-z0-9]/g, '');
+                 // Ostatak je Enter logika
+                 const cleanInput = typedInput.toLowerCase().replace(/[^a-z0-9]/g, '');
                      
-                     if (gameState === -1) { // Proveravamo ŠIFRU
-                         if (cleanInput === PASSWORD_KEY) {
-                             showQuestionScreen();
-                         } else {
-                             handleError(" > ERROR -1.1: Neovlašćen pristup. Sistem se restartuje.", true);
-                         }
-                         return;
+                 if (gameState === -1) { // Proveravamo ŠIFRU
+                     if (cleanInput === PASSWORD_KEY) {
+                         showQuestionScreen();
+                     } else {
+                         handleError(" > ERROR -1.1: Neovlašćen pristup. Sistem se restartuje.", true);
                      }
+                     return;
+                 }
 
-                     if (isQuestionVisible && gameState === 0) { // Proveravamo ODGOVOR NA PITANJE
-                         const finalInput = typedInput; 
-                         
-                         if (cleanInput === 'da') {
-                             startCLIMode();
-                         } else if (cleanInput === 'ne') {
-                             handleCowardice(finalInput); 
-                         } else {
-                             handleError(" > ERROR 0.2: Odgovor mora biti **DA** ili **NE**.", false, showQuestionScreen);
-                         }
-                         return;
+                 if (isQuestionVisible && gameState === 0) { // Proveravamo ODGOVOR NA PITANJE
+                     const finalInput = typedInput; 
+                     
+                     if (cleanInput === 'da') {
+                         startCLIMode();
+                     } else if (cleanInput === 'ne') {
+                         handleCowardice(finalInput); 
+                     } else {
+                         handleError(" > ERROR 0.2: Odgovor mora biti **DA** ili **NE**.", false, showQuestionScreen);
                      }
+                     return;
                  }
                  return; 
             }
@@ -766,7 +793,6 @@
             // Logika za CLI Mode (gameState >= 1)
             if (gameState >= 1 && gameState <= 3) { 
                 
-                // Osiguravamo fokus na svakom keydown-u u CLI modu
                 if (document.activeElement !== hiddenInput) {
                     forceInputFocus();
                 }
@@ -838,15 +864,13 @@
         });
         
         
+        /**
+         * KLJUČNO ZA MOBILNE UREĐAJE: Forsiranje fokusa na svaki dodir ekrana
+         * osigurava da se tastatura uvek podigne.
+         */
         document.body.addEventListener('touchstart', () => {
-             // Agresivno forsiranje fokusa na svaki dodir ekrana
              forceInputFocus();
         }, { passive: true });
-        
-        // Dodatni listener na klik na glavni output, za svaki slučaj
-        output.addEventListener('click', () => {
-             forceInputFocus();
-        });
 
         
         function checkUrlHash() {
