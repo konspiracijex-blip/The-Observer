@@ -121,17 +121,17 @@
             padding-left: 0; 
         }
         
-        /* AŽURIRANI STIL ZA SUBTILNI TEKST: MANJI FONT I CENTRIRAN BLOK */
+        /* STIL ZA SUBTILNI TEKST */
         .subtle-clue-text {
-            font-size: 0.6em; /* Smanjujemo veličinu sa 0.8em na 0.6em */
+            font-size: 0.6em; 
             color: #008000; 
             opacity: 0.7; 
             padding: 0 5px; 
             text-align: center; 
             
-            /* KLJUČNA PROMENA ZA CENTRIRANJE BLOKA */
-            width: 85%; /* Smanjujemo širinu bloka na 85% */
-            margin: 30px auto 0 auto; /* Centriramo ceo blok horizontalno (gore 30px, levo/desno auto) */
+            /* Centriranje bloka */
+            width: 85%; 
+            margin: 30px auto 0 auto; 
         }
 
         /* KLJUČNO: Fiksiramo input bar na dnu (koristi se SAMO u CLI modu) */
@@ -322,7 +322,7 @@
             'POWERING OFF COMPONENTS...'
         ];
 
-        // KLJUČNA PROMENA: LOMIMO TEKST NA ŽELJENA MESTA KORISTEĆI <br> TAG
+        // *** KLJUČNA IZMENA: DODATNI <BR> U PRVOJ LINIJI SUBTILNOG TEKSTA ***
         const INITIAL_PROMPT_STATE_TEMPLATE = `
             <div id="main-title">OBSERVER</div>
             <div id="subtitle" style="margin-bottom: 50px;">SISTEM 1101 / VER. 2.6</div>
@@ -337,7 +337,9 @@
                     > <span id="temp-input-span"></span><span id="temp-cursor">█</span>
                 </div>
                 <div class="subtle-clue-text">
-                    [FREQ/SIG: 457.000mhz]
+                    [FREQ/SIG:
+                    <br>
+                    457.000mhz] 
                     <br>
                     KONTROLA.BROJ: **(OVO NIJE KLJUČ)**
                 </div>
