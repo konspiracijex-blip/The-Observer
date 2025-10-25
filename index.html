@@ -322,7 +322,7 @@
             'POWERING OFF COMPONENTS...'
         ];
 
-        // *** KLJUČNA IZMENA: DODATNI <BR> U PRVOJ LINIJI SUBTILNOG TEKSTA ***
+        // *** KLJUČNA IZMENA: EKSTREMNO KOMPRIMOVAN HTML BEZ RAZMAKA OKO <BR> TAGOVA ***
         const INITIAL_PROMPT_STATE_TEMPLATE = `
             <div id="main-title">OBSERVER</div>
             <div id="subtitle" style="margin-bottom: 50px;">SISTEM 1101 / VER. 2.6</div>
@@ -336,13 +336,7 @@
                 <div class="initial-cli-line" id="initial-input-line">
                     > <span id="temp-input-span"></span><span id="temp-cursor">█</span>
                 </div>
-                <div class="subtle-clue-text">
-                    [FREQ/SIG:
-                    <br>
-                    457.000mhz] 
-                    <br>
-                    KONTROLA.BROJ: **(OVO NIJE KLJUČ)**
-                </div>
+                <div class="subtle-clue-text">[FREQ/SIG:<br>457.000mhz]<br>KONTROLA.BROJ: **(OVO NIJE KLJUČ)**</div>
             </div>
         `;
 
