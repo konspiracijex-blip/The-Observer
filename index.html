@@ -166,8 +166,9 @@
             let attemptCount = 0; 
             let typingTimer;
             
-            // Imenovane funkcije za Listenere Nivoa 1
+            // Imenovane funkcije za Listenere Nivoa 1 i Nivoa 2
             let inputListenerLevel1, keypressListenerLevel1; 
+            let inputListenerLevel2, keypressListenerLevel2; 
             
             const bootMessages = [
                 'CHECKING CORE COMPONENTS...',
@@ -203,9 +204,9 @@
             function resetSystem() {
                 clearTimeout(typingTimer); 
                 
-                // Osiguravamo da su listeneri Nivoa 2 isključeni
-                hiddenInput.oninput = null;
-                hiddenInput.onkeypress = null;
+                // UKLANJANJE LISTENERA NIVOA 2 (ako je bio aktivan)
+                hiddenInput.removeEventListener('input', inputListenerLevel2);
+                hiddenInput.removeEventListener('keypress', keypressListenerLevel2);
                 
                 gameContentDiv.classList.add('hidden');
                 bootSequenceDiv.style.display = 'block';
@@ -227,8 +228,12 @@
                 runBootSequence(bootMessages, 0);
             }
 
-            // --- NOVO: FUNKCIJA ZA GAŠENJE SISTEMA (SHUTDOWN) ---
+            // --- FUNKCIJA ZA GAŠENJE SISTEMA (SHUTDOWN) ---
             function shutDownSequence() {
+                // UKLANJANJE LISTENERA NIVOA 2
+                hiddenInput.removeEventListener('input', inputListenerLevel2);
+                hiddenInput.removeEventListener('keypress', keypressListenerLevel2);
+                
                 gameContentDiv.innerHTML = ''; 
 
                 const morpheusMessage = document.createElement('p');
@@ -285,7 +290,7 @@
                         document.body.style.backgroundColor = '#000000';
                         document.body.style.color = '#000000'; 
                         document.body.style.textShadow = 'none';
-                        gameContentDiv.textContent = ''; // Potpuno crno i prazno
+                        gameContentDiv.textContent = ''; 
                     }
                 }
 
@@ -319,60 +324,19 @@
                     const levelTwoDisplay = document.getElementById('level-two-display');
                     const cursorLevelTwo = document.getElementById('fake-cursor-level-two');
                     
-                    hiddenInput.disabled = false;
-                    hiddenInput.value = '';
+                    hiddenInput.disabled = false; // <-- VAZNO: Omogući kucanje
+                    hiddenInput.value = ''; 
+                    currentInputL2 = '';
+                    cursorLevelTwo.style.display = 'inline-block'; // <-- VAZNO: Prikazi kursor
                     hiddenInput.focus();
                     
                     // BITNA IZMENA: Uklanjamo Listenere Nivoa 1
                     hiddenInput.removeEventListener('input', inputListenerLevel1);
                     hiddenInput.removeEventListener('keypress', keypressListenerLevel1);
                     
-                    // Resetujemo handlere za Nivo 2
-                    hiddenInput.oninput = (e) => {
-                        const value = e.target.value.toUpperCase();
-                        // Ograničavamo duzinu unosa na 2 (DA ili NE)
-                        currentInputL2 = value.slice(0, 2); 
-                        e.target.value = currentInputL2;
-                        levelTwoDisplay.textContent = currentInputL2;
-                    };
-
-                    hiddenInput.onkeypress = (e) => {
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            
-                            const answer = currentInputL2.trim();
-                            
-                            if (answer === 'DA') {
-                                levelTwoDisplay.textContent = answer;
-                                hiddenInput.disabled = true;
-                                cursorLevelTwo.style.display = 'none';
-                                
-                                const result = document.createElement('p');
-                                result.textContent = "\nPRISTUP JE ODOBREN. PRELAZAK NA CENTRALNU TAJNU...";
-                                gameContentDiv.appendChild(result);
-                                
-                                // Mesto za NIVO 3
-                                
-                            } else if (answer === 'NE') {
-                                levelTwoDisplay.textContent = answer;
-                                
-                                hiddenInput.disabled = true;
-                                cursorLevelTwo.style.display = 'none';
-
-                                shutDownSequence(); 
-
-                            } else {
-                                const result = document.createElement('p');
-                                result.textContent = "\nNEVAŽEĆA KOMANDA. (Unesi DA ili NE)";
-                                gameContentDiv.appendChild(result);
-                                
-                                hiddenInput.value = '';
-                                currentInputL2 = '';
-                                levelTwoDisplay.textContent = '';
-                                hiddenInput.focus(); // Vrati fokus
-                            }
-                        }
-                    };
+                    // DODAJEMO LISTENERE NIVOA 2
+                    hiddenInput.addEventListener('input', inputListenerLevel2);
+                    hiddenInput.addEventListener('keypress', keypressListenerLevel2);
                     
                 }, 300);
             }
@@ -393,11 +357,11 @@
                 } else {
                     bootSequenceDiv.style.display = 'none';
                     gameContentDiv.classList.remove('hidden');
-                    hiddenInput.focus(); // VAZNO: Postavi fokus kada je igra spremna
+                    hiddenInput.focus();
                 }
             }
 
-            // --- LOGIKA ZA NIVO 1 KUCANJE I PROVERU ŠIFRE (Sada kao imenovane funkcije) ---
+            // --- LOGIKA ZA NIVO 1 KUCANJE I PROVERU ŠIFRE ---
             
             inputListenerLevel1 = (e) => {
                 const newInputValue = e.target.value;
@@ -419,7 +383,7 @@
                         hiddenInput.disabled = true;
                         fakeCursor.style.display = 'none';
                         
-                        // Uklanjamo listenere ovde pre prelaska na L2 
+                        // Uklanjamo listenere Nivoa 1 pre prelaska na L2
                         hiddenInput.removeEventListener('input', inputListenerLevel1);
                         hiddenInput.removeEventListener('keypress', keypressListenerLevel1);
                         startLevel2();
@@ -482,11 +446,67 @@
                 }
             };
 
-            // Postavljanje Listenere Nivoa 1
+            // --- LOGIKA ZA NIVO 2 KUCANJE I PROVERU ODGOVORA (DA/NE) ---
+            
+            inputListenerLevel2 = (e) => {
+                // Važno: Moramo ponovo pronaći element jer je gameContentDiv zamenjen
+                const levelTwoDisplay = document.getElementById('level-two-display');
+                if (!levelTwoDisplay) return;
+
+                const value = e.target.value.toUpperCase();
+                // Ograničavamo duzinu unosa na 2 (DA ili NE)
+                currentInputL2 = value.slice(0, 2); 
+                e.target.value = currentInputL2;
+                levelTwoDisplay.textContent = currentInputL2;
+            };
+
+            keypressListenerLevel2 = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    
+                    const levelTwoDisplay = document.getElementById('level-two-display');
+                    const cursorLevelTwo = document.getElementById('fake-cursor-level-two');
+                    if (!levelTwoDisplay || !cursorLevelTwo) return;
+
+                    const answer = currentInputL2.trim();
+                    
+                    if (answer === 'DA') {
+                        levelTwoDisplay.textContent = answer;
+                        hiddenInput.disabled = true;
+                        cursorLevelTwo.style.display = 'none';
+                        
+                        const result = document.createElement('p');
+                        result.textContent = "\nPRISTUP JE ODOBREN. PRELAZAK NA CENTRALNU TAJNU...";
+                        gameContentDiv.appendChild(result);
+                        
+                        // Mesto za NIVO 3 (nastavak)
+                        
+                    } else if (answer === 'NE') {
+                        levelTwoDisplay.textContent = answer;
+                        
+                        hiddenInput.disabled = true;
+                        cursorLevelTwo.style.display = 'none';
+
+                        shutDownSequence(); 
+
+                    } else {
+                        const result = document.createElement('p');
+                        result.textContent = "\nNEVAŽEĆA KOMANDA. (Unesi DA ili NE)";
+                        gameContentDiv.appendChild(result);
+                        
+                        hiddenInput.value = '';
+                        currentInputL2 = '';
+                        levelTwoDisplay.textContent = '';
+                        hiddenInput.focus();
+                    }
+                }
+            };
+
+            // Postavljanje Listenere Nivoa 1 na početku
             hiddenInput.addEventListener('input', inputListenerLevel1);
             hiddenInput.addEventListener('keypress', keypressListenerLevel1);
             
-            // POKRETANJE IGRE (VAŽNO: Ova linija je nedostajala!)
+            // POKRETANJE IGRE
             runBootSequence(bootMessages, 0); 
             
             document.body.addEventListener('click', () => {
