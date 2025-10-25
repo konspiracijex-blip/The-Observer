@@ -58,7 +58,6 @@
             padding-bottom: 50px; 
         }
         
-        /* KLJUČNA IZMENA: U CLI modu, samo se menja padding/poravnanje teksta */
         .cli-mode {
             text-align: left !important;
             min-height: 100vh; 
@@ -82,7 +81,7 @@
             padding: 20px 0;
             display: flex;
             flex-direction: column;
-            align-items: center; /* Ovo centrira naslov i podnaslov */
+            align-items: center; /* OVO CENTRIRA SAMO NASLOVE (main-title, subtitle) */
         }
         
         #static-title-area {
@@ -108,13 +107,16 @@
         .no-wrap-text {
             white-space: nowrap;
         }
+        
+        /* KLJUČNO ZA LEVO PORAVNANJE PROMPTA */
         #dynamic-content {
              display: block; 
              width: 100%; 
              max-width: none; 
              margin: 0; 
-             text-align: left; 
+             text-align: left; /* Osiguravamo levo poravnanje za sve unutra */
         }
+        
         .initial-cli-line {
             text-align: left; 
             margin-top: 10px; 
@@ -124,7 +126,7 @@
             padding-left: 0; 
         }
         
-        /* Input sada nije fiksan! On prati sadržaj. */
+        /* Input bar (sada ga dodajemo dinamički) */
         #input-container {
             display: none; 
             position: relative; 
@@ -213,7 +215,7 @@
             color: #00FF00;
         }
 
-        /* Stil za odbrojavanje, ako želimo da se ističe */
+        /* Stil za odbrojavanje */
         #countdown-timer {
             color: red; 
             font-weight: bold;
@@ -303,7 +305,6 @@
             'AWAITING USER INPUT...'
         ];
         
-        // NOVE LINIJE ZA GAŠENJE SISTEMA
         const SHUTDOWN_LINES = [
             '*** SHUTDOWN SEQUENCE INITIATED ***',
             'ARCHIVING ACTIVE LOGS... DONE',
@@ -349,7 +350,6 @@
              }, 50); 
         }
 
-        // Funkcija za dinamičko prilagođavanje poravnanja u CLI modu
         function adjustCliAlignment() {
             if (gameState < 1 || !output.classList.contains('cli-mode')) return;
 
@@ -487,7 +487,8 @@
             const textPromptSpan = document.getElementById('text-prompt');
             if (textPromptSpan) {
                 textPromptSpan.textContent = "Unesite šifru:";
-                // KLJUČNA IZMENA: Osiguravamo da je element blok, levo poravnat, manji i u jednom redu
+                
+                // KLJUČNE IZMENE ZA LEVO PORAVNANJE I VELIČINU:
                 textPromptSpan.style.display = 'block'; 
                 textPromptSpan.style.textAlign = 'left'; 
                 textPromptSpan.style.fontSize = '0.9em'; 
@@ -511,7 +512,6 @@
             
             const textPromptSpan = document.getElementById('text-prompt');
             if (textPromptSpan) {
-                // Postavljamo pitanja sa centriranim stilom za bolji izgled
                 textPromptSpan.innerHTML = `
                     <div style="text-align: center; width: 100%;">Dobrodošli!</div>
                     <div style="text-align: center; width: 100%; margin-top: 5px;">
@@ -521,8 +521,8 @@
                     </div>
                 `;
                 textPromptSpan.style.display = 'block'; 
-                textPromptSpan.style.fontSize = '1.2em'; // Vraćamo na standardnu veličinu za pitanje
-                textPromptSpan.style.whiteSpace = 'normal'; // Dozvoljavamo normalan prelom
+                textPromptSpan.style.fontSize = '1.2em'; 
+                textPromptSpan.style.whiteSpace = 'normal'; 
             }
             
             isQuestionVisible = true;
@@ -633,9 +633,8 @@
             output.style.justifyContent = 'center'; 
             
             const tempContainer = document.getElementById('initial-input-line');
-            if (tempContainer) tempContainer.remove(); // Uklanjamo gornji input ako postoji
+            if (tempContainer) tempContainer.remove(); 
 
-            // Dodajemo input-container na kraj output diva
             output.appendChild(inputContainer);
 
             inputContainer.style.display = 'flex'; 
@@ -653,7 +652,6 @@
             window.scrollTo(0, document.body.scrollHeight);
         }
         
-        // Funkcija za obradu unosa u hidden input polje (Za CLI mod)
         hiddenInput.addEventListener('input', () => {
             typedInput = hiddenInput.value;
             currentInputSpan.textContent = typedInput;
@@ -752,11 +750,10 @@
             if (gameState <= 0 || gameState === -1) { 
                  e.preventDefault();
                  
-                 // Logika za mobilni unos (input event) je sada na samom hidden inputu, ali ovde se obrađuju Enter i backspace
                  if (char === 'Enter') {
                      const cleanInput = typedInput.toLowerCase().replace(/[^a-z0-9]/g, '');
                      
-                     if (gameState === -1) { // Proveravamo ŠIFRU
+                     if (gameState === -1) { 
                          if (cleanInput === PASSWORD_KEY) {
                              showQuestionScreen();
                          } else {
@@ -765,7 +762,7 @@
                          return;
                      }
 
-                     if (isQuestionVisible && gameState === 0) { // Proveravamo ODGOVOR NA PITANJE
+                     if (isQuestionVisible && gameState === 0) { 
                          const finalInput = typedInput; 
                          
                          if (cleanInput === 'da') {
@@ -779,8 +776,6 @@
                      }
                  }
                  
-                 // OBRADA TIPKANJA ZA desktop tastaturu (tekst se prikazuje preko input eventa)
-                 // Osiguravamo fokus na svaki unos
                  forceInputFocus();
                  return; 
             }
@@ -868,7 +863,6 @@
              forceInputFocus();
         });
         
-        // Logika za proveru URL hash-a
         function checkUrlHash() {
             const hash = window.location.hash.substring(1).toLowerCase().replace(/[^a-z0-9]/g, '');
             if (hash === KEY_2) {
