@@ -199,6 +199,9 @@
             color: transparent; 
             background: transparent; 
             caret-color: transparent;
+
+            /* Dodatno osiguravamo da je uvek dostupan na touch uređajima */
+            pointer-events: auto; 
         }
 
 
@@ -262,9 +265,9 @@
     <div id="input-container">
         <span id="cli-prompt" style="color: lime; z-index: 202;">> </span> 
         <span id="current-input" style="z-index: 202;"></span><span id="cursor" style="z-index: 202;">█</span>
-        
-        <input type="text" id="cli-hidden-input" maxlength="50" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
     </div>
+
+    <input type="text" id="cli-hidden-input" maxlength="50" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
 
     <a id="url-manipulator" style="display: none;" href="#04012012"></a>
 
@@ -322,7 +325,7 @@
             'POWERING OFF COMPONENTS...'
         ];
 
-        // *** KLJUČNA IZMENA: EKSTREMNO KOMPRIMOVAN HTML BEZ RAZMAKA OKO <BR> TAGOVA ***
+        // EKSTREMNO KOMPRIMOVAN HTML BEZ RAZMAKA OKO <BR> TAGOVA
         const INITIAL_PROMPT_STATE_TEMPLATE = `
             <div id="main-title">OBSERVER</div>
             <div id="subtitle" style="margin-bottom: 50px;">SISTEM 1101 / VER. 2.6</div>
@@ -363,6 +366,7 @@
         }
         
         function forceInputFocus() {
+             // Čak i ako je input nevidljiv, mora da bude fokusiran da bi se podigla tastatura.
              setTimeout(() => { 
                  hiddenInput.focus(); 
              }, 50); 
@@ -762,6 +766,7 @@
             // Logika za CLI Mode (gameState >= 1)
             if (gameState >= 1 && gameState <= 3) { 
                 
+                // Osiguravamo fokus na svakom keydown-u u CLI modu
                 if (document.activeElement !== hiddenInput) {
                     forceInputFocus();
                 }
@@ -834,8 +839,14 @@
         
         
         document.body.addEventListener('touchstart', () => {
+             // Agresivno forsiranje fokusa na svaki dodir ekrana
              forceInputFocus();
         }, { passive: true });
+        
+        // Dodatni listener na klik na glavni output, za svaki slučaj
+        output.addEventListener('click', () => {
+             forceInputFocus();
+        });
 
         
         function checkUrlHash() {
