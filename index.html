@@ -121,16 +121,17 @@
             padding-left: 0; 
         }
         
-        /* AŽURIRANI STIL ZA SUBTILNI TEKST: MANJI FONT */
+        /* AŽURIRANI STIL ZA SUBTILNI TEKST: MANJI FONT I CENTRIRAN BLOK */
         .subtle-clue-text {
             font-size: 0.6em; /* Smanjujemo veličinu sa 0.8em na 0.6em */
             color: #008000; 
             opacity: 0.7; 
             padding: 0 5px; 
-            max-width: 100%;
-            margin-top: 30px; 
             text-align: center; 
-            /* Uklanjamo word-break jer koristimo BR tagove za fiksno prelamanje */
+            
+            /* KLJUČNA PROMENA ZA CENTRIRANJE BLOKA */
+            width: 85%; /* Smanjujemo širinu bloka na 85% */
+            margin: 30px auto 0 auto; /* Centriramo ceo blok horizontalno (gore 30px, levo/desno auto) */
         }
 
         /* KLJUČNO: Fiksiramo input bar na dnu (koristi se SAMO u CLI modu) */
@@ -728,15 +729,12 @@
             const currentActiveSpan = getActiveInputSpan();
 
             if (gameState <= 0 || gameState === -1) { 
-                 // Na desktopu sprecavamo Enter da radi default, ali dopustamo ga za unos
-                 // Na mobilnom web appu, ne mozemo spreciti unos, zato koristimo hiddenInput.
+                 
                  if (char === 'Enter') {
                      e.preventDefault();
                  }
                  
-                 // Za non-CLI mod, unos je već preuzet preko hiddenInput.addEventListener('input').
-                 // Ovde samo proveravamo Enter:
-
+                 
                  if (char === 'Enter') {
                      const cleanInput = typedInput.toLowerCase().replace(/[^a-z0-9]/g, '');
                      
