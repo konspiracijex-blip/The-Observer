@@ -32,6 +32,7 @@
             overflow-y: auto; 
             transition: opacity 0.1s; 
             
+            /* Padding na body da se tekst ne lepi za ivice */
             padding: 0 10px; 
         }
         
@@ -118,13 +119,10 @@
         .no-wrap-text {
             white-space: nowrap;
         }
-        .initial-cli-line {
-            display: none; /* KLJUČNO: Sakrivamo gornji unos */
-        }
         
         /* KLJUČNO: Fiksiramo input bar na dnu */
         #input-container {
-            display: none; /* Prikazujemo ga u JS-u */
+            display: none; 
             position: fixed; 
             bottom: 0;
             left: 0;
@@ -150,14 +148,14 @@
             padding: 0; 
         }
 
-        /* KLJUČNO: SKRIVENO INPUT POLJE JE IZNAD SVEGA */
+        /* SKRIVENO INPUT POLJE JE IZNAD SVEGA */
         #cli-hidden-input {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%; 
             height: 100%;
-            opacity: 0.001; /* Minimalna vidljivost */
+            opacity: 0.001; 
             padding: 0;
             margin: 0;
             border: none;
@@ -281,6 +279,7 @@
             'POWERING OFF COMPONENTS...'
         ];
 
+        // KLJUČNA PROMENA: IZBACUJEMO DVOSTRUKI INPUT IZ TEMPLATE-A
         const INITIAL_PROMPT_STATE_TEMPLATE = `
             <div id="main-title">OBSERVER</div>
             <div id="subtitle" style="margin-bottom: 50px;">SISTEM 1101 / VER. 2.6</div>
@@ -291,9 +290,6 @@
                 
                 <span id="text-prompt" class="no-wrap-text" style="display: none; font-size: 1.2em;"></span>
                 <br>
-                <div class="initial-cli-line" id="initial-input-line">
-                    > <span id="temp-input-span"></span><span id="temp-cursor">█</span>
-                </div>
                 <div id="subtle-clue">
                     [FREQ/SIG: 457.000mhz] KONTROLA.BROJ: **(OVO NIJE KLJUČ)**
                 </div>
@@ -350,7 +346,6 @@
             printNextLine();
         }
 
-        // ... (Shutdown i Countdown funkcije ostaju iste)
         function runShutdownSequence(cliLog) {
             let lineIndex = 0;
             const delay = 150; 
@@ -432,11 +427,7 @@
             // PRIKAZUJEMO INPUT BAR ODMAH
             inputContainer.style.display = 'flex'; 
             
-            // SAKRIVAMO UNOS NA NASLOVNOM EKRANU (koji smo pre koristili)
-            const initialInputLine = document.getElementById('initial-input-line');
-            if (initialInputLine) initialInputLine.style.display = 'none';
-            
-            gameState = -1; // Stanje: Unos prve šifre
+            gameState = -1; 
             typedInput = '';
             hiddenInput.value = '';
             currentInputSpan.textContent = '';
@@ -449,7 +440,6 @@
             output.classList.remove('cli-mode'); 
             output.style.justifyContent = 'center'; 
             
-            // Ponovo renderujemo naslovni ekran, da bi se resetovalo
             output.innerHTML = `<div class="centered-content-wrapper" id="title-wrapper">${INITIAL_PROMPT_STATE_TEMPLATE}</div>`;
 
             const textPromptSpan = document.getElementById('text-prompt');
@@ -470,11 +460,8 @@
             // OSTAVLJAMO INPUT BAR VIDLJIV
             inputContainer.style.display = 'flex'; 
             
-            const initialInputLine = document.getElementById('initial-input-line');
-            if (initialInputLine) initialInputLine.style.display = 'none';
-            
             isQuestionVisible = true;
-            gameState = 0; // Stanje: Odgovor DA/NE
+            gameState = 0; 
             typedInput = '';
             hiddenInput.value = '';
             currentInputSpan.textContent = '';
@@ -512,7 +499,6 @@
         }
 
         function resetGame() {
-            // ... (resetGame ostaje isti)
             output.innerHTML = '';
             output.classList.remove('cli-mode');
             output.style.justifyContent = 'center'; 
@@ -527,7 +513,6 @@
         }
 
         function handleCowardice(finalInput) {
-            // ... (handleCowardice ostaje isti, ali uklanjamo inputContainer na kraju)
              renderCLILayout(); 
             
             const cliLog = getCliLog();
@@ -582,9 +567,8 @@
                 cliLog.innerHTML = 'Molimo unesite prvu ključnu reč.<br>';
             }
 
-            output.style.justifyContent = 'flex-start'; // U CLI modu uvek krećemo od vrha
+            output.style.justifyContent = 'flex-start'; 
             
-            // SADA JE INPUT FIKSIRAN, NE TREBA GA DODAVATI U OUTPUT
             inputContainer.style.display = 'flex'; 
             
             gameState = 1;
@@ -598,12 +582,10 @@
         }
         
         hiddenInput.addEventListener('input', () => {
-            // Ažuriramo vizuelni span
             typedInput = hiddenInput.value;
             currentInputSpan.textContent = typedInput;
         });
 
-        // ... (triggerEnding, finalEnd, successKey1 ostaju isti, samo koriste finalInput = typedInput)
         function triggerEnding() {
             const finalInput = typedInput; 
             
@@ -687,15 +669,12 @@
         }
         
         document.addEventListener('keydown', (e) => {
-            // OBRADA ENTERA
             if (e.key === 'Enter') {
                 e.preventDefault();
                 
                 const cleanInput = typedInput.toLowerCase().replace(/[^a-z0-9]/g, '');
                 
-                // --------- Šifra i Pitanje (pre CLI moda) ---------
                 if (gameState <= 0 || gameState === -1) {
-                     // Proveravamo ŠIFRU
                      if (gameState === -1) {
                          if (cleanInput === PASSWORD_KEY) {
                              showQuestionScreen();
@@ -705,7 +684,6 @@
                          return;
                      }
 
-                     // Proveravamo ODGOVOR NA PITANJE
                      if (isQuestionVisible && gameState === 0) {
                          const finalInput = typedInput; 
                          
@@ -720,7 +698,6 @@
                      }
                 }
 
-                // --------- CLI Mod (Faze 1, 2, 3) ---------
                 if (gameState >= 1 && gameState <= 3) { 
                     const cliLog = getCliLog();
                     
@@ -770,7 +747,6 @@
                         }
                     }
                     
-                    // Resetovanje inputa
                     typedInput = '';
                     hiddenInput.value = ''; 
                     currentInputSpan.textContent = '';
@@ -784,7 +760,6 @@
         });
 
         
-        // Listeneri za fokus
         document.body.addEventListener('touchstart', () => {
              if (inputContainer.style.display === 'flex') {
                  forceInputFocus();
