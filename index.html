@@ -171,17 +171,26 @@
             color: lime; 
         }
 
-        /* KLJUČNO: NEVIDLJIVI INPUT FIELD */
+        /* KLJUČNO: NEVIDLJIVI INPUT FIELD (Optimizovano za mobilni fokus) */
         #cli-hidden-input {
-            position: absolute;
+            /* Mijenjamo position iz 'absolute' u 'fixed' da bude neovisan o skrolovanju i da ga mob. browser lakše fokusira */
+            position: fixed;
+            /* Postavljamo ga negdje gdje je sigurno izvan pogleda, ali lako dohvatljiv */
+            top: 0;
+            left: 0;
+            
             opacity: 0;
+            /* Dajemo mu minimalnu veličinu */
             width: 1px;
             height: 1px;
+            
             padding: 0;
             margin: 0;
             border: none;
             outline: none;
-            z-index: -1; 
+            
+            /* Z-index MORA biti pozitivan da ne bi bio 'ispod' body elemenata */
+            z-index: 1; 
         }
 
 
@@ -346,6 +355,7 @@
         }
         
         function forceInputFocus() {
+             // Koristimo setTimeout jer fokusiranje u touch/click handlerima često ne radi odmah
              setTimeout(() => { 
                  hiddenInput.focus(); 
              }, 50); 
@@ -659,9 +669,7 @@
             window.scrollTo(0, document.body.scrollHeight);
         }
         
-        // **********************************************
-        // KLJUČNA IZMENA: CENTRALIZOVANA OBRADA UNOSA TEKSTA
-        // **********************************************
+        // CENTRALIZOVANA OBRADA UNOSA TEKSTA
         hiddenInput.addEventListener('input', () => {
             // Ažurira typedInput na osnovu realne vrednosti u hidden input polju
             typedInput = hiddenInput.value;
@@ -764,9 +772,10 @@
             const currentActiveSpan = getActiveInputSpan();
 
             if (gameState <= 0 || gameState === -1) { 
-                 e.preventDefault();
                  
                  if (char === 'Enter') {
+                     e.preventDefault();
+                     
                      const cleanInput = typedInput.toLowerCase().replace(/[^a-z0-9]/g, '');
                      
                      if (gameState === -1) { 
@@ -792,7 +801,6 @@
                      }
                  }
                  
-                 // Za sve ostalo (tipkanje) oslanjamo se na 'input' event, ali moramo forsirati fokus
                  forceInputFocus();
                  return; 
             }
@@ -814,8 +822,6 @@
                     if (typedInput.length === 0) {
                         cliLog.innerHTML += `<br> > GREŠKA: Nedostaje ulaz.`;
                     } else {
-                        // Nema potrebe da u CLI modu ispisujemo ponovo ono što je korisnik ukucao
-                        // jer je input container na dnu (osim ako je pogresan, onda ga ispisujemo)
                         if (!((gameState === 1 && (cleanInput === KEY_1 || cleanInput === 'posmatrac')) || 
                               (gameState === 2 && cleanInput === KEY_2) || 
                               (gameState === 3 && cleanInput === KEY_3))) {
@@ -873,7 +879,7 @@
             }
         });
 
-        // KLJUČNO ZA MOBILNE UREĐAJE (vraćamo fokus)
+        // KLJUČNO ZA MOBILNE UREĐAJE (vraćamo fokus pri dodiru)
         document.body.addEventListener('touchstart', () => {
              forceInputFocus();
         }, { passive: true });
