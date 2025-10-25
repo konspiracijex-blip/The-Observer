@@ -28,10 +28,41 @@
             min-height: 100vh;
         }
         
+        /* Animacija za crveni bljesak pri prelasku na Nivo 2 */
+        @keyframes red-flash {
+            0% { background-color: #000000; }
+            50% { background-color: #FF0000; }
+            100% { background-color: #000000; }
+        }
+
+        .flash-red {
+            animation: red-flash 0.3s ease-out 1;
+        }
+
+        /* Animacija za bljeskanje teksta greške (CRVENO) */
+        @keyframes text-flash {
+            0% { opacity: 1; }
+            50% { opacity: 0.1; }
+            100% { opacity: 1; }
+        }
+
+        .fail-flash {
+            color: #FF0000; /* Crvena boja za grešku */
+            font-weight: bold;
+            animation: text-flash 0.5s step-start infinite; /* Trepće */
+        }
+
         #boot-sequence {
+            text-align: center;
+            font-size: 0.9em; 
             border-bottom: 1px solid rgba(0, 255, 0, 0.1);
             padding-bottom: 15px;
             margin-bottom: 15px;
+        }
+
+        #feedback-fail {
+            text-align: center;
+            margin-top: 20px;
         }
 
         .game-title {
@@ -40,26 +71,18 @@
             text-align: center;
             margin-bottom: 0px; 
             text-shadow: 0 0 10px rgba(255, 0, 0, 0.7), 0 0 20px rgba(255, 0, 0, 0.5);
-            animation: text-appear 1s ease-out;
-            font-weight: bold; 
+            font-weight: bold;
         }
 
         .system-info {
             font-size: 1.2em;
             color: #00FF00;
             text-align: center;
-            /* PROMENA MARGIN-E: Povlači element gore za 10 piksela */
             margin-top: -10px; 
             margin-bottom: 30px;
-            animation: text-appear 1s ease-out;
         }
         
-        @keyframes text-appear {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* STILOVI ZA LAŽNI INPUT (nepromenjeno) */
+        /* STILOVI ZA LAŽNI INPUT (nevidljivo polje za kucanje) */
         #hidden-input {
             position: absolute;
             opacity: 0;
@@ -76,6 +99,7 @@
             display: inline;
         }
         
+        /* STILOVI ZA TREPĆUĆI KURSOR */
         .cursor {
             background-color: #00FF00;
             color: #000000;
@@ -104,9 +128,7 @@
 
     <div class="terminal" id="terminal-container">
         
-        <div id="boot-sequence">
-            
-        </div>
+        <div id="boot-sequence"></div>
 
         <div id="game-content" class="hidden">
             <div class="game-title">OBSERVER</div>
@@ -118,44 +140,244 @@
             
             <input type="text" id="hidden-input" autofocus>
             
-            <div id="feedback-success" class="hidden">
-                PRISTUP ODOBREN.
-                PRELAZAK NA NIVO 2...
-            </div>
-            <div id="feedback-fail" class="hidden">
-                PRISTUP ODBIJEN.
-                Pokusajte ponovo.
-            </div>
+            <div id="feedback-success" class="hidden"></div>
+            <div id="feedback-fail" class="hidden"></div> 
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const terminalContainer = document.getElementById('terminal-container');
             const bootSequenceDiv = document.getElementById('boot-sequence');
             const gameContentDiv = document.getElementById('game-content');
             const hiddenInput = document.getElementById('hidden-input');
             const displayDiv = document.getElementById('user-input-display');
             const fakeCursor = document.getElementById('fake-cursor');
-            const successDiv = document.getElementById('feedback-success');
             const failDiv = document.getElementById('feedback-fail');
 
-            // ************ VAŽNO: DEFINIŠITE TAČNO REŠENJE ZA NIVO 1 ************
-            const CORRECT_ANSWER = 'TAJNAREC'; // Zamenite ovo sa Vašom šifrom
-            const BOOT_DELAY_MS = 100;
-            let currentInput = "";
-            // --------------------------------------------------------------------
+            // ************ KONFIGURACIJA IGRE ************
+            const CORRECT_ANSWER = 'OBSERVER';
+            const BOOT_DELAY_MS = 200;
+            const MAX_ATTEMPTS = 5;      
+            const HINT_ATTEMPT = 3;      
+            
+            let currentInput = ""; 
+            let currentInputL2 = ""; 
+            let attemptCount = 0; 
+            let typingTimer;
+            
+            // Imenovane funkcije za Listenere Nivoa 1
+            let inputListenerLevel1, keypressListenerLevel1; 
             
             const bootMessages = [
-                "BIOS: Observer system check initiated...",
-                "MEM: 16777216 bytes RAM allocated. OK.",
-                "HDD: Scanning drives... Sector 0-7 loaded.",
-                "NET: Establishing secure connection to Observer.Server...",
-                "NET: Link established. IP: 10.0.1.13.",
-                "SYS: Initializing core modules (KRNL-3301)...",
-                "SYS: Loading Konspiracije shell...",
-                "SYS: Security protocols online.",
-                "SYS: Boot successful. Executing OBSERVER/2.6...",
+                'CHECKING CORE COMPONENTS...',
+                'RAM: 640K OK',
+                'HDD: DRIVE C: ACCESS GRANTED',
+                'LOADING OBSERVER OS... SISTEM 1101',
+                'NETWORK CONNECTION... ONLINE [WANTED]',
+                'INITIATING OBSERVER PROTOCOL...',
+                'WARNING: ACCESS IS RESTRICTED.',
+                'AWAITING USER INPUT...'
             ];
+            // --------------------------------------------------------------------
+
+            // --- Funkcija za simulaciju kucanja teksta (Tipwriter effect) ---
+            function typeText(targetElement, text, speed) {
+                targetElement.textContent = ''; 
+                let i = 0;
+                
+                function type() {
+                    if (i < text.length) {
+                        targetElement.textContent += text.charAt(i);
+                        i++;
+                        typingTimer = setTimeout(type, speed);
+                    }
+                }
+                
+                type();
+            }
+            // --- KRAJ Funkcije za kucanje teksta ---
+
+
+            // --- FUNKCIJA ZA RESETOVANJE SISTEMA NA POČETAK ---
+            function resetSystem() {
+                clearTimeout(typingTimer); 
+                
+                // Osiguravamo da su listeneri Nivoa 2 isključeni
+                hiddenInput.oninput = null;
+                hiddenInput.onkeypress = null;
+                
+                gameContentDiv.classList.add('hidden');
+                bootSequenceDiv.style.display = 'block';
+                bootSequenceDiv.innerHTML = ''; 
+                
+                attemptCount = 0;
+                currentInput = '';
+                displayDiv.textContent = '';
+                hiddenInput.value = '';
+                hiddenInput.disabled = false;
+                failDiv.classList.add('hidden'); 
+                failDiv.classList.remove('fail-flash');
+                failDiv.style.color = '#00FF00'; 
+                
+                // Ponovno postavljanje listenere Nivoa 1
+                hiddenInput.addEventListener('input', inputListenerLevel1);
+                hiddenInput.addEventListener('keypress', keypressListenerLevel1);
+                
+                runBootSequence(bootMessages, 0);
+            }
+
+            // --- NOVO: FUNKCIJA ZA GAŠENJE SISTEMA (SHUTDOWN) ---
+            function shutDownSequence() {
+                gameContentDiv.innerHTML = ''; 
+
+                const morpheusMessage = document.createElement('p');
+                morpheusMessage.style.color = '#FF0000'; 
+                morpheusMessage.style.textAlign = 'center';
+                morpheusMessage.style.marginBottom = '30px';
+                morpheusMessage.textContent = "DOBRO. AKO SI SE UPLAŠIO SENKI, NIKADA NEĆEŠ VIDETI SVETLOST. SLABIĆI NE MOGU PROMENITI MATRICU. SISTEM SE GAŠI.";
+                gameContentDiv.appendChild(morpheusMessage);
+                
+                const shutDownDiv = document.createElement('div');
+                shutDownDiv.id = 'shutdown-log';
+                gameContentDiv.appendChild(shutDownDiv);
+
+                const logMessages = [
+                    'INITIATING SHUTDOWN PROTOCOL...',
+                    'SYSTEM INTEGRITY: FAIL - USER ABORTED',
+                    'CLOSING ALL THREADS...',
+                    'NETWORK DISCONNECT... OK',
+                    'DELETING TEMPORARY CACHE...',
+                    'FORCE CLOSING OS CORE...'
+                ];
+
+                let countdown = 33; 
+                let logIndex = 0;
+
+                function runShutDown() {
+                    if (logIndex < logMessages.length) {
+                        const logLine = document.createElement('p');
+                        logLine.textContent = logMessages[logIndex];
+                        shutDownDiv.appendChild(logLine);
+                        logIndex++;
+                        shutDownDiv.scrollTop = shutDownDiv.scrollHeight; 
+                        setTimeout(runShutDown, 500); 
+                    } else if (countdown >= 0) {
+                        
+                        // Uklanjanje prethodne linije odbrojavanja
+                        if (shutDownDiv.lastChild && shutDownDiv.lastChild.classList.contains('countdown-line')) {
+                            shutDownDiv.removeChild(shutDownDiv.lastChild);
+                        }
+                        
+                        const countdownDiv = document.createElement('p');
+                        countdownDiv.classList.add('countdown-line'); 
+                        countdownDiv.style.fontWeight = 'bold';
+                        countdownDiv.style.color = '#FF0000'; 
+                        countdownDiv.textContent = `SYSTEM SHUTDOWN IN: ${countdown} SECONDS...`;
+                        shutDownDiv.appendChild(countdownDiv);
+                        
+                        countdown--;
+                        setTimeout(runShutDown, 1000); 
+
+                    } else {
+                        // Potpuno gašenje - Ekran postaje potpuno crn
+                        document.body.style.transition = 'background-color 2s, color 2s';
+                        document.body.style.backgroundColor = '#000000';
+                        document.body.style.color = '#000000'; 
+                        document.body.style.textShadow = 'none';
+                        gameContentDiv.textContent = ''; // Potpuno crno i prazno
+                    }
+                }
+
+                setTimeout(runShutDown, 3000); 
+            }
+            // --------------------------------------------------------------------
+
+
+            // --- FUNKCIJA PRELASKA NA NIVO 2 ---
+            function startLevel2() {
+                terminalContainer.classList.add('flash-red');
+                
+                setTimeout(() => {
+                    terminalContainer.classList.remove('flash-red');
+                    
+                    gameContentDiv.innerHTML = `
+                        <div class="game-title">OBSERVER</div>
+                        <div class="system-info">NIVO 2 / INTERFACE V1.0</div>
+                        
+                        <br><br>
+                        
+                        Dobrodošli!
+                        <br><br>
+                        "Da li si zaista spreman da čuješ?"
+                        <br>
+                        (DA/NE)
+                        <br><br>
+                        Unos: <span id="level-two-display"></span><span class="cursor" id="fake-cursor-level-two">_</span>
+                    `;
+                    
+                    const levelTwoDisplay = document.getElementById('level-two-display');
+                    const cursorLevelTwo = document.getElementById('fake-cursor-level-two');
+                    
+                    hiddenInput.disabled = false;
+                    hiddenInput.value = '';
+                    hiddenInput.focus();
+                    
+                    // BITNA IZMENA: Uklanjamo Listenere Nivoa 1
+                    hiddenInput.removeEventListener('input', inputListenerLevel1);
+                    hiddenInput.removeEventListener('keypress', keypressListenerLevel1);
+                    
+                    // Resetujemo handlere za Nivo 2
+                    hiddenInput.oninput = (e) => {
+                        const value = e.target.value.toUpperCase();
+                        // Ograničavamo duzinu unosa na 2 (DA ili NE)
+                        currentInputL2 = value.slice(0, 2); 
+                        e.target.value = currentInputL2;
+                        levelTwoDisplay.textContent = currentInputL2;
+                    };
+
+                    hiddenInput.onkeypress = (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            
+                            const answer = currentInputL2.trim();
+                            
+                            if (answer === 'DA') {
+                                levelTwoDisplay.textContent = answer;
+                                hiddenInput.disabled = true;
+                                cursorLevelTwo.style.display = 'none';
+                                
+                                const result = document.createElement('p');
+                                result.textContent = "\nPRISTUP JE ODOBREN. PRELAZAK NA CENTRALNU TAJNU...";
+                                gameContentDiv.appendChild(result);
+                                
+                                // Mesto za NIVO 3
+                                
+                            } else if (answer === 'NE') {
+                                levelTwoDisplay.textContent = answer;
+                                
+                                hiddenInput.disabled = true;
+                                cursorLevelTwo.style.display = 'none';
+
+                                shutDownSequence(); 
+
+                            } else {
+                                const result = document.createElement('p');
+                                result.textContent = "\nNEVAŽEĆA KOMANDA. (Unesi DA ili NE)";
+                                gameContentDiv.appendChild(result);
+                                
+                                hiddenInput.value = '';
+                                currentInputL2 = '';
+                                levelTwoDisplay.textContent = '';
+                                hiddenInput.focus(); // Vrati fokus
+                            }
+                        }
+                    };
+                    
+                }, 300);
+            }
+            // --- KRAJ FUNKCIJE PRELASKA NA NIVO 2 ---
+
 
             // --- BOOT SEKVENCA ---
             function runBootSequence(messages, index) {
@@ -171,50 +393,102 @@
                 } else {
                     bootSequenceDiv.style.display = 'none';
                     gameContentDiv.classList.remove('hidden');
-                    hiddenInput.focus();
+                    hiddenInput.focus(); // VAZNO: Postavi fokus kada je igra spremna
                 }
             }
 
-            // POKRETANJE IGRE
-            runBootSequence(bootMessages, 0);
-
-
-            // --- LOGIKA ZA LAŽNO KUCANJE I PROVERU ŠIFRE ---
+            // --- LOGIKA ZA NIVO 1 KUCANJE I PROVERU ŠIFRE (Sada kao imenovane funkcije) ---
             
-            hiddenInput.addEventListener('input', (e) => {
-                const newInputValue = hiddenInput.value;
-                
-                currentInput = newInputValue;
+            inputListenerLevel1 = (e) => {
+                const newInputValue = e.target.value;
+                currentInput = newInputValue.toUpperCase();
                 displayDiv.textContent = currentInput;
-            });
-            
-            hiddenInput.addEventListener('keypress', (e) => {
+            };
+
+            keypressListenerLevel1 = (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     
+                    failDiv.classList.remove('fail-flash');
+                    failDiv.classList.add('hidden');
+                    failDiv.style.color = '#00FF00'; 
+                    
                     const userAnswer = currentInput.trim().toUpperCase();
-
+                    
                     if (userAnswer === CORRECT_ANSWER) {
-                        // USPEH
-                        successDiv.classList.remove('hidden');
-                        failDiv.classList.add('hidden');
                         hiddenInput.disabled = true;
                         fakeCursor.style.display = 'none';
-
+                        
+                        // Uklanjamo listenere ovde pre prelaska na L2 
+                        hiddenInput.removeEventListener('input', inputListenerLevel1);
+                        hiddenInput.removeEventListener('keypress', keypressListenerLevel1);
+                        startLevel2();
+                        
                     } else {
                         // NEUSPEH
-                        failDiv.classList.remove('hidden');
-                        successDiv.classList.add('hidden');
+                        attemptCount++; 
                         
-                        // Resetuj
-                        currentInput = '';
-                        displayDiv.textContent = '';
-                        hiddenInput.value = '';
+                        if (attemptCount === HINT_ATTEMPT) {
+                            failDiv.classList.remove('hidden');
+                            failDiv.classList.remove('fail-flash');
+                            failDiv.style.color = '#00FF00'; 
+                            
+                            const hintText = "Postojim na obe strane stakla: i u onome što se gleda i u onome ko gleda."; 
+                            typeText(failDiv, hintText, 50); 
+                            
+                            hiddenInput.disabled = true; 
+                            fakeCursor.style.display = 'none';
+
+                            setTimeout(() => {
+                                clearTimeout(typingTimer); 
+                                
+                                failDiv.classList.add('hidden');
+                                hiddenInput.disabled = false;
+                                fakeCursor.style.display = 'inline-block';
+                                
+                                currentInput = '';
+                                displayDiv.textContent = '';
+                                hiddenInput.value = '';
+                                hiddenInput.focus();
+                            }, 7150); 
+
+                        } else if (attemptCount >= MAX_ATTEMPTS) {
+                            failDiv.classList.remove('hidden');
+                            failDiv.classList.add('fail-flash');
+                            failDiv.textContent = "PRISTUP ODBIJEN.! SISTEM SE RESETUJE!";
+                            
+                            hiddenInput.disabled = true; 
+                            fakeCursor.style.display = 'none';
+
+                            setTimeout(resetSystem, 2500); 
+                            
+                        } else {
+                            failDiv.classList.remove('hidden');
+                            failDiv.classList.add('fail-flash');
+                            failDiv.textContent = "PRISTUP ODBIJEN! Pokusajte ponovo.";
+
+                            currentInput = '';
+                            displayDiv.textContent = '';
+                            hiddenInput.value = '';
+                            hiddenInput.focus();
+                            
+                            setTimeout(() => {
+                                failDiv.classList.remove('fail-flash');
+                                failDiv.classList.add('hidden'); 
+                                failDiv.style.color = '#00FF00'; 
+                            }, 1000); 
+                        }
                     }
                 }
-            });
+            };
+
+            // Postavljanje Listenere Nivoa 1
+            hiddenInput.addEventListener('input', inputListenerLevel1);
+            hiddenInput.addEventListener('keypress', keypressListenerLevel1);
             
-            // Logika za održavanje fokusa (bitno za mobilni unos)
+            // POKRETANJE IGRE (VAŽNO: Ova linija je nedostajala!)
+            runBootSequence(bootMessages, 0); 
+            
             document.body.addEventListener('click', () => {
                 if (!hiddenInput.disabled) {
                     hiddenInput.focus();
