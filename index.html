@@ -21,9 +21,7 @@
             display: flex;
             flex-direction: column;
             align-items: center; 
-            
             justify-content: flex-start; 
-            
             min-height: 100vh;
             position: relative; 
             margin: 0;
@@ -37,19 +35,12 @@
             text-align: left; 
             width: 90%;
             max-width: 800px; 
-            
             display: flex;
             flex-direction: column;
-            
-            /* KLJUČNO: Podrazumevano Vertikalno Centriranje za POČETNI ekran */
-            justify-content: center; 
-            
+            justify-content: center; /* Centriranje za boot i title screen */
             align-items: flex-start; 
-            
-            /* Obezbeđujemo minimalnu visinu, ali dozvoljavamo rast */
             min-height: 100vh; 
             height: auto; 
-            
             white-space: pre-wrap; 
             font-size: 1.2em;
             margin: 0 auto; 
@@ -58,15 +49,13 @@
             padding-bottom: 50px; 
         }
         
-        /* KLJUČNA IZMENA: U CLI modu, samo se menja padding/poravnanje teksta */
         .cli-mode {
             text-align: left !important;
             min-height: 100vh; 
             height: auto;
             align-items: flex-start !important; 
-            
             padding-top: 20px; 
-            padding-bottom: 70px !important; /* Prostor za fiksni input */
+            padding-bottom: 70px !important; /* Prostor za fiksni input na dnu */
         }
         
         #cli-log {
@@ -76,7 +65,6 @@
              margin-top: 10px;
         }
 
-        /* Centriranje wrapper za BOOT i START ekrane */
         .centered-content-wrapper {
             width: 100%;
             padding: 20px 0;
@@ -85,11 +73,6 @@
             align-items: center; 
         }
         
-        #static-title-area {
-            width: 100%; 
-            text-align: center; 
-            margin-bottom: 20px; 
-        }
         #main-title {
             font-family: 'VT323', monospace;
             font-size: 4em; 
@@ -99,22 +82,8 @@
             text-align: center; 
             width: 100%;
         }
-        #subtitle {
-            font-size: 1.5em;
-            margin-bottom: 50px; 
-            text-align: center; 
-            width: 100%;
-        }
-        .no-wrap-text {
-            white-space: nowrap;
-        }
-        #dynamic-content {
-             display: block; 
-             width: 100%; 
-             max-width: none; 
-             margin: 0; 
-             text-align: left; 
-        }
+        
+        /* Input linija na početnom ekranu - bitna za GORNJI unos */
         .initial-cli-line {
             text-align: left; 
             margin-top: 10px; 
@@ -124,58 +93,28 @@
             padding-left: 0; 
         }
         
-        /* Input SADA JESTE FIKSAN, da bi uvek bio dostupan na dnu ekrana */
+        /* Fiksirani INPUT BAR NA DNJU (Samo za CLI mode) */
         #input-container {
             display: none; 
-            position: fixed; /* Održavamo ga fiksnim na dnu */
+            position: fixed; 
             bottom: 0;
             left: 0;
             right: 0;
-            
             width: 100%; 
-            height: 50px; /* Dodajemo fiksnu visinu */
-            
+            height: 50px; 
             padding: 0 20px; 
             box-sizing: border-box; 
             z-index: 200; 
             background-color: black; 
             border-top: 1px solid #333; 
-            
             display: flex; 
             align-items: center; 
         }
-        
-        /* Poravnavanje unutrašnjih elemenata */
-        #cli-prompt, #current-input, #cursor {
-            font-size: 1.2em; 
-            line-height: 1.2em; 
-            margin: 0; 
-            padding: 0; 
-        }
 
-        /* Kursor u CLI modu - Osiguravamo vidljivost i treptanje */
-        #cursor {
-            animation: blink 1s step-start infinite;
-            display: inline-block; 
-            width: 0.5em;
-            background-color: lime; 
-            color: black; 
-            height: 1.2em; 
-        }
-        
-        /* FORSIRAMO VIDLJIVOST INPUT SPANA */
-        #current-input {
-            display: inline-block; 
-            min-width: 10px; 
-            line-height: 1.2em; 
-            color: lime; 
-            white-space: pre; 
-        }
-
-        /* KLJUČNO: NEVIDLJIVI INPUT FIELD, izvan fiksnog kontejnera */
+        /* KLJUČNO: NEVIDLJIVI INPUT FIELD */
         #cli-hidden-input {
             position: absolute;
-            opacity: 0.001; 
+            opacity: 0.001; /* Minimalna vidljivost */
             width: 100%; 
             height: 100%;
             top: 0;
@@ -185,78 +124,51 @@
             border: none;
             outline: none;
             z-index: 201; 
-            
             color: transparent; 
             background: transparent; 
             caret-color: transparent;
-
             pointer-events: auto; /* Da reaguje na dodir */
         }
-
-
-        /* Kursor na početnom ekranu */
-        #temp-cursor {
+        
+        /* Kursor na početnom ekranu (temp-cursor) i CLI modu (#cursor) */
+        #temp-cursor, #cursor {
             animation: blink 1s step-start infinite;
             display: inline-block;
             width: 0.5em;
         }
 
+        /* Kursor za CLI bar (blok) */
+        #cursor {
+            background-color: lime; 
+            color: black; 
+            height: 1.2em; 
+        }
+
         @keyframes blink {
             50% { opacity: 0; }
         }
-
-        /* Animacija za treptanje greške */
-        @keyframes blink-error-anim {
-            50% { opacity: 0.3; }
-        }
-        .blink-error {
-            color: red !important; 
-            animation: blink-error-anim 0.4s step-start infinite; 
-        }
-
-        /* Animacija za sporo treptanje hinta */
-        @keyframes slow-blink-anim {
-            0%, 100% { opacity: 1; } 
-            50% { opacity: 0.3; }      
-        }
-        .slow-blink {
-            animation: slow-blink-anim 2.5s ease-in-out infinite; 
-            color: #00FF00;
-        }
-
-        /* Stil za odbrojavanje, ako želimo da se ističe */
-        #countdown-timer {
-            color: red; 
-            font-weight: bold;
-            display: block;
-            margin-top: 15px;
-        }
-
-
-        #red-flash {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: red;
-            opacity: 0;
-            transition: opacity 0.1s;
-            pointer-events: none; 
-            z-index: 300;
-        }
-
-        /* Suptilni trag */
+        
         .subtle-clue-text {
             font-size: 0.6em; 
             color: #008000; 
             opacity: 0.7; 
             padding: 0 5px; 
             text-align: center; 
-            
             width: 85%; 
             margin: 30px auto 0 auto; 
         }
+        /* Ostali stilovi (blink-error, slow-blink, red-flash) ostaju isti */
+        @keyframes blink-error-anim { 50% { opacity: 0.3; } }
+        .blink-error { color: red !important; animation: blink-error-anim 0.4s step-start infinite; }
+        @keyframes slow-blink-anim { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .slow-blink { animation: slow-blink-anim 2.5s ease-in-out infinite; color: #00FF00; }
+        #countdown-timer { color: red; font-weight: bold; display: block; margin-top: 15px; }
+        #red-flash {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: red; opacity: 0; transition: opacity 0.1s;
+            pointer-events: none; z-index: 300;
+        }
+
     </style>
 </head>
 <body>
@@ -267,8 +179,8 @@
         </div>
 
     <div id="input-container">
-        <span id="cli-prompt" style="color: lime; z-index: 202;">> </span> 
-        <span id="current-input" style="z-index: 202;"></span><span id="cursor" style="z-index: 202;">█</span>
+        <span id="cli-prompt"> > </span> 
+        <span id="current-input"></span><span id="cursor">█</span>
     </div>
 
     <input type="text" id="cli-hidden-input" maxlength="50" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
@@ -291,7 +203,6 @@
         const output = document.getElementById('output');
         const inputContainer = document.getElementById('input-container');
         const currentInputSpan = document.getElementById('current-input');
-        const redFlash = document.getElementById('red-flash');
         const hiddenInput = document.getElementById('cli-hidden-input'); 
         
         let gameState = 0; 
@@ -319,17 +230,7 @@
             'AWAITING USER INPUT...'
         ];
         
-        const SHUTDOWN_LINES = [
-            '*** SHUTDOWN SEQUENCE INITIATED ***',
-            'ARCHIVING ACTIVE LOGS... DONE',
-            'CLOSING OBSERVER PROTOCOL...',
-            'NETWORK DISCONNECT... SUCCESSFUL',
-            'SAVING STATE DATA...',
-            'SYSTEM 1101 OFFLINE',
-            'POWERING OFF COMPONENTS...'
-        ];
-
-        // EKSTREMNO KOMPRIMOVAN HTML BEZ RAZMAKA OKO <BR> TAGOVA
+        // EKSTREMNO KOMPRIMOVAN HTML ZA POČETNE EKRANE
         const INITIAL_PROMPT_STATE_TEMPLATE = `
             <div id="main-title">OBSERVER</div>
             <div id="subtitle" style="margin-bottom: 50px;">SISTEM 1101 / VER. 2.6</div>
@@ -338,7 +239,7 @@
             
             <div id="dynamic-content">
                 
-                <span id="text-prompt" class="no-wrap-text" style="display: none; font-size: 1.2em;"></span>
+                <span id="text-prompt" style="display: none; font-size: 1.2em;"></span>
                 <br>
                 <div class="initial-cli-line" id="initial-input-line">
                     > <span id="temp-input-span"></span><span id="temp-cursor">█</span>
@@ -352,6 +253,7 @@
          */
         function getActiveInputSpan() {
              const tempInput = document.getElementById('temp-input-span');
+             // KLJUČNA LOGIKA: tempInput se koristi SAMO na početnim ekranima
              return ((gameState === 0 || gameState === -1) && tempInput) ? tempInput : currentInputSpan;
         }
 
@@ -359,117 +261,11 @@
             return document.getElementById('cli-log');
         }
         
-        function adjustCliAlignment() {
-            if (gameState < 1 || !output.classList.contains('cli-mode')) return;
-            const contentHeight = output.scrollHeight;
-            const viewportHeight = window.innerHeight;
-
-            if (contentHeight > viewportHeight - 70) { 
-                output.style.justifyContent = 'flex-start';
-            } else {
-                output.style.justifyContent = 'center';
-            }
-        }
-        
-        /**
-         * Agresivno forsiranje fokusa na nevidljivo polje.
-         * KLJUČNO za mobilne uređaje.
-         */
         function forceInputFocus() {
              setTimeout(() => { 
+                 // Uvek pokušavamo da fokusiramo nevidljivi input
                  hiddenInput.focus(); 
              }, 50); 
-        }
-
-
-        function runBootSequence() {
-            let lineIndex = 0;
-            const delay = 100; 
-            
-            output.classList.remove('cli-mode'); 
-            output.style.justifyContent = 'center'; 
-            
-            inputContainer.style.display = 'none'; 
-            
-            output.innerHTML = `<div class="centered-content-wrapper" id="boot-wrapper" style="text-align: left;"></div>`;
-            const wrapper = document.getElementById('boot-wrapper');
-            
-            function printNextLine() {
-                if (lineIndex < BOOT_LINES.length) {
-                    wrapper.innerHTML += BOOT_LINES[lineIndex] + '<br>';
-                    lineIndex++;
-                    setTimeout(printNextLine, delay);
-                } else {
-                    setTimeout(() => runInitialPasswordPrompt(), 1000); 
-                }
-            }
-            
-            printNextLine();
-        }
-
-        function runShutdownSequence(cliLog) {
-            let lineIndex = 0;
-            const delay = 150; 
-            
-            const countdownEl = document.getElementById('countdown-timer');
-            if (countdownEl) countdownEl.remove();
-        
-            function printNextLine() {
-                if (lineIndex < SHUTDOWN_LINES.length) {
-                    cliLog.innerHTML += SHUTDOWN_LINES[lineIndex] + '<br>';
-                    lineIndex++;
-                    window.scrollTo(0, document.body.scrollHeight);
-                    setTimeout(printNextLine, delay);
-                } else {
-                    setTimeout(() => {
-                        output.innerHTML = '';
-                        document.body.style.color = 'black';
-                        document.body.style.backgroundColor = 'black';
-                        document.body.style.transition = 'none';
-                        
-                        inputContainer.style.display = 'none'; 
-                        hiddenInput.blur();
-                    }, 1000); 
-                }
-            }
-            
-            cliLog.innerHTML += '<br><br>'; 
-            printNextLine();
-        }
-        
-        function startCountdown(durationSeconds, cliLog, callback) {
-            let timeLeft = durationSeconds;
-            
-            cliLog.innerHTML += `<span id="countdown-timer">Sistem se gasi za: ${timeLeft} sekundi.</span>`;
-            window.scrollTo(0, document.body.scrollHeight);
-
-            const countdownEl = document.getElementById('countdown-timer');
-
-            const updateCountdown = () => {
-                if (timeLeft <= 0) {
-                    clearInterval(countdownInterval);
-                    countdownInterval = null; 
-                    callback();
-                    return;
-                }
-
-                if (countdownEl) {
-                     countdownEl.textContent = `Sistem se gasi za: ${timeLeft} sekundi.`;
-
-                     if (timeLeft <= 5) {
-                        countdownEl.style.color = 'red';
-                        countdownEl.style.animation = 'blink-error-anim 0.4s step-start infinite';
-                    } else {
-                        countdownEl.style.color = 'red'; 
-                        countdownEl.style.animation = 'none';
-                    }
-                }
-                
-                timeLeft--;
-            };
-
-            countdownInterval = setInterval(updateCountdown, 1000);
-            updateCountdown(); 
         }
 
         function runInitialPasswordPrompt() {
@@ -490,9 +286,7 @@
                 textPromptSpan.style.display = 'inline';
             }
             
-            const errorArea = document.getElementById('error-message-area');
-            if (errorArea) errorArea.innerHTML = '';
-            
+            // Sakrivamo fiksni bar na dnu
             inputContainer.style.display = 'none'; 
             
             gameState = -1; 
@@ -517,9 +311,9 @@
                 textPromptSpan.innerHTML = `
                     <div style="text-align: center; width: 100%;">Dobrodošli!</div>
                     <div style="text-align: center; width: 100%; margin-top: 5px;">
-                        <span class="no-wrap-text">"Da li si zaista spreman da čuješ?"</span> 
+                        <span>"Da li si zaista spreman da čuješ?"</span> 
                         <br>
-                        <span class="no-wrap-text">(DA/NE)</span>
+                        <span>(DA/NE)</span>
                     </div>
                 `;
                 textPromptSpan.style.display = 'block'; 
@@ -536,82 +330,6 @@
             if(activeInput) activeInput.textContent = '';
 
             forceInputFocus(); /* KLJUČNO: Dodato za mobilni unos */
-        }
-
-        function handleError(errorMessage, doRestart = false, nextStateFunction = runInitialPasswordPrompt) {
-            
-            let errorArea = document.getElementById('error-message-area');
-            if (gameState >= 1 && getCliLog()) {
-                 errorArea = getCliLog();
-                 errorArea.innerHTML += `<div class="blink-error">${errorMessage}</div><br>`;
-                 window.scrollTo(0, document.body.scrollHeight); 
-            } else if (errorArea) {
-                 errorArea.innerHTML = `<div class="blink-error">${errorMessage}</div>`;
-            }
-            
-            typedInput = '';
-            hiddenInput.value = ''; 
-            const activeSpan = getActiveInputSpan();
-            if(activeSpan) activeSpan.textContent = '';
-
-
-            if (errorTimeout) clearTimeout(errorTimeout);
-
-            errorTimeout = setTimeout(() => {
-                if (doRestart) {
-                    resetGame(); 
-                } else if (gameState < 1) {
-                    nextStateFunction(); 
-                }
-            }, 3000); 
-            
-            forceInputFocus();
-        }
-
-
-        function resetGame() {
-            output.innerHTML = '';
-            output.classList.remove('cli-mode');
-            output.style.justifyContent = 'center'; 
-            inputContainer.style.display = 'none';
-            document.body.style.transition = 'none';
-            document.body.style.backgroundColor = 'black';
-            window.location.hash = ''; 
-            hiddenInput.blur(); 
-            key1ErrorCount = 0; 
-            key2ErrorCount = 0; 
-            runBootSequence(); 
-        }
-
-        function handleCowardice(finalInput) {
-             renderCLILayout(); 
-            
-            const cliLog = getCliLog();
-            
-            cliLog.innerHTML += `> ${finalInput}<br><br>`;
-            
-            cliLog.innerHTML += `<span style="font-style: italic;">Činjenica da si stigao ovde pokazuje da si tražio istinu. Ali odbijanje u trenutku izbora... to je najveća slabost.</span><br><br>`;
-            cliLog.innerHTML += `Istina ne čeka. Istina te ne pita. Ona samo **JESTE**. A ti si izabrao da budeš senka onoga što si mogao da budeš.<br><br>`;
-            cliLog.innerHTML += `Vrata se zatvaraju. Zaboravi ovaj ekran. Zaboravi Observera. Tvoj izbor je bio da ostaneš u laži.<br><br>`;
-            cliLog.innerHTML += `SISTEM SE GASI.<br><br>`; 
-            
-            inputContainer.style.display = 'none';
-            hiddenInput.blur();
-            
-            adjustCliAlignment(); 
-            window.scrollTo(0, document.body.scrollHeight);
-            
-            gameState = 99; 
-            
-            startCountdown(33, cliLog, () => {
-                
-                document.body.style.transition = 'background-color 5s ease-in-out';
-                document.body.style.backgroundColor = 'rgb(30, 30, 30)'; 
-                
-                setTimeout(() => {
-                    runShutdownSequence(cliLog);
-                }, 500); 
-            }); 
         }
 
         function renderCLILayout() {
@@ -640,8 +358,10 @@
 
             output.style.justifyContent = 'flex-start'; 
             
+            // Sada pokazujemo fiksni input bar na dnu
             inputContainer.style.display = 'flex'; 
             
+            // Sakrivamo privremeni kursor koji je bio na vrhu
             const tempCursor = document.getElementById('temp-cursor');
             if (tempCursor) tempCursor.style.display = 'none'; 
             
@@ -655,34 +375,199 @@
             window.scrollTo(0, document.body.scrollHeight);
         }
         
-        /** * FIX: Sada koristi getActiveInputSpan() da bi se tekst 
-         * ispisivao u pravom spanu (temp ili current)
-         */
+        // Funkcija za obradu unosa u hidden input polje
         hiddenInput.addEventListener('input', () => {
             typedInput = hiddenInput.value;
             const activeSpan = getActiveInputSpan(); 
             if(activeSpan) activeSpan.textContent = typedInput;
         });
 
+        // Ostatak logike (runBootSequence, handleError, handleCowardice, adjustCliAlignment, itd.) 
+        // ostaje isti kao u prethodnoj, ispravnoj verziji.
+
+        // ... [Ostale funkcije (runBootSequence, runShutdownSequence, startCountdown, 
+        // handleError, resetGame, handleCowardice, successKey1, triggerEnding, finalEnd) - zadržane iz V18]
+
+        function runBootSequence() {
+            let lineIndex = 0;
+            const delay = 100; 
+            output.classList.remove('cli-mode'); 
+            output.style.justifyContent = 'center'; 
+            inputContainer.style.display = 'none'; 
+            output.innerHTML = `<div class="centered-content-wrapper" id="boot-wrapper" style="text-align: left;"></div>`;
+            const wrapper = document.getElementById('boot-wrapper');
+            function printNextLine() {
+                if (lineIndex < BOOT_LINES.length) {
+                    wrapper.innerHTML += BOOT_LINES[lineIndex] + '<br>';
+                    lineIndex++;
+                    setTimeout(printNextLine, delay);
+                } else {
+                    setTimeout(() => runInitialPasswordPrompt(), 1000); 
+                }
+            }
+            printNextLine();
+        }
+
+        function runShutdownSequence(cliLog) {
+            let lineIndex = 0;
+            const delay = 150; 
+            const countdownEl = document.getElementById('countdown-timer');
+            if (countdownEl) countdownEl.remove();
+            function printNextLine() {
+                if (lineIndex < SHUTDOWN_LINES.length) {
+                    cliLog.innerHTML += SHUTDOWN_LINES[lineIndex] + '<br>';
+                    lineIndex++;
+                    window.scrollTo(0, document.body.scrollHeight);
+                    setTimeout(printNextLine, delay);
+                } else {
+                    setTimeout(() => {
+                        output.innerHTML = '';
+                        document.body.style.color = 'black';
+                        document.body.style.backgroundColor = 'black';
+                        document.body.style.transition = 'none';
+                        inputContainer.style.display = 'none'; 
+                        hiddenInput.blur();
+                    }, 1000); 
+                }
+            }
+            cliLog.innerHTML += '<br><br>'; 
+            printNextLine();
+        }
+        
+        function startCountdown(durationSeconds, cliLog, callback) {
+            let timeLeft = durationSeconds;
+            cliLog.innerHTML += `<span id="countdown-timer">Sistem se gasi za: ${timeLeft} sekundi.</span>`;
+            window.scrollTo(0, document.body.scrollHeight);
+            const countdownEl = document.getElementById('countdown-timer');
+            const updateCountdown = () => {
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null; 
+                    callback();
+                    return;
+                }
+                if (countdownEl) {
+                     countdownEl.textContent = `Sistem se gasi za: ${timeLeft} sekundi.`;
+                     if (timeLeft <= 5) {
+                        countdownEl.style.color = 'red';
+                        countdownEl.style.animation = 'blink-error-anim 0.4s step-start infinite';
+                    } else {
+                        countdownEl.style.color = 'red'; 
+                        countdownEl.style.animation = 'none';
+                    }
+                }
+                timeLeft--;
+            };
+            countdownInterval = setInterval(updateCountdown, 1000);
+            updateCountdown(); 
+        }
+
+        function handleError(errorMessage, doRestart = false, nextStateFunction = runInitialPasswordPrompt) {
+            let errorArea = document.getElementById('error-message-area');
+            if (gameState >= 1 && getCliLog()) {
+                 errorArea = getCliLog();
+                 errorArea.innerHTML += `<div class="blink-error">${errorMessage}</div><br>`;
+                 window.scrollTo(0, document.body.scrollHeight); 
+            } else if (errorArea) {
+                 errorArea.innerHTML = `<div class="blink-error">${errorMessage}</div>`;
+            }
+            typedInput = '';
+            hiddenInput.value = ''; 
+            const activeSpan = getActiveInputSpan();
+            if(activeSpan) activeSpan.textContent = '';
+            if (errorTimeout) clearTimeout(errorTimeout);
+            errorTimeout = setTimeout(() => {
+                if (doRestart) {
+                    resetGame(); 
+                } else if (gameState < 1) {
+                    nextStateFunction(); 
+                }
+            }, 3000); 
+            forceInputFocus();
+        }
+
+        function resetGame() {
+            output.innerHTML = '';
+            output.classList.remove('cli-mode');
+            output.style.justifyContent = 'center'; 
+            inputContainer.style.display = 'none';
+            document.body.style.transition = 'none';
+            document.body.style.backgroundColor = 'black';
+            window.location.hash = ''; 
+            hiddenInput.blur(); 
+            key1ErrorCount = 0; 
+            key2ErrorCount = 0; 
+            runBootSequence(); 
+        }
+
+        function handleCowardice(finalInput) {
+             renderCLILayout(); 
+            const cliLog = getCliLog();
+            cliLog.innerHTML += `> ${finalInput}<br><br>`;
+            cliLog.innerHTML += `<span style="font-style: italic;">Činjenica da si stigao ovde pokazuje da si tražio istinu. Ali odbijanje u trenutku izbora... to je najveća slabost.</span><br><br>`;
+            cliLog.innerHTML += `Istina ne čeka. Istina te ne pita. Ona samo **JESTE**. A ti si izabrao da budeš senka onoga što si mogao da budeš.<br><br>`;
+            cliLog.innerHTML += `Vrata se zatvaraju. Zaboravi ovaj ekran. Zaboravi Observera. Tvoj izbor je bio da ostaneš u laži.<br><br>`;
+            cliLog.innerHTML += `SISTEM SE GASI.<br><br>`; 
+            inputContainer.style.display = 'none';
+            hiddenInput.blur();
+            adjustCliAlignment(); 
+            window.scrollTo(0, document.body.scrollHeight);
+            gameState = 99; 
+            startCountdown(33, cliLog, () => {
+                document.body.style.transition = 'background-color 5s ease-in-out';
+                document.body.style.backgroundColor = 'rgb(30, 30, 30)'; 
+                setTimeout(() => {
+                    runShutdownSequence(cliLog);
+                }, 500); 
+            }); 
+        }
+
+        function adjustCliAlignment() {
+            if (gameState < 1 || !output.classList.contains('cli-mode')) return;
+            const contentHeight = output.scrollHeight;
+            const viewportHeight = window.innerHeight;
+            if (contentHeight > viewportHeight - 70) { 
+                output.style.justifyContent = 'flex-start';
+            } else {
+                output.style.justifyContent = 'center';
+            }
+        }
+
+        function successKey1() {
+            const finalInput = typedInput; 
+            gameState = 2;
+            typedInput = ''; 
+            key1ErrorCount = 0; 
+            const cliLog = getCliLog();
+            redFlash.style.opacity = 1;
+            setTimeout(() => { redFlash.style.opacity = 0; }, 100);
+            cliLog.innerHTML = ''; 
+            cliLog.innerHTML += `> ${finalInput}<br><br>`; 
+            cliLog.innerHTML += `<span style="color: red;">Posmatrač:</span><br>Ključ za pristup leži u nečemu što se dogodilo **četvrtog januara dvanaeste**. Uvek je bio tu.<br>`; 
+            const activeSpan = getActiveInputSpan();
+            if(activeSpan) activeSpan.textContent = '';
+            hiddenInput.value = ''; 
+            adjustCliAlignment(); 
+            window.scrollTo(0, document.body.scrollHeight);
+            inputContainer.style.display = 'flex';
+            forceInputFocus(); 
+            window.location.hash = '#' + KEY_2; 
+        }
+
         function triggerEnding() {
             const finalInput = typedInput; 
-            
             gameState = 3; 
             typedInput = '';
             const cliLog = getCliLog();
             hiddenInput.value = '';
             const activeSpan = getActiveInputSpan();
             if(activeSpan) activeSpan.textContent = '';
-            
             cliLog.innerHTML = ''; 
-            
             cliLog.innerHTML += `> ${finalInput}<br><br>`; 
-            
             cliLog.innerHTML += `<span style="color: red;">[KODIRAN IZVOR]</span><br>`;
             cliLog.innerHTML += `Potreban pristup A33.<br>`;
             cliLog.innerHTML += `Da bi pristupio potrebno je uspostaviti **šifrovani kanal** van mreže. Traži **NULA**.<br>`;
             cliLog.innerHTML += `<span class="slow-blink">Potvrdi šifru **MRAK**</span> za dobijanje preciznijih uputstava.<br>`;
-            
             adjustCliAlignment(); 
             window.scrollTo(0, document.body.scrollHeight);
             inputContainer.style.display = 'flex';
@@ -691,79 +576,42 @@
 
         function finalEnd() {
             const finalInput = typedInput; 
-
             gameState = 4; 
             inputContainer.style.display = 'none';
             const cliLog = getCliLog();
             hiddenInput.blur(); 
-            
             cliLog.innerHTML = ''; 
             cliLog.innerHTML += `> ${finalInput}<br><br>`;
-
             cliLog.innerHTML += `<span style="color: yellow;">[PRIVREMENO DEKLASIFIKOVANO]</span><br>`;
             cliLog.innerHTML += `Uputstva su poslata. Izlaz je van terminala.<br>`;
             cliLog.innerHTML += `Potraži **Sistem Observer NULA** na <span style="color: red; text-shadow: 0 0 3px red;">Telegram</span> bot kanalima.<br><br>`;
             cliLog.innerHTML += `<span style="font-size: 0.8em; opacity: 0.5; color: #00ff00;">[Pristup evidentiran] - [Podaci arhivirani] - [Locirana IP adresa]</span><br><br>`; 
             cliLog.innerHTML += `<span style="color: cyan; font-style: italic;">"Jedno je znati put. Drugo je ići tim putem. Izbor je napravljen."</span><br><br>`; 
-            
             document.body.style.transition = 'none'; 
             document.body.style.backgroundColor = 'black'; 
-            
             startCountdown(33, cliLog, () => { 
-                
                 document.body.style.transition = 'background-color 5s ease-in-out';
                 document.body.style.backgroundColor = 'rgb(30, 30, 30)'; 
-                
                 setTimeout(() => {
                     runShutdownSequence(cliLog);
                 }, 500); 
             }); 
         }
 
-        function successKey1() {
-            const finalInput = typedInput; 
-            
-            gameState = 2;
-            typedInput = ''; 
-            key1ErrorCount = 0; 
-            const cliLog = getCliLog();
 
-            redFlash.style.opacity = 1;
-            setTimeout(() => { redFlash.style.opacity = 0; }, 100);
-            
-            cliLog.innerHTML = ''; 
-            
-            cliLog.innerHTML += `> ${finalInput}<br><br>`; 
-            cliLog.innerHTML += `<span style="color: red;">Posmatrač:</span><br>Ključ za pristup leži u nečemu što se dogodilo **četvrtog januara dvanaeste**. Uvek je bio tu.<br>`; 
-
-            const activeSpan = getActiveInputSpan();
-            if(activeSpan) activeSpan.textContent = '';
-            hiddenInput.value = ''; 
-            
-            adjustCliAlignment(); 
-            window.scrollTo(0, document.body.scrollHeight);
-            inputContainer.style.display = 'flex';
-            forceInputFocus(); 
-            
-            window.location.hash = '#' + KEY_2; 
-        }
         
         document.addEventListener('keydown', (e) => {
             const char = e.key;
-            const currentActiveSpan = getActiveInputSpan();
-
+            
             if (gameState <= 0 || gameState === -1) { 
                  
-                 // Ako se ne pritisne Enter, ne želimo preventDefault() jer nam treba NATIVNI unos teksta
                  if (char === 'Enter') {
                      e.preventDefault();
                  } else {
-                     // Ipak pozivamo focus, jer neki browseri i dalje gube fokus čim korisnik dodirne ekran
                      forceInputFocus();
-                     return; // Pustamo native input event da radi posao, ne radimo nista ovde
+                     return; 
                  }
                  
-                 // Ostatak je Enter logika
                  const cleanInput = typedInput.toLowerCase().replace(/[^a-z0-9]/g, '');
                      
                  if (gameState === -1) { // Proveravamo ŠIFRU
@@ -819,7 +667,6 @@
                             else if (gameState === 2) triggerEnding();
                             else if (gameState === 3) finalEnd();
                         } else {
-                            // LOGIKA ZA GREŠKE U CLI MODU
                             if (!((gameState === 1 && (cleanInput === KEY_1 || cleanInput === 'posmatrac')) || 
                                   (gameState === 2 && cleanInput === KEY_2) || 
                                   (gameState === 3 && cleanInput === KEY_3))) {
@@ -854,7 +701,7 @@
                     
                     typedInput = '';
                     hiddenInput.value = ''; 
-                    currentActiveSpan.textContent = '';
+                    getActiveInputSpan().textContent = '';
                     
                     adjustCliAlignment(); 
                     window.scrollTo(0, document.body.scrollHeight);
@@ -871,6 +718,11 @@
         document.body.addEventListener('touchstart', () => {
              forceInputFocus();
         }, { passive: true });
+        
+        // Dodatni listener na klik na glavni output, za svaki slučaj
+        output.addEventListener('click', () => {
+             forceInputFocus();
+        });
 
         
         function checkUrlHash() {
