@@ -56,7 +56,7 @@
             padding-left: 20px; 
             padding-top: 0; 
             
-            /* Dodajemo padding na dnu da ne bi sadržaj bio ispod fiksnog inputa */
+            /* Dodajemo padding na dnu samo da CLI log ne prekriva input kontejner */
             padding-bottom: 70px; 
         }
         
@@ -77,6 +77,7 @@
              margin-top: 10px;
         }
 
+        /* ... (ostali stilovi za title, subtitle, blink ostaju isti) ... */
         .centered-content-wrapper {
             width: 100%;
             padding: 20px 0;
@@ -124,8 +125,32 @@
             padding-left: 0; 
         }
         
-        /* KLJUČNO: Fiksiramo kontejner za unos na dnu */
-        #input-container {
+        /* KLJUČNO ZA ANDROID: Full-screen, transparentno polje za unos */
+        #touch-area-input {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100; /* Ispod fiksnog CLI bara (200) */
+            
+            /* NEVIDLJIVOST: */
+            background: transparent;
+            color: transparent;
+            caret-color: transparent;
+            border: none;
+            outline: none;
+            
+            /* KLJUČNO: Dodajemo opacity i pointer-events za kontrolu vidljivosti i interakcije */
+            opacity: 0.001; 
+            pointer-events: none; /* Podrazumevano ne prima klikove/dodire */
+            
+            /* Sprečavamo zumiranje i skrolovanje, ali dozvoljavamo manipulaciju */
+            touch-action: manipulation; 
+        }
+        
+        /* KLJUČNO: Fiksiramo kontejner za VIZUELNI CLI PROMPT na dnu */
+        #cli-bar-container {
             display: none; /* Prikazujemo ga samo u CLI modu */
             position: fixed; 
             bottom: 0;
@@ -136,7 +161,7 @@
             
             padding: 0 20px; 
             box-sizing: border-box; 
-            z-index: 200; 
+            z-index: 200; /* Najviši sloj */
             background-color: black; 
             border-top: 1px solid #333; 
             
@@ -145,7 +170,7 @@
         }
         
         /* Poravnavanje unutrašnjih elemenata */
-        #cli-prompt, #current-input, #cursor {
+        #cli-prompt, #current-input-cli, #cursor {
             font-size: 1.2em; 
             line-height: 1.2em; 
             margin: 0; 
@@ -163,35 +188,12 @@
         }
         
         /* FORSIRAMO VIDLJIVOST INPUT SPANA */
-        #current-input {
+        #current-input-cli {
             display: inline-block; 
             min-width: 10px; 
             line-height: 1.2em; 
             color: lime; 
             white-space: pre; 
-        }
-
-        /* * Input je vidljiv, ali transparentan i malen. Postavljen iznad spanova. */
-        #cli-hidden-input {
-            position: absolute; 
-            top: 0;
-            left: 0;
-            width: 100%; 
-            height: 100%;
-            opacity: 0.001; 
-            padding-left: 20px; 
-            
-            margin: 0;
-            border: none;
-            outline: none;
-            z-index: 201; 
-            
-            font-size: 1.2em;
-            
-            color: transparent; 
-            background: transparent; 
-            caret-color: transparent; 
-            touch-action: manipulation; 
         }
 
 
@@ -256,15 +258,15 @@
 <body>
 
     <div id="red-flash"></div>
+    
+    <input type="text" id="touch-area-input" maxlength="50" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
 
     <div id="output">
         </div>
 
-    <div id="input-container">
-        <input type="text" id="cli-hidden-input" maxlength="50" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        
+    <div id="cli-bar-container">
         <span id="cli-prompt" style="color: lime; z-index: 202; position: relative;">> </span> 
-        <span id="current-input" style="z-index: 202; position: relative;"></span><span id="cursor" style="z-index: 202; position: relative;">█</span>
+        <span id="current-input-cli" style="z-index: 202; position: relative;"></span><span id="cursor" style="z-index: 202; position: relative;">█</span>
     </div>
 
     <a id="url-manipulator" style="display: none;" href="#04012012"></a>
@@ -287,10 +289,12 @@
         // **********************************************
 
         const output = document.getElementById('output');
-        const inputContainer = document.getElementById('input-container');
-        const currentInputSpan = document.getElementById('current-input');
+        const cliBarContainer = document.getElementById('cli-bar-container');
+        const currentInputCliSpan = document.getElementById('current-input-cli');
         const redFlash = document.getElementById('red-flash');
-        const hiddenInput = document.getElementById('cli-hidden-input'); 
+        
+        // KLJUČNO: Naše jedno, glavno, nevidljivo input polje
+        const hiddenInput = document.getElementById('touch-area-input'); 
         
         let gameState = 0; 
         let typedInput = '';
@@ -349,7 +353,7 @@
 
         function getActiveInputSpan() {
              const tempInput = document.getElementById('temp-input-span');
-             return ((gameState === 0 || gameState === -1) && tempInput) ? tempInput : currentInputSpan;
+             return ((gameState === 0 || gameState === -1) && tempInput) ? tempInput : currentInputCliSpan;
         }
 
         function getCliLog() {
@@ -368,6 +372,22 @@
                 output.style.justifyContent = 'center';
             }
         }
+        
+        function activateTouchInput() {
+            hiddenInput.style.pointerEvents = 'auto'; // Omogućava klikove/dodire
+            hiddenInput.focus();
+            
+            // Rešava problem da Android uvek prikaže tastaturu pre nego što treba
+            setTimeout(() => {
+                 // Ponovo fokusiramo polje nakon 50ms za maksimalnu pouzdanost
+                 hiddenInput.focus();
+            }, 50);
+        }
+        
+        function deactivateTouchInput() {
+            hiddenInput.style.pointerEvents = 'none'; // Onemogućava klikove/dodire
+            hiddenInput.blur();
+        }
 
 
         function runBootSequence() {
@@ -376,6 +396,9 @@
             
             output.classList.remove('cli-mode'); 
             output.style.justifyContent = 'center'; 
+            
+            cliBarContainer.style.display = 'none'; // Osiguravamo da CLI bar nije tu
+            deactivateTouchInput(); // Onemogućavamo input tokom boot-a
             
             output.innerHTML = `<div class="centered-content-wrapper" id="boot-wrapper" style="text-align: left;"></div>`;
             const wrapper = document.getElementById('boot-wrapper');
@@ -386,6 +409,8 @@
                     lineIndex++;
                     setTimeout(printNextLine, delay);
                 } else {
+                    // KLJUČNO: blur nakon boot-a da bi se Android tastatura zatvorila
+                    hiddenInput.blur(); 
                     setTimeout(() => showInitialScreen(), 1000); 
                 }
             }
@@ -415,6 +440,8 @@
                         
                         const cursor = document.getElementById('cursor');
                         if (cursor) cursor.style.display = 'none';
+                        
+                        deactivateTouchInput(); // Potpuno isključivanje unosa
                         
                         if (telegramAction && TelegramApp) {
                             TelegramApp.sendData(telegramAction);
@@ -480,13 +507,11 @@
             const textPromptSpan = document.getElementById('text-prompt');
             if (textPromptSpan) textPromptSpan.style.display = 'none'; 
             
-            // FIX 1: Sakrivamo fiksiran input bar na naslovnom ekranu
-            inputContainer.style.display = 'none'; 
+            cliBarContainer.style.display = 'none'; // CLI bar uvek sakriven na naslovnom ekranu
             
             const tempCursor = document.getElementById('temp-cursor');
             if (tempCursor) tempCursor.style.display = 'inline-block';
             
-            hiddenInput.blur();
             
             isQuestionVisible = false;
             typedInput = '';
@@ -498,8 +523,8 @@
                 errorArea.innerHTML = `<div class="slow-blink" id="input-hint" style="margin-top: 20px;">[DODIRNI EKRAN ZA UNOS]</div>`;
             }
 
-            // FOKUSIRANJE PRI PRIKAZU EKRANA (najbolji pokušaj)
-            setTimeout(() => { hiddenInput.focus(); }, 50); 
+            // FOKUSIRANJE INPUT POLJA (Aktivira touch listener)
+            activateTouchInput(); 
         }
         
         function runInitialPasswordPrompt() {
@@ -520,7 +545,6 @@
                 currentErrorArea.innerHTML = `<div class="slow-blink" id="input-hint" style="margin-top: 20px;">[DODIRNI EKRAN ZA UNOS]</div>`;
             }
 
-
             gameState = -1; 
             typedInput = '';
             
@@ -528,7 +552,7 @@
             if (activeInput) activeInput.textContent = '';
             
             // FOKUSIRANJE ZA UNOS ŠIFRE NA MOBILNOM
-            setTimeout(() => { hiddenInput.focus(); }, 50); 
+            activateTouchInput();
         }
 
         function showQuestionScreen() {
@@ -558,7 +582,7 @@
             typedInput = '';
             
             // FOKUSIRANJE ZA UNOS DA/NE NA MOBILNOM
-            setTimeout(() => { hiddenInput.focus(); }, 50); 
+            activateTouchInput(); 
         }
 
         function handleError(errorMessage, doRestart = false, nextStateFunction = runInitialPasswordPrompt) {
@@ -572,14 +596,14 @@
                  errorArea.innerHTML = `<div class="blink-error">${errorMessage}</div>`;
             }
             
-            // FIX 2: Uvek resetuj input polje i vizuelni prikaz unosa
+            // Uvek resetuj input polje i vizuelni prikaz unosa
             typedInput = '';
             const activeInput = getActiveInputSpan();
             if (activeInput) activeInput.textContent = '';
             hiddenInput.value = ''; // Resetovanje stvarne vrednosti
             
             // Pokušaj fokusiranja
-            setTimeout(() => { hiddenInput.focus(); }, 50);
+            activateTouchInput();
 
             if (errorTimeout) clearTimeout(errorTimeout);
 
@@ -596,11 +620,11 @@
             output.innerHTML = '';
             output.classList.remove('cli-mode');
             output.style.justifyContent = 'center'; 
-            inputContainer.style.display = 'none';
+            cliBarContainer.style.display = 'none';
             document.body.style.transition = 'none';
             document.body.style.backgroundColor = 'black';
             window.location.hash = ''; 
-            hiddenInput.blur(); 
+            deactivateTouchInput(); 
             key1ErrorCount = 0; 
             key2ErrorCount = 0; 
             runBootSequence(); 
@@ -619,7 +643,8 @@
             cliLog.innerHTML += `Vrata se zatvaraju. Zaboravi ovaj ekran. Zaboravi Observera. Tvoj izbor je bio da ostaneš u laži.<br><br>`;
             cliLog.innerHTML += `SISTEM SE GASI.<br><br>`; 
             
-            inputContainer.style.display = 'none';
+            cliBarContainer.style.display = 'none';
+            deactivateTouchInput(); 
             
             adjustCliAlignment(); 
             window.scrollTo(0, document.body.scrollHeight);
@@ -665,20 +690,20 @@
 
             output.style.justifyContent = 'center'; 
             
-            // Prikazujemo fiksirani input bar
-            inputContainer.style.display = 'flex'; 
+            // Prikazujemo fiksirani CLI bar
+            cliBarContainer.style.display = 'flex'; 
             
             const tempCursor = document.getElementById('temp-cursor');
             if (tempCursor) tempCursor.style.display = 'none'; 
             
             gameState = 1;
             typedInput = ''; 
-            currentInputSpan.textContent = '';
+            currentInputCliSpan.textContent = '';
             
             hiddenInput.value = '';
             
             // FOKUSIRANJE ZA KLJUČNU REČ
-            setTimeout(() => { hiddenInput.focus(); }, 100);
+            activateTouchInput();
             
             window.scrollTo(0, document.body.scrollHeight);
         }
@@ -702,7 +727,7 @@
             typedInput = '';
             const cliLog = getCliLog();
             hiddenInput.value = '';
-            currentInputSpan.textContent = '';
+            currentInputCliSpan.textContent = '';
             
             cliLog.innerHTML = ''; 
             
@@ -715,17 +740,17 @@
             
             adjustCliAlignment(); 
             window.scrollTo(0, document.body.scrollHeight);
-            inputContainer.style.display = 'flex';
-            hiddenInput.focus(); 
+            cliBarContainer.style.display = 'flex';
+            activateTouchInput(); 
         }
 
         function finalEnd() {
             const finalInput = typedInput; 
 
             gameState = 4; 
-            inputContainer.style.display = 'none';
+            cliBarContainer.style.display = 'none';
             const cliLog = getCliLog();
-            hiddenInput.blur(); 
+            deactivateTouchInput();
             
             cliLog.innerHTML = ''; 
             cliLog.innerHTML += `> ${finalInput}<br><br>`;
@@ -767,13 +792,13 @@
             cliLog.innerHTML += `<span style="color: red;">Posmatrač:</span><br>Ključ za pristup leži u nečemu što se dogodilo **četvrtog januara dvanaeste**. Uvek je bio tu.<br>`; 
 
             // Resetovanje nakon uspeha
-            currentInputSpan.textContent = '';
+            currentInputCliSpan.textContent = '';
             hiddenInput.value = ''; 
             
             adjustCliAlignment(); 
             window.scrollTo(0, document.body.scrollHeight);
-            inputContainer.style.display = 'flex';
-            hiddenInput.focus(); 
+            cliBarContainer.style.display = 'flex';
+            activateTouchInput(); 
             
             window.location.hash = '#' + KEY_2; 
         }
@@ -782,13 +807,11 @@
             const char = e.key;
             const currentActiveSpan = getActiveInputSpan();
             
-            // Forsira fokus na skriveno polje u svim aktivnim stanjima
-            if (gameState === -1 || gameState === 0 || (gameState >= 1 && gameState <= 3)) { 
-                 if (document.activeElement !== hiddenInput) {
-                     setTimeout(() => { hiddenInput.focus(); }, 1);
-                 }
+            // Proveravamo da li je input aktivan za celu igru
+            if (hiddenInput.style.pointerEvents !== 'auto') {
+                 // Ako nije aktivan (npr. tokom boot-a ili gašenja), ignorišemo keydown
+                 return;
             }
-
 
             // U svim stanjima gde je unos aktivan
             if (gameState <= 0 || gameState === -1 || (gameState >= 1 && gameState <= 3)) { 
@@ -798,11 +821,14 @@
                      e.preventDefault();
                      const cleanInput = typedInput.toLowerCase().replace(/[^a-z0-9]/g, '');
                      
-                     // Resetovanje unosa za sve enter akcije (ovo rešava problem sa ostajanjem teksta)
+                     // Resetovanje unosa za sve enter akcije (Ovo rešava problem sa ostajanjem teksta)
                      const finalTypedInput = typedInput;
                      typedInput = '';
                      hiddenInput.value = ''; 
                      currentActiveSpan.textContent = '';
+                     
+                     // Ponovno fokusiranje
+                     activateTouchInput();
 
                      if (gameState === 0 && !isQuestionVisible) {
                           if (cleanInput.length > 0) {
@@ -888,9 +914,8 @@
                              }
                          }
                          
-                         // Ponovno fokusiranje
-                         setTimeout(() => { hiddenInput.focus(); }, 50);
-
+                         // Ponovno fokusiranje je već odrađeno gore
+                         
                          adjustCliAlignment(); 
                          window.scrollTo(0, document.body.scrollHeight);
                          return; 
@@ -910,14 +935,14 @@
                 cliLog.innerHTML += `<span style="color: red;">Posmatrač:</span><br>Ključ za pristup je potvrđen. Unesite sledeću šifru.<br>`;
                 
                 gameState = 2; 
-                currentInputSpan.textContent = '';
+                currentInputCliSpan.textContent = '';
                 hiddenInput.value = ''; 
                 
                 // Uvek fokusiramo polje
-                setTimeout(() => { hiddenInput.focus(); }, 50);
+                activateTouchInput();
                 
-                // inputContainer je fixed, samo ga prikažemo
-                inputContainer.style.display = 'flex'; 
+                // Prikazujemo CLI bar
+                cliBarContainer.style.display = 'flex'; 
 
                 adjustCliAlignment(); 
                 window.scrollTo(0, document.body.scrollHeight);
@@ -926,24 +951,17 @@
             return false;
         }
 
-        // ********* FUNKCIJA ZA RUČNO FOKUSIRANJE NA DODIR *********
-        // (Ovo će se aktivirati kada korisnik dotakne fiksirano dno ekrana)
-        document.getElementById('input-container').addEventListener('click', (e) => {
-             // Ako je igra u aktivnom stanju za unos, uvek fokusiraj polje
-             if (gameState >= 1 && gameState <= 3) {
+        // ********* KLJUČNA IZMENA: Dodajemo touch listener na ceo body *********
+        // Kada je input polje nevidljivo, i dalje je *preko* celog ekrana (zato što je 'fixed')
+        // a mi mu kontrolišemo pointer-events.
+        document.body.addEventListener('touchstart', (e) => {
+             // Ako je input polje aktivno (pointer-events: auto), samo forsiraj fokus
+             if (hiddenInput.style.pointerEvents === 'auto') {
+                 // Zaustavljamo da mobilni browseri 'kradu' dodir
                  e.preventDefault();
-                 hiddenInput.focus();
+                 activateTouchInput();
              }
-        });
-        
-        document.addEventListener('touchstart', (e) => {
-             // U stanjima -1 i 0, dodir ekrana forsira fokus
-             if (gameState === -1 || gameState === 0) {
-                 setTimeout(() => {
-                     hiddenInput.focus();
-                 }, 1);
-             }
-        }, { passive: true });
+        }, { passive: false });
         // ******************************************************************
 
 
