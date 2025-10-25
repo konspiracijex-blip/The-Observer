@@ -204,6 +204,7 @@
         const inputContainer = document.getElementById('input-container');
         const currentInputSpan = document.getElementById('current-input');
         const hiddenInput = document.getElementById('cli-hidden-input'); 
+        const redFlash = document.getElementById('red-flash');
         
         let gameState = 0; 
         let typedInput = '';
@@ -228,6 +229,16 @@
             'INITIATING OBSERVER PROTOCOL...',
             'WARNING: ACCESS IS RESTRICTED.',
             'AWAITING USER INPUT...'
+        ];
+
+        const SHUTDOWN_LINES = [
+            '*** SHUTDOWN SEQUENCE INITIATED ***',
+            'ARCHIVING ACTIVE LOGS... DONE',
+            'CLOSING OBSERVER PROTOCOL...',
+            'NETWORK DISCONNECT... SUCCESSFUL',
+            'SAVING STATE DATA...',
+            'SYSTEM 1101 OFFLINE',
+            'POWERING OFF COMPONENTS...'
         ];
         
         // EKSTREMNO KOMPRIMOVAN HTML ZA POČETNE EKRANE
@@ -282,7 +293,8 @@
             
             const textPromptSpan = document.getElementById('text-prompt');
             if (textPromptSpan) {
-                textPromptSpan.textContent = "Unesite šifru:";
+                // Fiksirano: Manji tekst u jednom redu
+                textPromptSpan.innerHTML = '<span style="white-space: nowrap; font-size: 1.0em;">Unesite šifru:</span>';
                 textPromptSpan.style.display = 'inline';
             }
             
@@ -381,12 +393,6 @@
             const activeSpan = getActiveInputSpan(); 
             if(activeSpan) activeSpan.textContent = typedInput;
         });
-
-        // Ostatak logike (runBootSequence, handleError, handleCowardice, adjustCliAlignment, itd.) 
-        // ostaje isti kao u prethodnoj, ispravnoj verziji.
-
-        // ... [Ostale funkcije (runBootSequence, runShutdownSequence, startCountdown, 
-        // handleError, resetGame, handleCowardice, successKey1, triggerEnding, finalEnd) - zadržane iz V18]
 
         function runBootSequence() {
             let lineIndex = 0;
