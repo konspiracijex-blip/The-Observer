@@ -337,6 +337,7 @@
 
         function getActiveInputSpan() {
              const tempInput = document.getElementById('temp-input-span');
+             // Vraća span za unos šifre ili span za CLI
              return ((gameState === 0 || gameState === -1) && tempInput) ? tempInput : currentInputSpan;
         }
 
@@ -488,7 +489,6 @@
             if (textPromptSpan) {
                 textPromptSpan.textContent = "Unesite šifru:";
                 
-                // KLJUČNE IZMENE ZA LEVO PORAVNANJE I VELIČINU:
                 textPromptSpan.style.display = 'block'; 
                 textPromptSpan.style.textAlign = 'left'; 
                 textPromptSpan.style.fontSize = '0.9em'; 
@@ -503,6 +503,9 @@
             
             const activeInput = document.getElementById('temp-input-span');
             if (activeInput) activeInput.textContent = '';
+            
+            // KLJUČNO: Očistimo i hidden input da ne bi bilo duplog unosa na mobilnom
+            hiddenInput.value = '';
             
             forceInputFocus();
         }
@@ -528,6 +531,9 @@
             isQuestionVisible = true;
             gameState = 0; 
             typedInput = '';
+            
+            // KLJUČNO: Očistimo i hidden input
+            hiddenInput.value = '';
             
             forceInputFocus();
         }
@@ -652,9 +658,14 @@
             window.scrollTo(0, document.body.scrollHeight);
         }
         
+        // Funkcija za obradu unosa u hidden input polje (radi za CLI mod)
         hiddenInput.addEventListener('input', () => {
             typedInput = hiddenInput.value;
-            currentInputSpan.textContent = typedInput;
+            // Ažurira se samo currentInputSpan (CLI span), jer u početnom modu (gameState < 1) 
+            // unos rukovodimo preko keydown i temp-input-span.
+            if (gameState >= 1) {
+                currentInputSpan.textContent = typedInput;
+            }
         });
 
 
@@ -750,6 +761,23 @@
             if (gameState <= 0 || gameState === -1) { 
                  e.preventDefault();
                  
+                 // RESTORIRANA LOGIKA ZA UNOS TEKSTA (za desktop i mobilne uređaje)
+                 if (char === 'Backspace' || char === 'Delete') {
+                    typedInput = typedInput.slice(0, -1);
+                    // Sinhronizacija hidden inputa sa vidljivim unosom
+                    hiddenInput.value = typedInput; 
+                 } 
+                 else if (char.length === 1 && e.keyCode >= 32 && e.keyCode <= 126) { 
+                    typedInput += char;
+                    // Sinhronizacija hidden inputa sa vidljivim unosom
+                    hiddenInput.value = typedInput;
+                 }
+                 
+                 if (currentActiveSpan) {
+                    currentActiveSpan.textContent = typedInput;
+                 }
+
+
                  if (char === 'Enter') {
                      const cleanInput = typedInput.toLowerCase().replace(/[^a-z0-9]/g, '');
                      
@@ -854,7 +882,7 @@
             }
         });
 
-        // KLJUČNO ZA MOBILNE UREĐAJE
+        // KLJUČNO ZA MOBILNE UREĐAJE (vraćamo fokus)
         document.body.addEventListener('touchstart', () => {
              forceInputFocus();
         }, { passive: true });
