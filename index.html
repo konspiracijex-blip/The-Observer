@@ -228,8 +228,13 @@
 
         .hidden { display: none; }
 
+        /* ========= V17 KOREKCIJA ZA MOBILNI PRIKAZ (Povećan padding) ========= */
         @media (max-width: 600px) {
-            body { font-size: 12px; padding: 10px; }
+            /* V17 KOREKCIJA: POVEĆAVANJE PADDING-a (MARGINE) ZA MOBILNI PRIKAZ */
+            body { 
+                font-size: 12px; 
+                padding: 20px; /* Sada je 20px sa svih strana */
+            }
             .game-title { font-size: 1.6em; }
             .system-info { font-size: 0.8em; }
             .cursor { width: 6px; }
