@@ -129,14 +129,13 @@
 
         #user-input-display { display: inline; }
         
-        /* Novi div za tekst Levela 2 i Levela 3 - Uklonjen min-height 400px */
+        /* Level 2/3 tekst. Max-width 80% je ključan za poravnanje. */
         #level2-text {
             white-space: pre-wrap;
             text-align: left;
             margin: 20px auto 40px auto;
-            max-width: 80%;
+            max-width: 80%; /* KLJUČNO PORAVNANJE */
             line-height: 1.8;
-            /* min-height je sada regulisan klasom 'level-2-space' */
         }
         
         /* NOVA KLASA: Postavlja min-height 400px SAMO za Nivo 2 (dugački tekst) */
@@ -149,18 +148,17 @@
             font-weight: bold;
             margin-top: 30px;
             display: block;
-            /* NOVA IZMENA V8: Uklanjanje text-shadow-a */
             text-shadow: none; 
         }
 
 
-        /* V10 KOREKCIJA: Poravnanje inputa levo i centriranje bloka, da prati #level2-text */
+        /* V12 KOREKCIJA: Poravnanje inputa LINIJE (input, cursor) i celog REDA (input-row) */
         .input-row {
             display: flex;
             flex-direction: column;
             align-items: flex-start; 
             margin: 8px auto 0 auto; 
-            max-width: 80%; 
+            max-width: 80%; /* KLJUČNO PORAVNANJE: Isto kao Level 2/3 tekst */
         }
 
         .input-row .visible-input {
@@ -169,20 +167,25 @@
             gap: 8px;
         }
 
+        /* Poruke (Fail/Success) se nalaze unutar .messages-row koji je centriran u .input-row */
         .messages-row {
-            text-align: center;
+            /* Vraćen na flex/align-items: flex-start da bi se poruka mogla poravnati levo */
+            display: flex; 
+            justify-content: flex-start; 
+            width: 100%; /* Da zauzme celu širinu input-rowa */
             margin-top: 12px;
         }
 
-        /* Improved formatting for wrapped messages */
+        /* KOREKCIJA: Feedback element je levo poravnat po defaultu i ima istu širinu kao ostali elementi */
         #feedback-fail {
             display: block;
-            margin: 4px auto; /* Centriranje bloka */
-            white-space: pre; 
+            margin: 4px 0; /* Poravnava levo unutar messages-row */
+            white-space: pre-wrap; /* Koristimo pre-wrap za lakše formatiranje u JS */
             line-height: 1.6;
-            max-width: 90%;
-            text-align: center; /* Centriranje teksta unutar bloka (ovo se menja u JS za hint) */
+            max-width: 100%; /* Zauzima celu širinu .messages-rowa */
+            text-align: left; /* KLJUČNO: Podrazumevano poravnanje je LEVO */
             font-size: 0.8em; 
+            /* Za Nivo 1 ćemo morati ručno da ga centriramo u JS-u */
         }
         
         #feedback-success {
@@ -191,9 +194,7 @@
             white-space: pre-wrap;
             line-height: 1.6;
             word-break: break-word;
-            max-width: 90%;
-            margin-left: auto;
-            margin-right: auto;
+            max-width: 100%;
             text-align: center;
         }
 
@@ -215,7 +216,9 @@
             .system-info { font-size: 0.8em; }
             .cursor { width: 6px; }
             #feedback-fail { font-size: 0.9em; } 
-            #level2-text { max-width: 100%; min-height: 300px; }
+            /* U mobilnom prikazu, max-width za tekst je 100% da popuni ekran */
+            #level2-text { max-width: 100%; min-height: 300px; margin-left: 0; margin-right: 0; }
+            .input-row { max-width: 100%; margin-left: 0; margin-right: 0; }
         }
     </style>
 </head>
@@ -420,16 +423,24 @@
                 type();
             }
 
-
-            function showFailMessage(text, { flash = true, duration = 1000 } = {}) {
+            /**
+             * Prikazuje poruku greške.
+             * @param {string} text Tekst poruke.
+             * @param {Object} options Opcije.
+             * @param {boolean} options.flash Da li da blica.
+             * @param {number} options.duration Trajanje poruke.
+             * @param {boolean} options.center Da li da centrira tekst. (Koristi se samo za Nivo 1 fail poruke).
+             */
+            function showFailMessage(text, { flash = true, duration = 1000, center = false } = {}) {
                 if (failTimer) { clearTimeout(failTimer); failTimer = null; }
                 if (!failDiv) return;
                 
-                // Vraćanje na standardne stilove pre primene novih
-                failDiv.style.textAlign = 'center'; 
-                failDiv.style.maxWidth = '90%'; 
+                // V12 IZMENA: Poravnanje (default je LEFT iz CSS-a)
+                failDiv.style.textAlign = center ? 'center' : 'left'; 
                 
-                
+                // U Nivoima 2/3 (gde center=false) ovo prati poravnanje inputa/teksta
+                // U Nivoima 1 (gde center=true) ovo osigurava da je poruka centrirana
+
                 failDiv.innerHTML = text; 
                 failDiv.classList.remove('hidden');
                 failDiv.style.display = 'block';
@@ -451,9 +462,8 @@
                     failDiv.innerHTML = ''; 
                     failDiv.style.color = '#00FF00'; // Resetovanje boje na zelenu za sledeće poruke
                     
-                    // Osiguravamo da se resetuju stilske izmene iz drugih delova koda
-                    failDiv.style.textAlign = 'center'; 
-                    failDiv.style.maxWidth = '90%'; 
+                    // Resetovanje tekst poravnanja (vraća na default: left)
+                    failDiv.style.textAlign = 'left'; 
                     
                     failTimer = null;
                 }, duration);
@@ -673,7 +683,7 @@
 
 
             // =================================================================
-            // NIVO 3 LOGIKA - ZAGONETKA (V11: IZMENJEN HINT KAO TYPING)
+            // NIVO 3 LOGIKA - ZAGONETKA (V12: Korigovano poravnanje hint/fail)
             // =================================================================
 
             function startLevel3() {
@@ -806,6 +816,8 @@
                         failDiv.classList.add('hidden');
                         failDiv.style.display = 'none';
                         failDiv.innerHTML = '';
+                        // Resetujemo na default LEFT poravnanje za Level 3
+                        failDiv.style.textAlign = 'left'; 
                     }
 
                     const userAnswer = currentInput.trim().toUpperCase();
@@ -814,23 +826,24 @@
                         // USPEH: PRELAZAK NA NIVO 4
                         level3SuccessTransitionToLevel4();
                     } 
-                    // V11: Koristi typeText za spori ispis hint-a
+                    // Hint za Nivo 3
                     else if (HINT_TRIGGERS_LEVEL_3.includes(userAnswer) && !hintUsedLevel3) {
                         
                         hintUsedLevel3 = true; // Označavamo da je hint dat
                         
-                        // Hint tekst se kuca polako
+                        // V12 IZMENA: Ručna podešavanja za typeText su svedena na minimum.
+                        // CSS već daje ispravan max-width i text-align: left.
+                        
+                        // Pokrećemo kucanje teksta
                         typeText(failDiv, HINT_TEXT_LEVEL_3, 50);
                         
-                        // Zbog sporog kucanja, prilagođavamo stil ručno:
-                        failDiv.style.textAlign = 'left'; 
-                        failDiv.style.maxWidth = '80%';
+                        // Postavljamo boju
                         failDiv.style.color = '#00FF00'; 
                         
                         hiddenInput.disabled = true;
                         if (fakeCursor) fakeCursor.style.display = 'none';
 
-                        // Vreme trajanja hint poruke (isto kao u Nivo 1: 50ms * 140 karaktera teksta)
+                        // Vreme trajanja hint poruke
                         setTimeout(() => {
                             if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; }
 
@@ -840,10 +853,7 @@
                                 failDiv.innerHTML = '';
                             }
                             
-                            // Vraćanje stila na default
-                            failDiv.style.textAlign = 'center'; 
-                            failDiv.style.maxWidth = '90%';
-                            
+                            // Resetovanje unosa i omogućavanje inputa
                             hiddenInput.disabled = false;
                             if (fakeCursor) fakeCursor.style.display = 'inline-block';
 
@@ -851,7 +861,7 @@
                             displayDiv.textContent = '';
                             hiddenInput.value = '';
                             hiddenInput.focus();
-                        }, 7150); // Trajanje hint poruke
+                        }, 7150); 
 
                     }
                     else {
@@ -862,7 +872,8 @@
                             failMessage = "POMOĆ&nbsp;JE&nbsp;VEĆ&nbsp;DATA!";
                         } 
                         
-                        showFailMessage(failMessage, { flash: false, duration: 1500 }); // Uvek zelena za Nivo 3 greške/hint poruke
+                        // V12 IZMENA: center=false se koristi jer poruka greške u Nivu 3 treba da bude levo poravnata
+                        showFailMessage(failMessage, { flash: false, duration: 1500, center: false }); 
                         currentInput = '';
                         displayDiv.textContent = '';
                         hiddenInput.value = '';
@@ -892,6 +903,8 @@
                         failDiv.classList.add('hidden');
                         failDiv.style.display = 'none';
                         failDiv.innerHTML = '';
+                        // V12: Za Nivo 1 fail message treba da bude centriran
+                        failDiv.style.textAlign = 'center'; 
                     }
 
                     const userAnswer = currentInput.trim().toUpperCase();
@@ -911,17 +924,18 @@
                         }, 300);
 
                     } 
-                    // V6 NOVI USLOV: Provera da li je uneta reč za pomoć i da li hint nije iskorišćen
+                    // Hint za Nivo 1
                     else if (HINT_TRIGGERS.includes(userAnswer) && !hintUsedLevel1) {
                         
                         hintUsedLevel1 = true; // Označavamo da je hint dat
                         
-                        // Hint tekst se kuca polako
+                        // V12 IZMENA: Za Hint Nivoa 1 postavljamo poravnanje na LEVO.
+                        failDiv.style.textAlign = 'left'; 
+                        
+                        // Pokreće kucanje teksta
                         typeText(failDiv, HINT_TEXT, 50);
                         
-                        // Zbog sporog kucanja, ne koristimo showFailMessage, već prilagođavamo stil ručno:
-                        failDiv.style.textAlign = 'left'; 
-                        failDiv.style.maxWidth = '80%';
+                        // Postavljamo boju
                         failDiv.style.color = '#00FF00'; 
                         
                         hiddenInput.disabled = true;
@@ -937,9 +951,8 @@
                                 failDiv.innerHTML = '';
                             }
                             
-                            // Vraćanje stila na default
+                            // V12: Resetujemo poravnanje na CENTER, spremno za centrirane Fail poruke Nivoa 1
                             failDiv.style.textAlign = 'center'; 
-                            failDiv.style.maxWidth = '90%';
                             
                             hiddenInput.disabled = false;
                             if (fakeCursor) fakeCursor.style.display = 'inline-block';
@@ -948,30 +961,32 @@
                             displayDiv.textContent = '';
                             hiddenInput.value = '';
                             hiddenInput.focus();
-                        }, 7150); // Trajanje hint poruke (dovoljno za ispis)
+                        }, 7150); 
 
                     } 
                     else {
                         // Tretiranje pogrešnog unosa/unosa pomoći nakon što je Hint već dat
                         attemptCount++;
                         
+                        // V12: Postavljamo poravnanje na CENTER pre prikaza
+                        failDiv.style.textAlign = 'center'; 
+
                         if (attemptCount >= MAX_ATTEMPTS) {
-                            showFailMessage("PRISTUP&nbsp;ODBIJEN!<br>SISTEM&nbsp;SE&nbsp;RESETUJE!", { flash: true, duration: 2400 });
+                            // Centrirana poruka, flash=true (koristi centriranje iz showFailMessage)
+                            showFailMessage("PRISTUP&nbsp;ODBIJEN!<br>SISTEM&nbsp;SE&nbsp;RESETUJE!", { flash: true, duration: 2400, center: true });
                             hiddenInput.disabled = true;
                             if (fakeCursor) fakeCursor.style.display = 'none';
                             setTimeout(resetSystem, 2500);
 
                         } else {
-                            // Zelena poruka bez bljeska
+                            // Centrirana poruka, flash=false (koristi centriranje iz showFailMessage)
                             let failMessage = "PRISTUP&nbsp;ODBIJEN!<br>Pokusajte&nbsp;ponovo.";
                             
-                            // V7 IZMENA: Samo ispisujemo poruku da je pomoć već data ako je iskorišćena
                             if (hintUsedLevel1 && HINT_TRIGGERS.includes(userAnswer)) {
                                 failMessage = "POMOĆ&nbsp;JE&nbsp;VEĆ&nbsp;DATA!";
                             } 
-                            // Ostatak pogrešnih pokušaja dobija samo "PRISTUP ODBIJEN..." bez sugestije
 
-                            showFailMessage(failMessage, { flash: false, duration: 1500 });
+                            showFailMessage(failMessage, { flash: false, duration: 1500, center: true });
                             
                             currentInput = '';
                             displayDiv.textContent = '';
@@ -1020,8 +1035,8 @@
                         
                     } else if (userAnswer === 'NE') {
                         // *** IZMENA: Pokretanje sekvence gašenja sistema ***
-                        // Kratka zelena potvrda pre tranzicije
-                        showFailMessage("ODGOVOR PRIHVAĆEN. STATUS: OFFLINE.", { flash: false, duration: 500 });
+                        // Levo poravnata poruka
+                        showFailMessage("ODGOVOR PRIHVAĆEN. STATUS: OFFLINE.", { flash: false, duration: 500, center: false });
                         
                         // Onemogućavanje unosa
                         hiddenInput.disabled = true;
@@ -1030,8 +1045,8 @@
                         setTimeout(startShutdownSequence, 600); // Pozivanje funkcije gašenja
 
                     } else {
-                        // Neispravan unos
-                        showFailMessage("NEVAŽEĆI UNOS!<br>Molimo&nbsp;unesite&nbsp;DA&nbsp;ili&nbsp;NE.", { flash: true, duration: 1500 });
+                        // Neispravan unos (Levo poravnata poruka)
+                        showFailMessage("NEVAŽEĆI UNOS!<br>Molimo&nbsp;unesite&nbsp;DA&nbsp;ili&nbsp;NE.", { flash: true, duration: 1500, center: false });
                         currentInput = '';
                         displayDiv.textContent = '';
                         hiddenInput.value = '';
@@ -1073,7 +1088,7 @@
                 
                 // Resetovanje stanja hint-a
                 hintUsedLevel1 = false; 
-                hintUsedLevel3 = false; // V10: Reset Level 3 hint
+                hintUsedLevel3 = false; 
 
                 if (fakeCursor) fakeCursor.style.display = 'inline-block';
 
@@ -1083,9 +1098,8 @@
                     failDiv.style.display = 'none';
                     failDiv.innerHTML = '';
                     failDiv.style.color = '#00FF00';
-                    // Resetovanje stila za hint
-                    failDiv.style.textAlign = 'center'; 
-                    failDiv.style.maxWidth = '90%'; 
+                    // V12: Resetovanje na podrazumevano LEFT za failDiv, osim u Level 1
+                    failDiv.style.textAlign = 'left'; 
                 }
                 if (successDiv) {
                     successDiv.classList.add('hidden');
