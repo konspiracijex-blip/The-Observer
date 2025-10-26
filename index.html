@@ -421,7 +421,7 @@
             }
 
 
-            function showFailMessage(text, { flash = true, duration = 1000, alignLeft = false } = {}) {
+            function showFailMessage(text, { flash = true, duration = 1000 } = {}) {
                 if (failTimer) { clearTimeout(failTimer); failTimer = null; }
                 if (!failDiv) return;
                 
@@ -429,11 +429,6 @@
                 failDiv.style.textAlign = 'center'; 
                 failDiv.style.maxWidth = '90%'; 
                 
-                // Specijalna poravnanja za hint (ako je potrebno)
-                if (alignLeft) {
-                    failDiv.style.textAlign = 'left'; 
-                    failDiv.style.maxWidth = '80%';
-                }
                 
                 failDiv.innerHTML = text; 
                 failDiv.classList.remove('hidden');
@@ -678,7 +673,7 @@
 
 
             // =================================================================
-            // NIVO 3 LOGIKA - ZAGONETKA (V10: DODAT HINT)
+            // NIVO 3 LOGIKA - ZAGONETKA (V11: IZMENJEN HINT KAO TYPING)
             // =================================================================
 
             function startLevel3() {
@@ -804,26 +799,51 @@
                 if (e.key === 'Enter') {
                     e.preventDefault();
 
+                    // Čišćenje feedback-a (ako je ostalo od prethodnog, npr. brzi unos)
+                    if (failTimer) { clearTimeout(failTimer); failTimer = null; }
+                    if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; }
+                    if (failDiv) {
+                        failDiv.classList.add('hidden');
+                        failDiv.style.display = 'none';
+                        failDiv.innerHTML = '';
+                    }
+
                     const userAnswer = currentInput.trim().toUpperCase();
                     
                     if (CORRECT_ANSWER_LEVEL_3.includes(userAnswer)) {
                         // USPEH: PRELAZAK NA NIVO 4
                         level3SuccessTransitionToLevel4();
                     } 
-                    // V10 NOVI USLOV: Provera za Nivo 3 Hint
+                    // V11: Koristi typeText za spori ispis hint-a
                     else if (HINT_TRIGGERS_LEVEL_3.includes(userAnswer) && !hintUsedLevel3) {
                         
                         hintUsedLevel3 = true; // Označavamo da je hint dat
                         
-                        showFailMessage(HINT_TEXT_LEVEL_3, { flash: false, duration: 7150, alignLeft: true }); // Koristi typeText stil
+                        // Hint tekst se kuca polako
+                        typeText(failDiv, HINT_TEXT_LEVEL_3, 50);
+                        
+                        // Zbog sporog kucanja, prilagođavamo stil ručno:
+                        failDiv.style.textAlign = 'left'; 
+                        failDiv.style.maxWidth = '80%';
+                        failDiv.style.color = '#00FF00'; 
                         
                         hiddenInput.disabled = true;
                         if (fakeCursor) fakeCursor.style.display = 'none';
 
-                        // Vreme trajanja hint poruke
+                        // Vreme trajanja hint poruke (isto kao u Nivo 1: 50ms * 140 karaktera teksta)
                         setTimeout(() => {
                             if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; }
 
+                            if (failDiv) {
+                                failDiv.classList.add('hidden');
+                                failDiv.style.display = 'none';
+                                failDiv.innerHTML = '';
+                            }
+                            
+                            // Vraćanje stila na default
+                            failDiv.style.textAlign = 'center'; 
+                            failDiv.style.maxWidth = '90%';
+                            
                             hiddenInput.disabled = false;
                             if (fakeCursor) fakeCursor.style.display = 'inline-block';
 
@@ -831,13 +851,13 @@
                             displayDiv.textContent = '';
                             hiddenInput.value = '';
                             hiddenInput.focus();
-                        }, 7150); 
+                        }, 7150); // Trajanje hint poruke
+
                     }
                     else {
-                        // NEUSPEH
+                        // NEUSPEH ILI PONOVNA TRAŽNJA HINTA
                         let failMessage = "ODGOVOR POGREŠAN.<br>Pokušajte ponovo.";
 
-                        // Ako je hint već iskorišćen i ponovo se traži
                          if (hintUsedLevel3 && HINT_TRIGGERS_LEVEL_3.includes(userAnswer)) {
                             failMessage = "POMOĆ&nbsp;JE&nbsp;VEĆ&nbsp;DATA!";
                         } 
@@ -928,7 +948,7 @@
                             displayDiv.textContent = '';
                             hiddenInput.value = '';
                             hiddenInput.focus();
-                        }, 7150); // Trajanje hint poruke
+                        }, 7150); // Trajanje hint poruke (dovoljno za ispis)
 
                     } 
                     else {
