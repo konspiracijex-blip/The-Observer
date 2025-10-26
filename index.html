@@ -51,7 +51,7 @@
             animation: text-flash 0.5s step-start infinite;
         }
 
-        /* NOVO: Blinking efekat za gašenje i poruke uspeha */
+        /* Blinking efekat za gašenje i poruke uspeha */
         @keyframes green-blink {
             0% { opacity: 1; }
             50% { opacity: 0.2; }
@@ -64,11 +64,32 @@
             text-align: center;
             padding-top: 45vh;
             text-shadow: 0 0 5px rgba(0, 255, 0, 0.7), 0 0 10px rgba(0, 255, 0, 0.3);
+            font-weight: bold; 
         }
 
         .shutdown-message {
             animation: green-blink 1s step-start infinite;
         }
+
+        /* V16 NOVO: Stil za poruku odbijanja pristupa */
+        .access-denied-message {
+            color: #00FF00;
+            font-size: 1.2em; 
+            text-align: center;
+            padding-top: 45vh;
+            text-shadow: 0 0 5px rgba(0, 255, 0, 0.7), 0 0 10px rgba(0, 255, 0, 0.3);
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background-color: black;
+            z-index: 100;
+            line-height: 1.8;
+            font-weight: bold;
+            animation: green-blink 0.5s step-start 3; /* Blink samo 3 puta */
+        }
+
 
         /* Sekvence poruka (boot, shutdown) */
         #boot-sequence {
@@ -81,10 +102,9 @@
         
         /* Novi div za sekvencu gašenja koji koristi isti stil */
         #shutdown-terminal-sequence {
-            /* Osiguravamo da nema min-height iz terminal klase */
             min-height: auto; 
             padding: 20px;
-            margin-top: 50px; /* Mali razmak od vrha */
+            margin-top: 50px; 
             text-align: left;
             font-size: 0.9em;
         }
@@ -116,7 +136,7 @@
         /* KRITIČNA KOREKCIJA: Uklanjamo apsolutno pozicioniranje koje uzrokuje skok */
         #hidden-input {
             opacity: 0;
-            position: fixed; /* Fixed ili absolute van vidljivog dela */
+            position: fixed; 
             left: -9999px;
             top: -9999px;
             width: 1px;
@@ -134,11 +154,11 @@
             white-space: pre-wrap;
             text-align: left;
             margin: 20px auto 40px auto;
-            max-width: 80%; /* KLJUČNO PORAVNANJE */
+            max-width: 80%; 
             line-height: 1.8;
         }
         
-        /* NOVA KLASA: Postavlja min-height 400px SAMO za Nivo 2 (dugački tekst) */
+        /* Postavlja min-height 400px SAMO za Nivo 2 (dugački tekst) */
         .level-2-space {
             min-height: 400px;
         }
@@ -152,13 +172,13 @@
         }
 
 
-        /* V12 KOREKCIJA: Poravnanje inputa LINIJE (input, cursor) i celog REDA (input-row) */
+        /* Poravnanje inputa LINIJE (input, cursor) i celog REDA (input-row) */
         .input-row {
             display: flex;
             flex-direction: column;
             align-items: flex-start; 
             margin: 8px auto 0 auto; 
-            max-width: 80%; /* KLJUČNO PORAVNANJE: Isto kao Level 2/3 tekst */
+            max-width: 80%; 
         }
 
         .input-row .visible-input {
@@ -167,25 +187,23 @@
             gap: 8px;
         }
 
-        /* Poruke (Fail/Success) se nalaze unutar .messages-row koji je centriran u .input-row */
+        /* Poruke (Fail/Success) se nalaze unutar .messages-row */
         .messages-row {
-            /* Vraćen na flex/align-items: flex-start da bi se poruka mogla poravnati levo */
             display: flex; 
             justify-content: flex-start; 
-            width: 100%; /* Da zauzme celu širinu input-rowa */
+            width: 100%; 
             margin-top: 12px;
         }
 
-        /* KOREKCIJA: Feedback element je levo poravnat po defaultu i ima istu širinu kao ostali elementi */
+        /* Feedback element je levo poravnat po defaultu */
         #feedback-fail {
             display: block;
-            margin: 4px 0; /* Poravnava levo unutar messages-row */
-            white-space: pre-wrap; /* Koristimo pre-wrap za lakše formatiranje u JS */
+            margin: 4px 0; 
+            white-space: pre-wrap; 
             line-height: 1.6;
-            max-width: 100%; /* Zauzima celu širinu .messages-rowa */
-            text-align: left; /* KLJUČNO: Podrazumevano poravnanje je LEVO */
+            max-width: 100%; 
+            text-align: left; 
             font-size: 0.8em; 
-            /* Za Nivo 1 ćemo morati ručno da ga centriramo u JS-u */
         }
         
         #feedback-success {
@@ -216,7 +234,8 @@
             .system-info { font-size: 0.8em; }
             .cursor { width: 6px; }
             #feedback-fail { font-size: 0.9em; } 
-            /* U mobilnom prikazu, max-width za tekst je 100% da popuni ekran */
+            .access-denied-message { font-size: 1em; } 
+            /* U mobilnom prikazu, max-width za tekst je 100% */
             #level2-text { max-width: 100%; min-height: 300px; margin-left: 0; margin-right: 0; }
             .input-row { max-width: 100%; margin-left: 0; margin-right: 0; }
         }
@@ -238,7 +257,7 @@
 
                 <div class="messages-row">
                     <div id="feedback-success" class="hidden"></div>
-                    <div id="feedback-fail" class="hidden"></div>
+                    <div id="feedback-fail" id="feedback-fail"></div>
                 </div>
             </div>
             
@@ -351,26 +370,20 @@
             ];
             
             // =================================================================
-            // REFACTORING: ZAJEDNIČKA FUNKCIJA ZA KUCANJE PORUKA SEKVENCI
+            // ZAJEDNIČKA FUNKCIJA ZA KUCANJE PORUKA SEKVENCI
             // =================================================================
             
             /**
              * Pokreće sekvencu kucanja poruka u zadatom kontejneru.
-             * @param {HTMLElement} targetDiv Element gde će se poruke kucati.
-             * @param {string[]} messages Niz poruka za kucanje.
-             * @param {number} index Trenutni indeks poruke.
-             * @param {function} callback Funkcija koja se poziva na kraju sekvence.
              */
             function runSequence(targetDiv, messages, index, callback = null) {
                 if (index < messages.length) {
                     const line = document.createElement('p');
                     line.textContent = messages[index];
                     
-                    // Osigurava da je kontejner vidljiv i dodaje liniju
                     targetDiv.style.display = 'block';
                     targetDiv.appendChild(line);
 
-                    // Skrolovanje unutar DIV-a (za duže sekvence)
                     targetDiv.scrollTop = targetDiv.scrollHeight;
 
                     setTimeout(() => runSequence(targetDiv, messages, index + 1, callback), BOOT_DELAY_MS);
@@ -425,28 +438,19 @@
 
             /**
              * Prikazuje poruku greške.
-             * @param {string} text Tekst poruke.
-             * @param {Object} options Opcije.
-             * @param {boolean} options.flash Da li da blica.
-             * @param {number} options.duration Trajanje poruke.
-             * @param {boolean} options.center Da li da centrira tekst. (Koristi se samo za Nivo 1 fail poruke).
              */
             function showFailMessage(text, { flash = true, duration = 1000, center = false } = {}) {
                 if (failTimer) { clearTimeout(failTimer); failTimer = null; }
                 if (!failDiv) return;
                 
-                // V12 IZMENA: Poravnanje (default je LEFT iz CSS-a)
                 failDiv.style.textAlign = center ? 'center' : 'left'; 
                 
-                // U Nivoima 2/3 (gde center=false) ovo prati poravnanje inputa/teksta
-                // U Nivoima 1 (gde center=true) ovo osigurava da je poruka centrirana
-
                 failDiv.innerHTML = text; 
                 failDiv.classList.remove('hidden');
                 failDiv.style.display = 'block';
                 failDiv.classList.toggle('fail-flash', flash);
                 
-                // Postavljanje boje na zelenu ako nema bljeska, inače crvena
+                // Postavljanje boje: crvena ako blica, inače zelena
                 if (!flash) {
                     failDiv.style.color = '#00FF00'; 
                 } else {
@@ -460,7 +464,9 @@
                     failDiv.classList.add('hidden');
                     failDiv.style.display = 'none';
                     failDiv.innerHTML = ''; 
-                    failDiv.style.color = '#00FF00'; // Resetovanje boje na zelenu za sledeće poruke
+                    
+                    // Osigurava da se boja vrati na zelenu nakon blicanja/prikaza
+                    failDiv.style.color = '#00FF00'; 
                     
                     // Resetovanje tekst poravnanja (vraća na default: left)
                     failDiv.style.textAlign = 'left'; 
@@ -468,6 +474,42 @@
                     failTimer = null;
                 }, duration);
             }
+
+            /**
+             * V16: Prikazuje zelenu poruku za odbijen pristup i pokreće reset.
+             */
+            function showAccessDeniedMessageAndReset() {
+                // 1. Onemogućavanje unosa i čišćenje ekrana
+                hiddenInput.disabled = true;
+                if (fakeCursor) fakeCursor.style.display = 'none';
+
+                gameContentDiv.classList.add('hidden'); 
+                level2TextDiv.innerHTML = '';
+                level2TextDiv.classList.add('hidden');
+                currentInputRowEl.style.display = 'none';
+                terminalContainer.style.display = 'none'; 
+                
+                window.scrollTo(0, 0); 
+
+                // 2. Kreiranje i prikaz zelene poruke na celom ekranu
+                const deniedMsgDiv = document.createElement('div');
+                deniedMsgDiv.id = 'access-denied-full';
+                deniedMsgDiv.innerHTML = 'PRISTUP ODBIJEN!<br>SISTEM SE RESETUJE!';
+                deniedMsgDiv.className = 'access-denied-message'; 
+                
+                document.body.appendChild(deniedMsgDiv);
+
+                // 3. Pauza, pa uklanjanje poruke i pokretanje reset sistema
+                setTimeout(() => {
+                    // Uklanjanje poruke sa tela
+                    document.body.removeChild(deniedMsgDiv);
+                    
+                    // Pozivanje postojeće resetSystem funkcije
+                    resetSystem();
+                    
+                }, 1500); // 1.5 sekundi za prikaz zelene poruke
+            }
+
             
             function accessGranted() {
                 // Uklanja elemente Nivoa 1
@@ -498,13 +540,12 @@
                 level2TextDiv.innerHTML = '';
                 level2TextDiv.classList.remove('hidden');
                 
-                // V12 FIX: Dodaje klasu za min-height 400px
+                // Dodaje klasu za min-height 400px
                 level2TextDiv.classList.add('level-2-space'); 
                 
                 currentInputRowEl.style.display = 'none'; // Sakrivanje input reda dok traje kucanje
 
                 // Kuca tekst Nivoa 2
-                // IZMENA: Brzina kucanja smanjena sa 50 na 20 ms
                 typeText(level2TextDiv, LEVEL_2_TEXT, 20, () => {
                     // Dodaje pitanje i input nakon što je tekst iskucan
                     const questionPrompt = document.createElement('span');
@@ -525,11 +566,10 @@
                     hiddenInput.disabled = false;
                     if (fakeCursor) fakeCursor.style.display = 'inline-block';
                     
-                    // KOREKCIJA SKROLOVANJA: Skrolujemo tako da input bude vidljiv, a naslov ostane.
+                    // Skrolujemo tako da input bude vidljiv
                     const scrollTargetLevel2 = currentInputRowEl.offsetTop - (window.innerHeight / 3);
                     window.scrollTo(0, scrollTargetLevel2 > 0 ? scrollTargetLevel2 : 0);
                     
-                    // Fokusiramo bez skrolovanja (jer smo već skrolovali)
                     hiddenInput.focus({ preventScroll: true }); 
 
                     // Dodavanje slušaoca Nivoa 2
@@ -540,6 +580,8 @@
             
             
             function loadLevel3WithBootSequence() {
+                // ... (Logika za Level 3 boot sekvencu - nepromenjena) ...
+                
                 // 1. Uklanjanje svih dinamičkih elemenata sa ekrana (pre "UČITAVAM" poruke)
                 gameContentDiv.classList.add('hidden'); 
                 level2TextDiv.innerHTML = '';
@@ -592,7 +634,7 @@
                     // Pokretanje nove boot sekvence
                     bootSequenceDiv.style.display = 'block';
                     bootSequenceDiv.innerHTML = ''; 
-                    gameContentDiv.classList.add('hidden'); // Održavamo skrivenim tokom boot-a
+                    gameContentDiv.classList.add('hidden'); 
                     
                     // Postavljanje Level 3 podnaslova
                     systemInfo.textContent = 'PRISTUP ODOBREN / NIVO PRISTUPA A3';
@@ -601,7 +643,7 @@
 
                     // Korišćenje LEVEL_3_TRANSITION_MESSAGES. Callback će pokrenuti startLevel3()
                     runSequence(bootSequenceDiv, LEVEL_3_TRANSITION_MESSAGES, 0, () => {
-                        // 4. DRUGO POTPUNO ČIŠĆENJE EKRANA (Step 4 - Briše boot poruke i čisti za Level 3)
+                        // 4. DRUGO POTPUNO ČIŠĆENJE EKRANA 
                         
                         // Uklanjamo boot poruke
                         bootSequenceDiv.style.display = 'none';
@@ -613,13 +655,15 @@
                         // 5. Pokretanje Level 3 zagonetke
                         startLevel3();
                     });
-                }, 1000); // Pauza za "UČITAVAM"
+                }, 1000); 
             }
             
             // =================================================================
             // SEKVENCA GAŠENJA SISTEMA
             // =================================================================
             function startShutdownSequence() {
+                // ... (Logika za Shutdown - nepromenjena) ...
+
                 // 1. Onemogućavanje unosa
                 hiddenInput.disabled = true;
                 if (fakeCursor) fakeCursor.style.display = 'none';
@@ -631,7 +675,7 @@
                 level2TextDiv.innerHTML = '';
                 level2TextDiv.classList.add('hidden');
                 currentInputRowEl.style.display = 'none';
-                terminalContainer.style.display = 'none'; // Sakrivanje celog terminala
+                terminalContainer.style.display = 'none'; 
                 
                 window.scrollTo(0, 0); 
                 
@@ -651,14 +695,14 @@
                 setTimeout(() => {
                     // 3a. Uklanjanje poruke i POTPUNO BRISANJE EKRANA 
                     document.body.removeChild(shutdownTextDiv);
-                    document.body.innerHTML = ''; // BRISE SVE OSTALO SA BODY-ja
+                    document.body.innerHTML = ''; 
                     
                     // 3b. Postavljanje body stila za prikaz sekvence
                     document.body.style.backgroundColor = 'black';
                     document.body.style.color = '#00FF00';
                     document.body.style.overflow = 'auto';
                     document.body.style.textShadow = '0 0 5px rgba(0, 255, 0, 0.7), 0 0 10px rgba(0, 255, 0, 0.3)';
-                    window.scrollTo(0, 0); // Vrh ekrana
+                    window.scrollTo(0, 0); 
 
                     // 3c. Kreiranje posvećenog kontejnera za poruke sekvence
                     const shutdownTerminalSequence = document.createElement('div');
@@ -668,25 +712,23 @@
                     // 4. Pokretanje sekvence gašenja unutar novog kontejnera
                     runSequence(shutdownTerminalSequence, SHUTDOWN_MESSAGES, 0, () => {
                         // 5. Gašenje ekrana na crno
-                        
-                        // Sakrivanje celog body sadržaja (poruke su gotove)
                         document.body.innerHTML = '';
-                        
-                        // Postavljanje celog body na crno bez teksta/scroll-a
                         document.body.style.backgroundColor = 'black';
                         document.body.style.color = 'black';
                         document.body.style.overflow = 'hidden';
                         document.body.style.textShadow = 'none'; 
                     });
-                }, 1500); // Vreme prikaza poruke "SISTEM SE GASI"
+                }, 1500); 
             }
 
 
             // =================================================================
-            // NIVO 3 LOGIKA - ZAGONETKA (V12: Korigovano poravnanje hint/fail)
+            // NIVO 3 LOGIKA
             // =================================================================
 
             function startLevel3() {
+                // ... (Logika za Level 3 - nepromenjena) ...
+                
                 // Uklanjanje slušaoca Nivoa 2
                 hiddenInput.removeEventListener('input', inputListenerLevel2);
                 hiddenInput.removeEventListener('keydown', keypressListenerLevel2);
@@ -695,12 +737,9 @@
                 successDiv.classList.add('hidden');
                 successDiv.innerHTML = '';
                 currentInputRowEl.style.display = 'none';
-                level2TextDiv.innerHTML = ''; // Potpuno brisanje starog teksta
+                level2TextDiv.innerHTML = ''; 
                 
-                // Uklanjamo klasu za min-height 400px kako bi se polje podiglo
                 level2TextDiv.classList.remove('level-2-space'); 
-                
-                // Prikazujemo game content nakon boot sekvence (gameContentDiv je već vidljiv iz callback-a)
                 
                 // Kuca tekst Nivoa 3
                 typeText(level2TextDiv, LEVEL_3_RIDDLE_TEXT, 50, () => {
@@ -709,7 +748,7 @@
                     currentInput = '';
                     displayDiv.textContent = '';
                     hiddenInput.value = '';
-                    inputPromptText.textContent = 'ODGOVOR:'; // Novi prompt
+                    inputPromptText.textContent = 'ODGOVOR:'; 
                     currentInputRowEl.style.display = 'flex';
                     
                     // Omogućava unos
@@ -726,7 +765,7 @@
                 });
             }
 
-            // V5 NOVO: Tranzicija na Nivo 4
+            // ... (level3SuccessTransitionToLevel4 i startLevel4Placeholder - nepromenjene) ...
             function level3SuccessTransitionToLevel4() {
                 // 1. Onemogućavanje unosa
                 hiddenInput.disabled = true;
@@ -761,7 +800,7 @@
                     // Vraćanje osnovne strukture nakon potpunog čišćenja
                     const oldTerminalContainer = terminalContainer;
                     const oldHiddenInput = hiddenInput;
-                    document.body.innerHTML = ''; // POTPUNO ČIŠĆENJE
+                    document.body.innerHTML = ''; 
                     document.body.appendChild(oldTerminalContainer);
                     document.body.appendChild(oldHiddenInput); 
                     oldTerminalContainer.style.display = 'block';
@@ -772,31 +811,26 @@
                     
                     systemInfo.textContent = 'PRISTUP ODOBREN / NIVO PRISTUPA A4';
                     
-                    // Korišćenje LEVEL_4_TRANSITION_MESSAGES. Callback će pokrenuti Level 4 (buduća funkcija)
                     runSequence(bootSequenceDiv, LEVEL_4_TRANSITION_MESSAGES, 0, () => {
-                        // 6. TREĆE ČIŠĆENJE EKRANA (Brisanje boot poruka)
+                        // 6. TREĆE ČIŠĆENJE EKRANA 
                         bootSequenceDiv.style.display = 'none';
                         bootSequenceDiv.innerHTML = '';
                         
                         // 7. Pokretanje Nivoa 4 (trenutno placeholder)
                         startLevel4Placeholder();
                     });
-                }, 1000); // Trajanje poruke "TAČNO!"
+                }, 1000); 
             }
 
-            // V5 NOVO: Placeholder za početak Nivoa 4
             function startLevel4Placeholder() {
-                // Svi elementi su već očišćeni, samo aktiviramo game content sa novim naslovom
                 gameContentDiv.classList.remove('hidden');
                 
                 const placeholderDiv = document.createElement('div');
                 placeholderDiv.innerHTML = '<br><br>DOBRODOŠAO U NIVO 4.<br>Spremni za sledeću zagonetku...';
                 placeholderDiv.style.textAlign = 'center';
                 placeholderDiv.style.marginTop = '50px';
-                level2TextDiv.appendChild(placeholderDiv); // Koristimo level2TextDiv za prikaz
+                level2TextDiv.appendChild(placeholderDiv); 
                 level2TextDiv.classList.remove('hidden');
-                
-                // Ovo je tačka gde bi se pokrenuo Level 4. Za sada ostaje ovako.
             }
             
             inputListenerLevel3 = (e) => {
@@ -809,15 +843,15 @@
                 if (e.key === 'Enter') {
                     e.preventDefault();
 
-                    // Čišćenje feedback-a (ako je ostalo od prethodnog, npr. brzi unos)
+                    // Čišćenje feedback-a 
                     if (failTimer) { clearTimeout(failTimer); failTimer = null; }
                     if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; }
                     if (failDiv) {
                         failDiv.classList.add('hidden');
                         failDiv.style.display = 'none';
                         failDiv.innerHTML = '';
-                        // Resetujemo na default LEFT poravnanje za Level 3
                         failDiv.style.textAlign = 'left'; 
+                        failDiv.style.color = '#00FF00'; 
                     }
 
                     const userAnswer = currentInput.trim().toUpperCase();
@@ -829,15 +863,10 @@
                     // Hint za Nivo 3
                     else if (HINT_TRIGGERS_LEVEL_3.includes(userAnswer) && !hintUsedLevel3) {
                         
-                        hintUsedLevel3 = true; // Označavamo da je hint dat
+                        hintUsedLevel3 = true; 
                         
-                        // V12 IZMENA: Ručna podešavanja za typeText su svedena na minimum.
-                        // CSS već daje ispravan max-width i text-align: left.
-                        
-                        // Pokrećemo kucanje teksta
                         typeText(failDiv, HINT_TEXT_LEVEL_3, 50);
                         
-                        // Postavljamo boju
                         failDiv.style.color = '#00FF00'; 
                         
                         hiddenInput.disabled = true;
@@ -872,7 +901,6 @@
                             failMessage = "POMOĆ&nbsp;JE&nbsp;VEĆ&nbsp;DATA!";
                         } 
                         
-                        // V12 IZMENA: center=false se koristi jer poruka greške u Nivu 3 treba da bude levo poravnata
                         showFailMessage(failMessage, { flash: false, duration: 1500, center: false }); 
                         currentInput = '';
                         displayDiv.textContent = '';
@@ -883,7 +911,7 @@
             };
 
             // =================================================================
-            // NIVO 1 LOGIKA (Koristi hintUsedLevel1)
+            // NIVO 1 LOGIKA 
             // =================================================================
 
             inputListenerLevel1 = (e) => {
@@ -903,8 +931,8 @@
                         failDiv.classList.add('hidden');
                         failDiv.style.display = 'none';
                         failDiv.innerHTML = '';
-                        // V12: Za Nivo 1 fail message treba da bude centriran
                         failDiv.style.textAlign = 'center'; 
+                        failDiv.style.color = '#00FF00'; 
                     }
 
                     const userAnswer = currentInput.trim().toUpperCase();
@@ -927,15 +955,12 @@
                     // Hint za Nivo 1
                     else if (HINT_TRIGGERS.includes(userAnswer) && !hintUsedLevel1) {
                         
-                        hintUsedLevel1 = true; // Označavamo da je hint dat
+                        hintUsedLevel1 = true; 
                         
-                        // V12 IZMENA: Za Hint Nivoa 1 postavljamo poravnanje na LEVO.
                         failDiv.style.textAlign = 'left'; 
                         
-                        // Pokreće kucanje teksta
                         typeText(failDiv, HINT_TEXT, 50);
                         
-                        // Postavljamo boju
                         failDiv.style.color = '#00FF00'; 
                         
                         hiddenInput.disabled = true;
@@ -951,7 +976,6 @@
                                 failDiv.innerHTML = '';
                             }
                             
-                            // V12: Resetujemo poravnanje na CENTER, spremno za centrirane Fail poruke Nivoa 1
                             failDiv.style.textAlign = 'center'; 
                             
                             hiddenInput.disabled = false;
@@ -968,18 +992,25 @@
                         // Tretiranje pogrešnog unosa/unosa pomoći nakon što je Hint već dat
                         attemptCount++;
                         
-                        // V12: Postavljamo poravnanje na CENTER pre prikaza
                         failDiv.style.textAlign = 'center'; 
 
                         if (attemptCount >= MAX_ATTEMPTS) {
-                            // Centrirana poruka, flash=true (koristi centriranje iz showFailMessage)
-                            showFailMessage("PRISTUP&nbsp;ODBIJEN!<br>SISTEM&nbsp;SE&nbsp;RESETUJE!", { flash: true, duration: 2400, center: true });
+                            
+                            // *** V16 KRITIČAN FIKS: Pozivanje nove funkcije umesto starog, problematičnog showFailMessage ***
+                            
                             hiddenInput.disabled = true;
                             if (fakeCursor) fakeCursor.style.display = 'none';
-                            setTimeout(resetSystem, 2500);
+
+                            if (failDiv) {
+                                failDiv.classList.add('hidden');
+                                failDiv.innerHTML = '';
+                            }
+                            
+                            showAccessDeniedMessageAndReset();
+
 
                         } else {
-                            // Centrirana poruka, flash=false (koristi centriranje iz showFailMessage)
+                            // Centrirana poruka
                             let failMessage = "PRISTUP&nbsp;ODBIJEN!<br>Pokusajte&nbsp;ponovo.";
                             
                             if (hintUsedLevel1 && HINT_TRIGGERS.includes(userAnswer)) {
@@ -1026,26 +1057,22 @@
                         displayDiv.textContent = '';
                         hiddenInput.value = '';
                         
-                        // UKLANJANJE PORUKE I POZIV NOVE SEKVENCIJE
                         successDiv.classList.add('hidden');
                         successDiv.innerHTML = '';
 
-                        // Pokreće novu loading sekvencu koja vodi u Level 3
                         loadLevel3WithBootSequence();
                         
                     } else if (userAnswer === 'NE') {
-                        // *** IZMENA: Pokretanje sekvence gašenja sistema ***
-                        // Levo poravnata poruka
+                        // Pokretanje sekvence gašenja sistema 
                         showFailMessage("ODGOVOR PRIHVAĆEN. STATUS: OFFLINE.", { flash: false, duration: 500, center: false });
                         
-                        // Onemogućavanje unosa
                         hiddenInput.disabled = true;
                         if (fakeCursor) fakeCursor.style.display = 'none';
                         
                         setTimeout(startShutdownSequence, 600); // Pozivanje funkcije gašenja
 
                     } else {
-                        // Neispravan unos (Levo poravnata poruka)
+                        // Neispravan unos
                         showFailMessage("NEVAŽEĆI UNOS!<br>Molimo&nbsp;unesite&nbsp;DA&nbsp;ili&nbsp;NE.", { flash: true, duration: 1500, center: false });
                         currentInput = '';
                         displayDiv.textContent = '';
@@ -1063,20 +1090,21 @@
                 if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; }
                 if (failTimer) { clearTimeout(failTimer); failTimer = null; }
                 
-                // Vraćanje body stila na default 
-                document.body.innerHTML = ''; // Potpuno čišćenje tela
-                document.body.appendChild(terminalContainer); // Vraćanje glavnog kontejnera
-                document.body.appendChild(hiddenInput); // Vraćanje inputa
+                // Potpuno čišćenje tela
+                document.body.innerHTML = ''; 
+                document.body.appendChild(terminalContainer); 
+                document.body.appendChild(hiddenInput); 
 
+                // Vraćanje body stila na default 
                 document.body.style.color = '#00FF00';
                 document.body.style.overflow = 'auto';
                 document.body.style.textShadow = '0 0 5px rgba(0, 255, 0, 0.7), 0 0 10px rgba(0, 255, 0, 0.3)';
                 document.body.style.backgroundColor = '#000000';
 
 
-                terminalContainer.style.display = 'block'; // Vraćanje prikaza glavnog kontejnera
+                terminalContainer.style.display = 'block'; 
                 terminalContainer.classList.remove('flash-red');
-                gameContentDiv.classList.add('hidden'); // Skriva CEO sadržaj
+                gameContentDiv.classList.add('hidden'); 
                 bootSequenceDiv.style.display = 'block';
                 bootSequenceDiv.innerHTML = '';
 
@@ -1092,15 +1120,6 @@
 
                 if (fakeCursor) fakeCursor.style.display = 'inline-block';
 
-                if (failDiv) {
-                    failDiv.classList.remove('fail-flash');
-                    failDiv.classList.add('hidden');
-                    failDiv.style.display = 'none';
-                    failDiv.innerHTML = '';
-                    failDiv.style.color = '#00FF00';
-                    // V12: Resetovanje na podrazumevano LEFT za failDiv, osim u Level 1
-                    failDiv.style.textAlign = 'left'; 
-                }
                 if (successDiv) {
                     successDiv.classList.add('hidden');
                     successDiv.style.display = 'none';
@@ -1122,7 +1141,7 @@
                     currentInputRowEl.style.display = 'flex';
                 }
                 
-                // Dodavanje slušaoca Nivoa 1 i uklanjanje svih ostalih
+                // Resetovanje Listenera na Nivo 1
                 hiddenInput.removeEventListener('input', inputListenerLevel1);
                 hiddenInput.removeEventListener('keydown', keypressListenerLevel1);
                 hiddenInput.removeEventListener('input', inputListenerLevel2);
@@ -1133,8 +1152,10 @@
                 hiddenInput.addEventListener('input', inputListenerLevel1);
                 hiddenInput.addEventListener('keydown', keypressListenerLevel1);
 
+                window.scrollTo(0, 0); 
+
+                // Pokretanje Boot Sekvence
                 runSequence(bootSequenceDiv, bootMessages, 0, () => {
-                    // Originalni završetak boot-a (Nivo 1, poziva se na startu ili resetu)
                     bootSequenceDiv.style.display = 'none';
                     gameContentDiv.classList.remove('hidden'); 
                     level2TextDiv.classList.add('hidden'); 
