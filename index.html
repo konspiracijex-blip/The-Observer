@@ -153,7 +153,8 @@
         #level2-text {
             white-space: pre-wrap;
             text-align: left;
-            margin: 20px auto 40px auto;
+            /* FIKS: Smanjujemo donju marginu sa 40px na 10px za desktop, jer mobilni preuzima kontrolu */
+            margin: 20px auto 10px auto; 
             max-width: 80%; 
             line-height: 1.8;
         }
@@ -230,25 +231,32 @@
 
         /* ========= V17 KOREKCIJA ZA MOBILNI PRIKAZ (Povećan padding) ========= */
         @media (max-width: 600px) {
-            /* V17 KOREKCIJA: POVEĆAVANJE PADDING-a (MARGINE) ZA MOBILNI PRIKAZ */
+            
             body { 
                 font-size: 12px; 
-                padding: 20px; /* Sada je 20px sa svih strana */
+                padding: 20px; 
             }
             .game-title { font-size: 1.6em; }
             .system-info { font-size: 0.8em; }
             .cursor { width: 6px; }
             #feedback-fail { font-size: 0.9em; } 
             .access-denied-message { font-size: 1em; } 
-            /* U mobilnom prikazu, max-width za tekst je 100% */
-            #level2-text { max-width: 100%; min-height: 300px; margin-left: 0; margin-right: 0; }
             
-            /* KRITIČNA IZMENA: Uklanjamo gornju marginu kako bi input bio odmah ispod System Info */
+            /* KRITIČAN FIKS 1: Eliminisanje donje margine teksta zagonetke za mobilni (Nivo 3) */
+            #level2-text { 
+                max-width: 100%; 
+                min-height: 300px; 
+                margin-left: 0; 
+                margin-right: 0; 
+                margin-bottom: 0 !important; /* Postavljamo na nulu, koristeći !important da nadjačamo stil unutar koda */
+            }
+            
+            /* KRITIČAN FIKS 2: Eliminisanje gornje margine unosa za mobilni (Nivo 1) */
             .input-row { 
                 max-width: 100%; 
                 margin-left: 0; 
                 margin-right: 0;
-                margin-top: 0; /* NOVO: Ovo uklanja 8px prostora i podiže polje za unos */
+                margin-top: 0; 
             }
         }
     </style>
