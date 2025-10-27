@@ -248,12 +248,7 @@
                 max-width: 100%; 
                 margin-left: 0; 
                 margin-right: 0;
-                margin-top: 0; /* Ovo uklanja 8px prostora i podiže polje za unos na Nivo 1 */
-            }
-            
-            /* Ispravka za nivo 2/3 tekst margine na mobilnom*/
-            #level2-text {
-                margin: 20px 0 20px 0; /* Smanjujemo donju marginu za Level 2/3 */
+                margin-top: 0; /* NOVO: Ovo uklanja 8px prostora i podiže polje za unos */
             }
         }
     </style>
@@ -597,8 +592,6 @@
             
             
             function loadLevel3WithBootSequence() {
-                // ... (Logika za Level 3 boot sekvencu - nepromenjena) ...
-                
                 // 1. Uklanjanje svih dinamičkih elemenata sa ekrana (pre "UČITAVAM" poruke)
                 gameContentDiv.classList.add('hidden'); 
                 level2TextDiv.innerHTML = '';
@@ -679,8 +672,6 @@
             // SEKVENCA GAŠENJA SISTEMA
             // =================================================================
             function startShutdownSequence() {
-                // ... (Logika za Shutdown - nepromenjena) ...
-
                 // 1. Onemogućavanje unosa
                 hiddenInput.disabled = true;
                 if (fakeCursor) fakeCursor.style.display = 'none';
@@ -754,7 +745,6 @@
                 currentInputRowEl.style.display = 'none';
                 level2TextDiv.innerHTML = ''; 
                 
-                // *** KRITIČNA KOREKCIJA ZA RAZMAK (Nivo 3): Uklanjamo min-height! ***
                 level2TextDiv.classList.remove('level-2-space'); 
                 
                 // Kuca tekst Nivoa 3
@@ -771,7 +761,9 @@
                     hiddenInput.disabled = false;
                     if (fakeCursor) fakeCursor.style.display = 'inline-block';
                     
-                    window.scrollTo(0, 0); 
+                    // V18 FIKS: SKROLOVANJE NA INPUT POLJE NAKON KUCAJNJA ZAGONETKE
+                    const scrollTargetLevel3 = currentInputRowEl.offsetTop - (window.innerHeight / 3);
+                    window.scrollTo(0, scrollTargetLevel3 > 0 ? scrollTargetLevel3 : 0);
                     
                     hiddenInput.focus({ preventScroll: true }); 
 
@@ -781,7 +773,6 @@
                 });
             }
 
-            // ... (level3SuccessTransitionToLevel4 i startLevel4Placeholder - nepromenjene) ...
             function level3SuccessTransitionToLevel4() {
                 // 1. Onemogućavanje unosa
                 hiddenInput.disabled = true;
