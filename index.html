@@ -70,6 +70,12 @@
         .shutdown-message {
             animation: green-blink 1s step-start infinite;
         }
+        
+        /* Novi stil za "TAČNO" poruku nakon uspeha Nivoa 3, koja samo blinka i ne ostaje */
+        #success-message-full {
+            animation: green-blink 0.5s step-start 3; /* Blink samo 3 puta */
+        }
+
 
         /* V16 NOVO: Stil za poruku odbijanja pristupa */
         .access-denied-message {
@@ -245,7 +251,6 @@
             /* KRITIČAN FIKS: Eliminisanje min-height i donje margine za mobilni */
             #level2-text { 
                 max-width: 100%; 
-                /* min-height: 300px; - OVO JE UZROKOVALO VELIKI RAZMAK, UKLONJENO! */
                 margin-left: 0; 
                 margin-right: 0; 
                 margin-bottom: 0 !important; 
@@ -317,13 +322,17 @@
             // NIVO 2 KONSTANTE
             const LEVEL_2_TEXT = "Svuda oko tebe vidljivi zidovi, nevidljive brave.<br>Svet u kojem živiš nije onaj koji misliš da poznaješ.<br>Ljudi spavaju, veruju ono što im je rečeno, a ne ono što mogu sami da otkriju.<br>Zato ti postavljam pitanje.<br>Da li si posmatrač ili učesnik?<br>Da li si još jedan broj u sistemu koji te koristi Ili si spreman da pronađeš istinu u matrici i prođeš kroz nju?<br>Ako želiš istinu, moraćeš da je zaslužiš.<br>Prva zagonetka te čeka. Vrata će se otvoriti samo onima koji razumeju skriveni jezik.";
 
-            // NOVE KONSTANTE ZA NIVO 3 (ZAGONETKU)
+            // NIVO 3 KONSTANTE (Kamera)
             const CORRECT_ANSWER_LEVEL_3 = ['KAMERA', 'KAMERE']; 
             const LEVEL_3_RIDDLE_TEXT = "Ona te posmatra, ali nikad te ne vidi. Ko je ona?";
-            
-            // NOVE KONSTANTE ZA NIVO 3 HINT (V10)
             const HINT_TRIGGERS_LEVEL_3 = ['POMOC', 'HELP']; 
             const HINT_TEXT_LEVEL_3 = "Zna svaki tvoj pokret, ali ne postoje oči koje gledaju.";
+            
+            // NOVE KONSTANTE ZA NIVO 4 (BUDUCNOST)
+            const CORRECT_ANSWER_LEVEL_4 = ['BUDUCNOST', 'BUDUĆNOST']; 
+            const LEVEL_4_RIDDLE_TEXT = "Šta je uvek pred tobom, ali nikad ne možeš da je vidiš?";
+            // Nema HINT KONSTANTI za Nivo 4
+
             
             // NOVE PORUKE ZA PRELAZAK NA NIVO 3
             const LEVEL_3_TRANSITION_MESSAGES = [
@@ -337,14 +346,16 @@
                 'AWAITING RIDDLE ANSWER...'
             ];
 
-            // NOVE PORUKE ZA MINI BOOT NIVO 4 (V5 DODATAK)
-            const LEVEL_4_TRANSITION_MESSAGES = [
+            // NOVE PORUKE ZA MINI BOOT NIVO 4 (Ovo se briše, koristi se samo "TAČNO" pa Level 4)
+            /*
+            const LEVEL_4_TRANSITION_MESSAGES_OLD = [
                 'RIDDLE SOLVED: CAMERA MODULE ACTIVATED',
                 'DECRYPTING ORACLE PYLON 4...',
                 'ACCESSING HIDDEN REALITY DATA...',
                 'PREPARING USER FOR DEEPER INSIGHT...',
                 'LEVEL 4 TRANSITION INITIATED.'
             ];
+            */
             
             // NOVE PORUKE ZA GAŠENJE SISTEMA (SHUTDOWN)
             const SHUTDOWN_MESSAGES = [
@@ -366,11 +377,12 @@
             let typingTimer = null;
             let failTimer = null;
             let hintUsedLevel1 = false; // Status hint-a za Nivo 1
-            let hintUsedLevel3 = false; // Status hint-a za Nivo 3 (V10)
+            let hintUsedLevel3 = false; // Status hint-a za Nivo 3
 
             let inputListenerLevel1, keypressListenerLevel1;
             let inputListenerLevel2, keypressListenerLevel2;
             let inputListenerLevel3, keypressListenerLevel3; 
+            let inputListenerLevel4, keypressListenerLevel4; // NOVI listeneri za Nivo 4
 
             const bootMessages = [
                 'CHECKING CORE COMPONENTS...',
@@ -796,7 +808,7 @@
                 
                 window.scrollTo(0, 0); 
                 
-                // 3. Prikaz "TAČNO!" poruke na celom ekranu
+                // 3. Prikaz "TAČNO!" poruke na celom ekranu (BLINKA!)
                 const successMsgDiv = document.createElement('div');
                 successMsgDiv.id = 'success-message-full';
                 successMsgDiv.textContent = 'TAČNO!';
@@ -808,11 +820,11 @@
                 
                 document.body.appendChild(successMsgDiv);
 
-                // 4. Pauza, pa uklanjanje poruke i DRUGO ČIŠĆENJE EKRANA
+                // 4. Pauza, pa uklanjanje poruke i PRELAZAK NA NIVO 4
                 setTimeout(() => {
                     document.body.removeChild(successMsgDiv);
                     
-                    // Vraćanje osnovne strukture nakon potpunog čišćenja
+                    // Vraćanje osnovne strukture
                     const oldTerminalContainer = terminalContainer;
                     const oldHiddenInput = hiddenInput;
                     document.body.innerHTML = ''; 
@@ -820,32 +832,10 @@
                     document.body.appendChild(oldHiddenInput); 
                     oldTerminalContainer.style.display = 'block';
                     
-                    // 5. MINI BOOT SEKVENCA ZA NIVO 4
-                    bootSequenceDiv.style.display = 'block';
-                    bootSequenceDiv.innerHTML = ''; 
+                    // Nema boot sekvence, samo se nastavlja na Level 4
+                    startLevel4();
                     
-                    systemInfo.textContent = 'PRISTUP ODOBREN / NIVO PRISTUPA A4';
-                    
-                    runSequence(bootSequenceDiv, LEVEL_4_TRANSITION_MESSAGES, 0, () => {
-                        // 6. TREĆE ČIŠĆENJE EKRANA 
-                        bootSequenceDiv.style.display = 'none';
-                        bootSequenceDiv.innerHTML = '';
-                        
-                        // 7. Pokretanje Nivoa 4 (trenutno placeholder)
-                        startLevel4Placeholder();
-                    });
                 }, 1000); 
-            }
-
-            function startLevel4Placeholder() {
-                gameContentDiv.classList.remove('hidden');
-                
-                const placeholderDiv = document.createElement('div');
-                placeholderDiv.innerHTML = '<br><br>DOBRODOŠAO U NIVO 4.<br>Spremni za sledeću zagonetku...';
-                placeholderDiv.style.textAlign = 'center';
-                placeholderDiv.style.marginTop = '50px';
-                level2TextDiv.appendChild(placeholderDiv); 
-                level2TextDiv.classList.remove('hidden');
             }
             
             inputListenerLevel3 = (e) => {
@@ -924,6 +914,109 @@
                     }
                 }
             };
+
+            // =================================================================
+            // NIVO 4 LOGIKA (NOVO)
+            // =================================================================
+            
+            function startLevel4() {
+                // Ažuriranje podnaslova sistema
+                systemInfo.textContent = 'PRISTUP ODOBREN / NIVO PRISTUPA A4';
+                
+                // Re-aktivacija naslova i podnaslova
+                gameContentDiv.classList.remove('hidden');
+                
+                // Čišćenje samo dinamičkog sadržaja i poruka
+                successDiv.classList.add('hidden');
+                successDiv.innerHTML = '';
+                currentInputRowEl.style.display = 'none';
+                level2TextDiv.innerHTML = ''; 
+                
+                // Uklanjanje klase za veliki min-height (Nivo 2)
+                level2TextDiv.classList.remove('level-2-space'); 
+                
+                // Kuca tekst Nivoa 4
+                typeText(level2TextDiv, LEVEL_4_RIDDLE_TEXT, 50, () => {
+                    
+                    // Priprema input za Nivo 4
+                    currentInput = '';
+                    displayDiv.textContent = '';
+                    hiddenInput.value = '';
+                    inputPromptText.textContent = 'ODGOVOR:'; 
+                    currentInputRowEl.style.display = 'flex';
+                    
+                    // Omogućava unos
+                    hiddenInput.disabled = false;
+                    if (fakeCursor) fakeCursor.style.display = 'inline-block';
+                    
+                    // SKROLOVANJE NA INPUT POLJE NAKON KUCAJNJA ZAGONETKE
+                    const scrollTargetLevel4 = currentInputRowEl.offsetTop - (window.innerHeight / 3);
+                    window.scrollTo(0, scrollTargetLevel4 > 0 ? scrollTargetLevel4 : 0);
+                    
+                    hiddenInput.focus({ preventScroll: true }); 
+
+                    // Dodavanje slušaoca Nivoa 4
+                    hiddenInput.addEventListener('input', inputListenerLevel4);
+                    hiddenInput.addEventListener('keydown', keypressListenerLevel4);
+                });
+            }
+            
+            inputListenerLevel4 = (e) => {
+                const newInputValue = e.target.value;
+                currentInput = newInputValue.toUpperCase();
+                displayDiv.textContent = currentInput;
+            };
+
+            keypressListenerLevel4 = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+
+                    // Čišćenje feedback-a 
+                    if (failTimer) { clearTimeout(failTimer); failTimer = null; }
+                    if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; }
+                    if (failDiv) {
+                        failDiv.classList.add('hidden');
+                        failDiv.style.display = 'none';
+                        failDiv.innerHTML = '';
+                        failDiv.style.textAlign = 'left'; 
+                        failDiv.style.color = '#00FF00'; 
+                    }
+
+                    const userAnswer = currentInput.trim().toUpperCase();
+                    
+                    if (CORRECT_ANSWER_LEVEL_4.includes(userAnswer)) {
+                        // USPEH: PRELAZAK NA NIVO 5 (Placeholder)
+                        
+                        hiddenInput.disabled = true;
+                        if (fakeCursor) fakeCursor.style.display = 'none';
+                        
+                        // Privremeno: Prikaz uspeha i prelazak na krajnji placeholder
+                        showFailMessage("TAČNO. PRELAZAK NA NIVO 5...", { flash: false, duration: 1500, center: true }); 
+                        
+                        // Uklanjanje slušaoca Nivoa 4
+                        hiddenInput.removeEventListener('input', inputListenerLevel4);
+                        hiddenInput.removeEventListener('keydown', keypressListenerLevel4);
+                        
+                        setTimeout(() => {
+                            // Jednostavno prelazak na placeholder
+                            currentInputRowEl.style.display = 'none';
+                            level2TextDiv.innerHTML = '<br><br>ČESTITAMO! STIGLI STE DO KRAJA TRENUTNE SIMULACIJE.';
+                        }, 1600);
+
+
+                    } else {
+                        // NEUSPEH (Nema Hinta za Nivo 4)
+                        let failMessage = "ODGOVOR POGREŠAN.<br>Pokušajte ponovo.";
+                        
+                        showFailMessage(failMessage, { flash: false, duration: 1500, center: false }); 
+                        currentInput = '';
+                        displayDiv.textContent = '';
+                        hiddenInput.value = '';
+                        hiddenInput.focus();
+                    }
+                }
+            };
+            
 
             // =================================================================
             // NIVO 1 LOGIKA 
@@ -1163,6 +1256,8 @@
                 hiddenInput.removeEventListener('keydown', keypressListenerLevel2);
                 hiddenInput.removeEventListener('input', inputListenerLevel3);
                 hiddenInput.removeEventListener('keydown', keypressListenerLevel3);
+                hiddenInput.removeEventListener('input', inputListenerLevel4); // Dodato: Uklanjanje slušaoca za Nivo 4
+                hiddenInput.removeEventListener('keydown', keypressListenerLevel4); // Dodato: Uklanjanje slušaoca za Nivo 4
                 
                 hiddenInput.addEventListener('input', inputListenerLevel1);
                 hiddenInput.addEventListener('keydown', keypressListenerLevel1);
@@ -1190,6 +1285,8 @@
             hiddenInput.removeEventListener('keydown', keypressListenerLevel1);
             hiddenInput.removeEventListener('input', inputListenerLevel3);
             hiddenInput.removeEventListener('keydown', keypressListenerLevel3);
+            hiddenInput.removeEventListener('input', inputListenerLevel4); // Uklanjanje slušaoca za Nivo 4
+            hiddenInput.removeEventListener('keydown', keypressListenerLevel4); // Uklanjanje slušaoca za Nivo 4
             hiddenInput.addEventListener('input', inputListenerLevel1);
             hiddenInput.addEventListener('keydown', keypressListenerLevel1);
 
