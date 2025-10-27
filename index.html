@@ -248,7 +248,12 @@
                 max-width: 100%; 
                 margin-left: 0; 
                 margin-right: 0;
-                margin-top: 0; /* NOVO: Ovo uklanja 8px prostora i podiže polje za unos */
+                margin-top: 0; /* Ovo uklanja 8px prostora i podiže polje za unos na Nivo 1 */
+            }
+            
+            /* Ispravka za nivo 2/3 tekst margine na mobilnom*/
+            #level2-text {
+                margin: 20px 0 20px 0; /* Smanjujemo donju marginu za Level 2/3 */
             }
         }
     </style>
@@ -739,8 +744,6 @@
             // =================================================================
 
             function startLevel3() {
-                // ... (Logika za Level 3 - nepromenjena) ...
-                
                 // Uklanjanje slušaoca Nivoa 2
                 hiddenInput.removeEventListener('input', inputListenerLevel2);
                 hiddenInput.removeEventListener('keydown', keypressListenerLevel2);
@@ -751,6 +754,7 @@
                 currentInputRowEl.style.display = 'none';
                 level2TextDiv.innerHTML = ''; 
                 
+                // *** KRITIČNA KOREKCIJA ZA RAZMAK (Nivo 3): Uklanjamo min-height! ***
                 level2TextDiv.classList.remove('level-2-space'); 
                 
                 // Kuca tekst Nivoa 3
