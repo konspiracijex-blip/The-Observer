@@ -153,13 +153,13 @@
         #level2-text {
             white-space: pre-wrap;
             text-align: left;
-            /* FIKS: Smanjujemo donju marginu sa 40px na 10px za desktop, jer mobilni preuzima kontrolu */
+            /* FIKS: Smanjujemo donju marginu za desktop */
             margin: 20px auto 10px auto; 
             max-width: 80%; 
             line-height: 1.8;
         }
         
-        /* Postavlja min-height 400px SAMO za Nivo 2 (dugački tekst) */
+        /* Postavlja min-height SAMO za Nivo 2 (dugački tekst) */
         .level-2-space {
             min-height: 400px;
         }
@@ -242,16 +242,16 @@
             #feedback-fail { font-size: 0.9em; } 
             .access-denied-message { font-size: 1em; } 
             
-            /* KRITIČAN FIKS 1: Eliminisanje donje margine teksta zagonetke za mobilni (Nivo 3) */
+            /* KRITIČAN FIKS: Eliminisanje min-height i donje margine za mobilni */
             #level2-text { 
                 max-width: 100%; 
-                min-height: 300px; 
+                /* min-height: 300px; - OVO JE UZROKOVALO VELIKI RAZMAK, UKLONJENO! */
                 margin-left: 0; 
                 margin-right: 0; 
-                margin-bottom: 0 !important; /* Postavljamo na nulu, koristeći !important da nadjačamo stil unutar koda */
+                margin-bottom: 0 !important; 
             }
             
-            /* KRITIČAN FIKS 2: Eliminisanje gornje margine unosa za mobilni (Nivo 1) */
+            /* Eliminisanje gornje margine unosa za mobilni */
             .input-row { 
                 max-width: 100%; 
                 margin-left: 0; 
@@ -769,7 +769,7 @@
                     hiddenInput.disabled = false;
                     if (fakeCursor) fakeCursor.style.display = 'inline-block';
                     
-                    // V18 FIKS: SKROLOVANJE NA INPUT POLJE NAKON KUCAJNJA ZAGONETKE
+                    // SKROLOVANJE NA INPUT POLJE NAKON KUCAJNJA ZAGONETKE
                     const scrollTargetLevel3 = currentInputRowEl.offsetTop - (window.innerHeight / 3);
                     window.scrollTo(0, scrollTargetLevel3 > 0 ? scrollTargetLevel3 : 0);
                     
