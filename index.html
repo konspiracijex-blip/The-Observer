@@ -77,7 +77,7 @@
         }
 
 
-        /* V16 NOVO: Stil za poruku odbijanja pristupa */
+        /* Stil za poruku odbijanja pristupa */
         .access-denied-message {
             color: #00FF00;
             font-size: 1.2em; 
@@ -331,7 +331,6 @@
             // NIVO 4 KONSTANTE (Budućnost)
             const CORRECT_ANSWER_LEVEL_4 = ['BUDUCNOST', 'BUDUĆNOST']; 
             const LEVEL_4_RIDDLE_TEXT = "Šta je uvek pred tobom, ali nikad ne možeš da je vidiš?";
-            // Nema HINT KONSTANTI za Nivo 4
             
             // NOVE KONSTANTE ZA NIVO 5 (1776)
             const CORRECT_ANSWER_LEVEL_5 = ['1776']; 
@@ -349,6 +348,16 @@
                 'LEVEL 3 ACCESS: GRANTED',
                 'AWAITING RIDDLE ANSWER...'
             ];
+            
+            // NOVE PORUKE ZA MINI BOOT NIVO 4 
+            const LEVEL_4_TRANSITION_MESSAGES = [
+                'RIDDLE SOLVED: CAMERA MODULE ACTIVATED',
+                'DECRYPTING ORACLE PYLON 4...',
+                'ACCESSING HIDDEN REALITY DATA...',
+                'PREPARING USER FOR DEEPER INSIGHT...',
+                'LEVEL 4 TRANSITION INITIATED.'
+            ];
+
 
             // NOVE PORUKE ZA GAŠENJE SISTEMA (SHUTDOWN)
             const SHUTDOWN_MESSAGES = [
@@ -364,19 +373,22 @@
                 'SYSTEM OFFLINE.'
             ];
             
+            // =================================================================
+            // UKLONJENE SU SVE AUDIO FUNKCIJE I VARIJABLE
+            // =================================================================
 
             let currentInput = "";
             let attemptCount = 0;
             let typingTimer = null;
             let failTimer = null;
-            let hintUsedLevel1 = false; // Status hint-a za Nivo 1
-            let hintUsedLevel3 = false; // Status hint-a za Nivo 3
+            let hintUsedLevel1 = false; 
+            let hintUsedLevel3 = false; 
 
             let inputListenerLevel1, keypressListenerLevel1;
             let inputListenerLevel2, keypressListenerLevel2;
             let inputListenerLevel3, keypressListenerLevel3; 
             let inputListenerLevel4, keypressListenerLevel4; 
-            let inputListenerLevel5, keypressListenerLevel5; // NOVI listeneri za Nivo 5
+            let inputListenerLevel5, keypressListenerLevel5; 
 
             const bootMessages = [
                 'CHECKING CORE COMPONENTS...',
@@ -399,9 +411,6 @@
             // ZAJEDNIČKA FUNKCIJA ZA KUCANJE PORUKA SEKVENCI
             // =================================================================
             
-            /**
-             * Pokreće sekvencu kucanja poruka u zadatom kontejneru.
-             */
             function runSequence(targetDiv, messages, index, callback = null) {
                 if (index < messages.length) {
                     const line = document.createElement('p');
@@ -409,6 +418,8 @@
                     
                     targetDiv.style.display = 'block';
                     targetDiv.appendChild(line);
+                    
+                    // UKLONJEN ZVUK: Kucanje za svaku liniju sekvence
 
                     targetDiv.scrollTop = targetDiv.scrollHeight;
 
@@ -431,6 +442,8 @@
                 let i = 0;
                 function type() {
                     if (i < text.length) {
+                        // UKLONJEN ZVUK: Kucanje za sporu simulaciju
+                        
                         // Logika za prepoznavanje <br> i &nbsp;
                         if (text.charAt(i) === '<') {
                             const brIndex = text.indexOf('<br>', i);
@@ -462,12 +475,11 @@
                 type();
             }
 
-            /**
-             * Prikazuje poruku greške.
-             */
             function showFailMessage(text, { flash = true, duration = 1000, center = false } = {}) {
                 if (failTimer) { clearTimeout(failTimer); failTimer = null; }
                 if (!failDiv) return;
+                
+                // UKLONJEN ZVUK: Greška/Buzz
                 
                 failDiv.style.textAlign = center ? 'center' : 'left'; 
                 
@@ -476,7 +488,6 @@
                 failDiv.style.display = 'block';
                 failDiv.classList.toggle('fail-flash', flash);
                 
-                // Postavljanje boje: crvena ako blica, inače zelena
                 if (!flash) {
                     failDiv.style.color = '#00FF00'; 
                 } else {
@@ -501,10 +512,9 @@
                 }, duration);
             }
 
-            /**
-             * Prikazuje zelenu poruku za odbijen pristup i pokreće reset.
-             */
             function showAccessDeniedMessageAndReset() {
+                // UKLONJEN ZVUK: Greška pre isključenja
+                
                 // 1. Onemogućavanje unosa i čišćenje ekrana
                 hiddenInput.disabled = true;
                 if (fakeCursor) fakeCursor.style.display = 'none';
@@ -533,11 +543,12 @@
                     // Pozivanje postojeće resetSystem funkcije
                     resetSystem();
                     
-                }, 1500); // 1.5 sekundi za prikaz zelene poruke
+                }, 1500); 
             }
 
-            
             function accessGranted() {
+                // UKLONJEN ZVUK: Uspeh
+                
                 // Uklanja elemente Nivoa 1
                 currentInputRowEl.classList.add('hidden');
                 successDiv.classList.add('hidden');
@@ -548,6 +559,483 @@
                 // Prelazak na Level 2
                 setTimeout(startLevel2, 300);
             }
+            
+            // =================================================================
+            // NIVO 3-5 TRANCISIONE FUNKCIJE BEZ ZVUKA
+            // =================================================================
+
+            function level3SuccessTransitionToLevel4() {
+                // UKLONJEN ZVUK: Uspeh
+                
+                // 1. Onemogućavanje unosa
+                hiddenInput.disabled = true;
+                if (fakeCursor) fakeCursor.style.display = 'none';
+                hiddenInput.removeEventListener('input', inputListenerLevel3);
+                hiddenInput.removeEventListener('keydown', keypressListenerLevel3);
+                
+                // ... (ostatak funkcije nepromenjen)
+                gameContentDiv.classList.add('hidden'); 
+                level2TextDiv.innerHTML = '';
+                currentInputRowEl.style.display = 'none';
+                terminalContainer.style.display = 'none'; 
+                
+                window.scrollTo(0, 0); 
+                
+                const successMsgDiv = document.createElement('div');
+                successMsgDiv.id = 'success-message-full';
+                successMsgDiv.textContent = 'TAČNO!';
+                successMsgDiv.className = 'success-message'; 
+                successMsgDiv.style.position = 'fixed';
+                successMsgDiv.style.width = '100%';
+                successMsgDiv.style.height = '100%';
+                successMsgDiv.style.backgroundColor = 'black'; 
+                
+                document.body.appendChild(successMsgDiv);
+
+                setTimeout(() => {
+                    document.body.removeChild(successMsgDiv);
+                    
+                    const oldTerminalContainer = terminalContainer;
+                    const oldHiddenInput = hiddenInput;
+                    document.body.innerHTML = ''; 
+                    document.body.appendChild(oldTerminalContainer);
+                    document.body.appendChild(oldHiddenInput); 
+                    oldTerminalContainer.style.display = 'block';
+                    
+                    // MINI BOOT SEKVENCA ZA NIVO 4
+                    bootSequenceDiv.style.display = 'block';
+                    bootSequenceDiv.innerHTML = ''; 
+                    
+                    systemInfo.textContent = 'PRISTUP ODOBREN / NIVO PRISTUPA A4';
+                    gameContentDiv.classList.add('hidden'); // Sakrij glavni content
+                    
+                    runSequence(bootSequenceDiv, LEVEL_4_TRANSITION_MESSAGES, 0, () => {
+                        bootSequenceDiv.style.display = 'none';
+                        bootSequenceDiv.innerHTML = '';
+                        startLevel4(); // Pokreće stvarni Nivo 4
+                    });
+                    
+                }, 1000); 
+            }
+            
+            function level4SuccessTransitionToLevel5() {
+                // UKLONJEN ZVUK: Uspeh
+                
+                // 1. Onemogućavanje unosa
+                hiddenInput.disabled = true;
+                if (fakeCursor) fakeCursor.style.display = 'none';
+                hiddenInput.removeEventListener('input', inputListenerLevel4);
+                hiddenInput.removeEventListener('keydown', keypressListenerLevel4);
+                
+                // 2. PRVO ČIŠĆENJE EKRANA (Brzo)
+                gameContentDiv.classList.add('hidden'); 
+                level2TextDiv.innerHTML = '';
+                currentInputRowEl.style.display = 'none';
+                terminalContainer.style.display = 'none'; 
+                
+                window.scrollTo(0, 0); 
+                
+                // 3. Prikaz "TAČNO!" poruke na celom ekranu (BLINKA!)
+                const successMsgDiv = document.createElement('div');
+                successMsgDiv.id = 'success-message-full';
+                successMsgDiv.textContent = 'TAČNO!';
+                successMsgDiv.className = 'success-message'; 
+                successMsgDiv.style.position = 'fixed';
+                successMsgDiv.style.width = '100%';
+                successMsgDiv.style.height = '100%';
+                successMsgDiv.style.backgroundColor = 'black'; 
+                
+                document.body.appendChild(successMsgDiv);
+
+                // 4. Pauza, pa uklanjanje poruke i PRELAZAK NA NIVO 5
+                setTimeout(() => {
+                    document.body.removeChild(successMsgDiv);
+                    
+                    // Vraćanje osnovne strukture
+                    const oldTerminalContainer = terminalContainer;
+                    const oldHiddenInput = hiddenInput;
+                    document.body.innerHTML = ''; 
+                    document.body.appendChild(oldTerminalContainer);
+                    document.body.appendChild(oldHiddenInput); 
+                    oldTerminalContainer.style.display = 'block';
+                    
+                    // Nastavak na Level 5
+                    startLevel5();
+                    
+                }, 1000); 
+            }
+
+            // =================================================================
+            // NIVO 4 LOGIKA (Puna implementacija)
+            // =================================================================
+            
+            function startLevel4() {
+                // Uklanjanje slušaoca Nivoa 3
+                hiddenInput.removeEventListener('input', inputListenerLevel3);
+                hiddenInput.removeEventListener('keydown', keypressListenerLevel3);
+                
+                gameContentDiv.classList.remove('hidden');
+                
+                successDiv.classList.add('hidden');
+                successDiv.innerHTML = '';
+                currentInputRowEl.style.display = 'none';
+                level2TextDiv.innerHTML = ''; 
+                
+                level2TextDiv.classList.remove('level-2-space'); 
+                
+                // Kuca tekst Nivoa 4
+                typeText(level2TextDiv, LEVEL_4_RIDDLE_TEXT, 50, () => {
+                    
+                    // Priprema input za Nivo 4
+                    currentInput = '';
+                    displayDiv.textContent = '';
+                    hiddenInput.value = '';
+                    inputPromptText.textContent = 'ODGOVOR:'; 
+                    currentInputRowEl.style.display = 'flex';
+                    
+                    // Omogućava unos
+                    hiddenInput.disabled = false;
+                    if (fakeCursor) fakeCursor.style.display = 'inline-block';
+                    
+                    const scrollTargetLevel4 = currentInputRowEl.offsetTop - (window.innerHeight / 3);
+                    window.scrollTo(0, scrollTargetLevel4 > 0 ? scrollTargetLevel4 : 0);
+                    
+                    hiddenInput.focus({ preventScroll: true }); 
+
+                    // Dodavanje slušaoca Nivoa 4
+                    hiddenInput.addEventListener('input', inputListenerLevel4);
+                    hiddenInput.addEventListener('keydown', keypressListenerLevel4);
+                });
+            }
+            
+            // =================================================================
+            // NIVO 5 LOGIKA (Bez Zvuka)
+            // =================================================================
+            
+            function startLevel5() {
+                // Uklanjanje slušaoca Nivoa 4
+                hiddenInput.removeEventListener('input', inputListenerLevel4);
+                hiddenInput.removeEventListener('keydown', keypressListenerLevel4);
+                
+                // Ažuriranje podnaslova sistema
+                systemInfo.textContent = 'PRISTUP ODOBREN / NIVO PRISTUPA A5';
+                
+                gameContentDiv.classList.remove('hidden');
+                
+                successDiv.classList.add('hidden');
+                successDiv.innerHTML = '';
+                currentInputRowEl.style.display = 'none';
+                level2TextDiv.innerHTML = ''; 
+                
+                level2TextDiv.classList.remove('level-2-space'); 
+                
+                // Kuca tekst Nivoa 5
+                typeText(level2TextDiv, LEVEL_5_RIDDLE_TEXT + "<br><br>Pronađi, pročitaj pažljivo i otkrij.", 50, () => {
+                    
+                    // Priprema input za Nivo 5
+                    currentInput = '';
+                    displayDiv.textContent = '';
+                    hiddenInput.value = '';
+                    inputPromptText.textContent = 'ODGOVOR:'; 
+                    currentInputRowEl.style.display = 'flex';
+                    
+                    // Omogućava unos
+                    hiddenInput.disabled = false;
+                    if (fakeCursor) fakeCursor.style.display = 'inline-block';
+                    
+                    const scrollTargetLevel5 = currentInputRowEl.offsetTop - (window.innerHeight / 3);
+                    window.scrollTo(0, scrollTargetLevel5 > 0 ? scrollTargetLevel5 : 0);
+                    
+                    hiddenInput.focus({ preventScroll: true }); 
+
+                    // Dodavanje slušaoca Nivoa 5
+                    hiddenInput.addEventListener('input', inputListenerLevel5);
+                    hiddenInput.addEventListener('keydown', keypressListenerLevel5);
+                });
+            }
+            
+            // =================================================================
+            // IMPLEMENTACIJA LISTENERA ZA SVE NIVOE (BEZ ZVUKA)
+            // =================================================================
+
+            inputListenerLevel1 = (e) => {
+                const newInputValue = e.target.value;
+                currentInput = newInputValue.toUpperCase();
+                displayDiv.textContent = currentInput;
+                // UKLONJEN ZVUK
+            };
+            
+            keypressListenerLevel1 = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    
+                    if (failTimer) { clearTimeout(failTimer); failTimer = null; }
+                    if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; }
+                    if (failDiv) {
+                        failDiv.classList.add('hidden');
+                        failDiv.style.display = 'none';
+                        failDiv.innerHTML = '';
+                        failDiv.style.textAlign = 'center'; 
+                        failDiv.style.color = '#00FF00'; 
+                    }
+
+                    const userAnswer = currentInput.trim().toUpperCase();
+
+                    if (CORRECT_ANSWERS.includes(userAnswer)) {
+                        
+                        hiddenInput.disabled = true;
+                        if (fakeCursor) fakeCursor.style.display = 'none';
+
+                        hiddenInput.removeEventListener('input', inputListenerLevel1);
+                        hiddenInput.removeEventListener('keydown', keypressListenerLevel1);
+
+                        terminalContainer.classList.add('flash-red');
+
+                        setTimeout(() => {
+                            terminalContainer.classList.remove('flash-red');
+                            accessGranted(); 
+                        }, 300);
+
+                    } 
+                    else if (HINT_TRIGGERS.includes(userAnswer) && !hintUsedLevel1) {
+                        
+                        // UKLONJEN ZVUK Kucanja HINT-a
+                        
+                        hintUsedLevel1 = true; 
+                        failDiv.style.textAlign = 'left'; 
+                        typeText(failDiv, HINT_TEXT, 50);
+                        failDiv.style.color = '#00FF00'; 
+                        hiddenInput.disabled = true;
+                        if (fakeCursor) fakeCursor.style.display = 'none';
+
+                        setTimeout(() => {
+                            if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; }
+                            if (failDiv) {
+                                failDiv.classList.add('hidden');
+                                failDiv.style.display = 'none';
+                                failDiv.innerHTML = '';
+                            }
+                            failDiv.style.textAlign = 'center'; 
+                            hiddenInput.disabled = false;
+                            if (fakeCursor) fakeCursor.style.display = 'inline-block';
+                            currentInput = '';
+                            displayDiv.textContent = '';
+                            hiddenInput.value = '';
+                            hiddenInput.focus();
+                        }, 7150); 
+
+                    } 
+                    else {
+                        // NEUSPEH
+                        
+                        attemptCount++;
+                        failDiv.style.textAlign = 'center'; 
+
+                        if (attemptCount >= MAX_ATTEMPTS) {
+                            hiddenInput.disabled = true;
+                            if (fakeCursor) fakeCursor.style.display = 'none';
+                            if (failDiv) {
+                                failDiv.classList.add('hidden');
+                                failDiv.innerHTML = '';
+                            }
+                            showAccessDeniedMessageAndReset();
+                        } else {
+                            let failMessage = "PRISTUP&nbsp;ODBIJEN!<br>Pokusajte&nbsp;ponovo.";
+                            if (hintUsedLevel1 && HINT_TRIGGERS.includes(userAnswer)) {
+                                failMessage = "POMOĆ&nbsp;JE&nbsp;VEĆ&nbsp;DATA!";
+                            } 
+                            showFailMessage(failMessage, { flash: false, duration: 1500, center: true });
+                            currentInput = '';
+                            displayDiv.textContent = '';
+                            hiddenInput.value = '';
+                            hiddenInput.focus();
+                        }
+                    }
+                }
+            };
+
+            inputListenerLevel2 = (e) => {
+                const newInputValue = e.target.value;
+                currentInput = newInputValue.toUpperCase();
+                if (currentInput.length > 2) {
+                    currentInput = currentInput.substring(0, 2);
+                    e.target.value = currentInput;
+                }
+                displayDiv.textContent = currentInput;
+                // UKLONJEN ZVUK
+            };
+            
+            keypressListenerLevel2 = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+
+                    const userAnswer = currentInput.trim().toUpperCase();
+                    
+                    if (userAnswer === 'DA') {
+                        // PRELAZAK NA NIVO 3
+                        // UKLONJEN ZVUK
+                        hiddenInput.disabled = true;
+                        if (fakeCursor) fakeCursor.style.display = 'none';
+                        currentInput = '';
+                        displayDiv.textContent = '';
+                        hiddenInput.value = '';
+                        successDiv.classList.add('hidden');
+                        successDiv.innerHTML = '';
+                        loadLevel3WithBootSequence();
+                        
+                    } else if (userAnswer === 'NE') {
+                        // GAŠENJE
+                        // UKLONJEN ZVUK
+                        showFailMessage("ODGOVOR PRIHVAĆEN. STATUS: OFFLINE.", { flash: false, duration: 500, center: false });
+                        hiddenInput.disabled = true;
+                        if (fakeCursor) fakeCursor.style.display = 'none';
+                        setTimeout(startShutdownSequence, 600); 
+                    } else {
+                        // NEVAŽEĆI UNOS
+                        // UKLONJEN ZVUK
+                        showFailMessage("NEVAŽEĆI UNOS!<br>Molimo&nbsp;unesite&nbsp;DA&nbsp;ili&nbsp;NE.", { flash: true, duration: 1500, center: false });
+                        currentInput = '';
+                        displayDiv.textContent = '';
+                        hiddenInput.value = '';
+                        hiddenInput.focus();
+                    }
+                }
+            };
+            
+            inputListenerLevel3 = (e) => {
+                const newInputValue = e.target.value;
+                currentInput = newInputValue.toUpperCase();
+                displayDiv.textContent = currentInput;
+                // UKLONJEN ZVUK
+            };
+
+            keypressListenerLevel3 = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+
+                    const userAnswer = currentInput.trim().toUpperCase();
+                    
+                    if (CORRECT_ANSWER_LEVEL_3.includes(userAnswer)) {
+                        level3SuccessTransitionToLevel4();
+                    } 
+                    else if (HINT_TRIGGERS_LEVEL_3.includes(userAnswer) && !hintUsedLevel3) {
+                        
+                        // UKLONJEN ZVUK
+                        
+                        hintUsedLevel3 = true; 
+                        typeText(failDiv, HINT_TEXT_LEVEL_3, 50);
+                        failDiv.style.color = '#00FF00'; 
+                        hiddenInput.disabled = true;
+                        if (fakeCursor) fakeCursor.style.display = 'none';
+
+                        setTimeout(() => {
+                            if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; }
+                            if (failDiv) {
+                                failDiv.classList.add('hidden');
+                                failDiv.style.display = 'none';
+                                failDiv.innerHTML = '';
+                            }
+                            hiddenInput.disabled = false;
+                            if (fakeCursor) fakeCursor.style.display = 'inline-block';
+                            currentInput = '';
+                            displayDiv.textContent = '';
+                            hiddenInput.value = '';
+                            hiddenInput.focus();
+                        }, 7150); 
+
+                    }
+                    else {
+                        
+                        let failMessage = "ODGOVOR POGREŠAN.<br>Pokušajte ponovo.";
+
+                         if (hintUsedLevel3 && HINT_TRIGGERS_LEVEL_3.includes(userAnswer)) {
+                            failMessage = "POMOĆ&nbsp;JE&nbsp;VEĆ&nbsp;DATA!";
+                        } 
+                        showFailMessage(failMessage, { flash: false, duration: 1500, center: false }); 
+                        currentInput = '';
+                        displayDiv.textContent = '';
+                        hiddenInput.value = '';
+                        hiddenInput.focus();
+                    }
+                }
+            };
+            
+            inputListenerLevel4 = (e) => {
+                const newInputValue = e.target.value;
+                currentInput = newInputValue.toUpperCase();
+                displayDiv.textContent = currentInput;
+                // UKLONJEN ZVUK
+            };
+
+            keypressListenerLevel4 = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+
+                    const userAnswer = currentInput.trim().toUpperCase();
+                    
+                    if (CORRECT_ANSWER_LEVEL_4.includes(userAnswer)) {
+                        level4SuccessTransitionToLevel5();
+
+                    } else {
+                        
+                        let failMessage = "ODGOVOR POGREŠAN.<br>Pokušajte ponovo.";
+                        showFailMessage(failMessage, { flash: false, duration: 1500, center: false }); 
+                        currentInput = '';
+                        displayDiv.textContent = '';
+                        hiddenInput.value = '';
+                        hiddenInput.focus();
+                    }
+                }
+            };
+            
+            inputListenerLevel5 = (e) => {
+                const newInputValue = e.target.value;
+                currentInput = newInputValue.toUpperCase();
+                displayDiv.textContent = currentInput;
+                // UKLONJEN ZVUK
+            };
+
+            keypressListenerLevel5 = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    
+                    const userAnswer = currentInput.trim().toUpperCase();
+                    
+                    if (CORRECT_ANSWER_LEVEL_5.includes(userAnswer)) {
+                        // USPEH: PRELAZAK NA NIVO 6 (Placeholder)
+                        
+                        // UKLONJEN ZVUK
+                        
+                        hiddenInput.disabled = true;
+                        if (fakeCursor) fakeCursor.style.display = 'none';
+                        
+                        showFailMessage("TAČNO. STIGLI STE DO KRAJA TRENUTNE SIMULACIJE. AŽURIRANJE ZA NIVO 6 USKORO.", { flash: false, duration: 2500, center: true }); 
+                        
+                        hiddenInput.removeEventListener('input', inputListenerLevel5);
+                        hiddenInput.removeEventListener('keydown', keypressListenerLevel5);
+                        
+                        setTimeout(() => {
+                            currentInputRowEl.style.display = 'none';
+                            level2TextDiv.innerHTML = '<br><br>ČESTITAMO! STIGLI STE DO KRAJA TRENUTNE SIMULACIJE. <br>HVALA NA UČESTVOVANJU!';
+                        }, 2600);
+
+
+                    } else {
+                        // NEUSPEH
+                        
+                        let failMessage = "ODGOVOR POGREŠAN.<br>Pokušajte ponovo.";
+                        showFailMessage(failMessage, { flash: false, duration: 1500, center: false }); 
+                        currentInput = '';
+                        displayDiv.textContent = '';
+                        hiddenInput.value = '';
+                        hiddenInput.focus();
+                    }
+                }
+            };
+
+            // =================================================================
+            // FUNKCIJE NIVO LOGIKE I TRANCICIJE
+            // =================================================================
             
             function startLevel2() {
                 // Skrivanje elemenata Nivoa 1
@@ -565,11 +1053,9 @@
                 // Priprema za kucanje teksta Nivoa 2
                 level2TextDiv.innerHTML = '';
                 level2TextDiv.classList.remove('hidden');
-                
-                // Dodaje klasu za min-height 400px
                 level2TextDiv.classList.add('level-2-space'); 
                 
-                currentInputRowEl.style.display = 'none'; // Sakrivanje input reda dok traje kucanje
+                currentInputRowEl.style.display = 'none'; 
 
                 // Kuca tekst Nivoa 2
                 typeText(level2TextDiv, LEVEL_2_TEXT, 20, () => {
@@ -592,7 +1078,6 @@
                     hiddenInput.disabled = false;
                     if (fakeCursor) fakeCursor.style.display = 'inline-block';
                     
-                    // Skrolujemo tako da input bude vidljiv
                     const scrollTargetLevel2 = currentInputRowEl.offsetTop - (window.innerHeight / 3);
                     window.scrollTo(0, scrollTargetLevel2 > 0 ? scrollTargetLevel2 : 0);
                     
@@ -682,9 +1167,43 @@
                 }, 1000); 
             }
             
-            // =================================================================
+            function startLevel3() {
+                // Uklanjanje slušaoca Nivoa 2
+                hiddenInput.removeEventListener('input', inputListenerLevel2);
+                hiddenInput.removeEventListener('keydown', keypressListenerLevel2);
+                
+                successDiv.classList.add('hidden');
+                successDiv.innerHTML = '';
+                currentInputRowEl.style.display = 'none';
+                level2TextDiv.innerHTML = ''; 
+                
+                level2TextDiv.classList.remove('level-2-space'); 
+                
+                // Kuca tekst Nivoa 3
+                typeText(level2TextDiv, LEVEL_3_RIDDLE_TEXT, 50, () => {
+                    
+                    // Priprema input za Nivo 3
+                    currentInput = '';
+                    displayDiv.textContent = '';
+                    hiddenInput.value = '';
+                    inputPromptText.textContent = 'ODGOVOR:'; 
+                    currentInputRowEl.style.display = 'flex';
+                    
+                    // Omogućava unos
+                    hiddenInput.disabled = false;
+                    if (fakeCursor) fakeCursor.style.display = 'inline-block';
+                    
+                    window.scrollTo(0, 0); 
+                    
+                    hiddenInput.focus({ preventScroll: true }); 
+
+                    // Dodavanje slušaoca Nivoa 3
+                    hiddenInput.addEventListener('input', inputListenerLevel3);
+                    hiddenInput.addEventListener('keydown', keypressListenerLevel3);
+                });
+            }
+
             // SEKVENCA GAŠENJA SISTEMA
-            // =================================================================
             function startShutdownSequence() {
                 // 1. Onemogućavanje unosa
                 hiddenInput.disabled = true;
@@ -717,6 +1236,9 @@
                 setTimeout(() => {
                     // 3a. Uklanjanje poruke i POTPUNO BRISANJE EKRANA 
                     document.body.removeChild(shutdownTextDiv);
+                    
+                    // UKLONJEN ZVUK: Greška pre isključenja
+                    
                     document.body.innerHTML = ''; 
                     
                     // 3b. Postavljanje body stila za prikaz sekvence
@@ -742,587 +1264,6 @@
                     });
                 }, 1500); 
             }
-
-
-            // =================================================================
-            // NIVO 3 LOGIKA
-            // =================================================================
-
-            function startLevel3() {
-                // Uklanjanje slušaoca Nivoa 2
-                hiddenInput.removeEventListener('input', inputListenerLevel2);
-                hiddenInput.removeEventListener('keydown', keypressListenerLevel2);
-                
-                // Čišćenje samo dinamičkog sadržaja i poruka
-                successDiv.classList.add('hidden');
-                successDiv.innerHTML = '';
-                currentInputRowEl.style.display = 'none';
-                level2TextDiv.innerHTML = ''; 
-                
-                level2TextDiv.classList.remove('level-2-space'); 
-                
-                // Kuca tekst Nivoa 3
-                typeText(level2TextDiv, LEVEL_3_RIDDLE_TEXT, 50, () => {
-                    
-                    // Priprema input za Nivo 3
-                    currentInput = '';
-                    displayDiv.textContent = '';
-                    hiddenInput.value = '';
-                    inputPromptText.textContent = 'ODGOVOR:'; 
-                    currentInputRowEl.style.display = 'flex';
-                    
-                    // Omogućava unos
-                    hiddenInput.disabled = false;
-                    if (fakeCursor) fakeCursor.style.display = 'inline-block';
-                    
-                    // SKROLOVANJE NA INPUT POLJE NAKON KUCAJNJA ZAGONETKE
-                    const scrollTargetLevel3 = currentInputRowEl.offsetTop - (window.innerHeight / 3);
-                    window.scrollTo(0, scrollTargetLevel3 > 0 ? scrollTargetLevel3 : 0);
-                    
-                    hiddenInput.focus({ preventScroll: true }); 
-
-                    // Dodavanje slušaoca Nivoa 3
-                    hiddenInput.addEventListener('input', inputListenerLevel3);
-                    hiddenInput.addEventListener('keydown', keypressListenerLevel3);
-                });
-            }
-
-            function level3SuccessTransitionToLevel4() {
-                // 1. Onemogućavanje unosa
-                hiddenInput.disabled = true;
-                if (fakeCursor) fakeCursor.style.display = 'none';
-                hiddenInput.removeEventListener('input', inputListenerLevel3);
-                hiddenInput.removeEventListener('keydown', keypressListenerLevel3);
-                
-                // 2. PRVO ČIŠĆENJE EKRANA (Brzo)
-                gameContentDiv.classList.add('hidden'); 
-                level2TextDiv.innerHTML = '';
-                currentInputRowEl.style.display = 'none';
-                terminalContainer.style.display = 'none'; 
-                
-                window.scrollTo(0, 0); 
-                
-                // 3. Prikaz "TAČNO!" poruke na celom ekranu (BLINKA!)
-                const successMsgDiv = document.createElement('div');
-                successMsgDiv.id = 'success-message-full';
-                successMsgDiv.textContent = 'TAČNO!';
-                successMsgDiv.className = 'success-message'; 
-                successMsgDiv.style.position = 'fixed';
-                successMsgDiv.style.width = '100%';
-                successMsgDiv.style.height = '100%';
-                successMsgDiv.style.backgroundColor = 'black'; 
-                
-                document.body.appendChild(successMsgDiv);
-
-                // 4. Pauza, pa uklanjanje poruke i PRELAZAK NA NIVO 4
-                setTimeout(() => {
-                    document.body.removeChild(successMsgDiv);
-                    
-                    // Vraćanje osnovne strukture
-                    const oldTerminalContainer = terminalContainer;
-                    const oldHiddenInput = hiddenInput;
-                    document.body.innerHTML = ''; 
-                    document.body.appendChild(oldTerminalContainer);
-                    document.body.appendChild(oldHiddenInput); 
-                    oldTerminalContainer.style.display = 'block';
-                    
-                    // Nastavak na Level 4
-                    startLevel4();
-                    
-                }, 1000); 
-            }
-            
-            inputListenerLevel3 = (e) => {
-                const newInputValue = e.target.value;
-                currentInput = newInputValue.toUpperCase();
-                displayDiv.textContent = currentInput;
-            };
-
-            keypressListenerLevel3 = (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-
-                    // Čišćenje feedback-a 
-                    if (failTimer) { clearTimeout(failTimer); failTimer = null; }
-                    if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; }
-                    if (failDiv) {
-                        failDiv.classList.add('hidden');
-                        failDiv.style.display = 'none';
-                        failDiv.innerHTML = '';
-                        failDiv.style.textAlign = 'left'; 
-                        failDiv.style.color = '#00FF00'; 
-                    }
-
-                    const userAnswer = currentInput.trim().toUpperCase();
-                    
-                    if (CORRECT_ANSWER_LEVEL_3.includes(userAnswer)) {
-                        // USPEH: PRELAZAK NA NIVO 4
-                        level3SuccessTransitionToLevel4();
-                    } 
-                    // Hint za Nivo 3
-                    else if (HINT_TRIGGERS_LEVEL_3.includes(userAnswer) && !hintUsedLevel3) {
-                        
-                        hintUsedLevel3 = true; 
-                        
-                        typeText(failDiv, HINT_TEXT_LEVEL_3, 50);
-                        
-                        failDiv.style.color = '#00FF00'; 
-                        
-                        hiddenInput.disabled = true;
-                        if (fakeCursor) fakeCursor.style.display = 'none';
-
-                        // Vreme trajanja hint poruke
-                        setTimeout(() => {
-                            if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; }
-
-                            if (failDiv) {
-                                failDiv.classList.add('hidden');
-                                failDiv.style.display = 'none';
-                                failDiv.innerHTML = '';
-                            }
-                            
-                            // Resetovanje unosa i omogućavanje inputa
-                            hiddenInput.disabled = false;
-                            if (fakeCursor) fakeCursor.style.display = 'inline-block';
-
-                            currentInput = '';
-                            displayDiv.textContent = '';
-                            hiddenInput.value = '';
-                            hiddenInput.focus();
-                        }, 7150); 
-
-                    }
-                    else {
-                        // NEUSPEH ILI PONOVNA TRAŽNJA HINTA
-                        let failMessage = "ODGOVOR POGREŠAN.<br>Pokušajte ponovo.";
-
-                         if (hintUsedLevel3 && HINT_TRIGGERS_LEVEL_3.includes(userAnswer)) {
-                            failMessage = "POMOĆ&nbsp;JE&nbsp;VEĆ&nbsp;DATA!";
-                        } 
-                        
-                        showFailMessage(failMessage, { flash: false, duration: 1500, center: false }); 
-                        currentInput = '';
-                        displayDiv.textContent = '';
-                        hiddenInput.value = '';
-                        hiddenInput.focus();
-                    }
-                }
-            };
-
-            // =================================================================
-            // NIVO 4 LOGIKA 
-            // =================================================================
-            
-            function startLevel4() {
-                // Uklanjanje slušaoca Nivoa 3
-                hiddenInput.removeEventListener('input', inputListenerLevel3);
-                hiddenInput.removeEventListener('keydown', keypressListenerLevel3);
-                
-                // Ažuriranje podnaslova sistema
-                systemInfo.textContent = 'PRISTUP ODOBREN / NIVO PRISTUPA A4';
-                
-                // Re-aktivacija naslova i podnaslova
-                gameContentDiv.classList.remove('hidden');
-                
-                // Čišćenje samo dinamičkog sadržaja i poruka
-                successDiv.classList.add('hidden');
-                successDiv.innerHTML = '';
-                currentInputRowEl.style.display = 'none';
-                level2TextDiv.innerHTML = ''; 
-                
-                // Uklanjanje klase za veliki min-height (Nivo 2)
-                level2TextDiv.classList.remove('level-2-space'); 
-                
-                // Kuca tekst Nivoa 4
-                typeText(level2TextDiv, LEVEL_4_RIDDLE_TEXT, 50, () => {
-                    
-                    // Priprema input za Nivo 4
-                    currentInput = '';
-                    displayDiv.textContent = '';
-                    hiddenInput.value = '';
-                    inputPromptText.textContent = 'ODGOVOR:'; 
-                    currentInputRowEl.style.display = 'flex';
-                    
-                    // Omogućava unos
-                    hiddenInput.disabled = false;
-                    if (fakeCursor) fakeCursor.style.display = 'inline-block';
-                    
-                    // SKROLOVANJE NA INPUT POLJE NAKON KUCAJNJA ZAGONETKE
-                    const scrollTargetLevel4 = currentInputRowEl.offsetTop - (window.innerHeight / 3);
-                    window.scrollTo(0, scrollTargetLevel4 > 0 ? scrollTargetLevel4 : 0);
-                    
-                    hiddenInput.focus({ preventScroll: true }); 
-
-                    // Dodavanje slušaoca Nivoa 4
-                    hiddenInput.addEventListener('input', inputListenerLevel4);
-                    hiddenInput.addEventListener('keydown', keypressListenerLevel4);
-                });
-            }
-            
-            function level4SuccessTransitionToLevel5() {
-                // 1. Onemogućavanje unosa
-                hiddenInput.disabled = true;
-                if (fakeCursor) fakeCursor.style.display = 'none';
-                hiddenInput.removeEventListener('input', inputListenerLevel4);
-                hiddenInput.removeEventListener('keydown', keypressListenerLevel4);
-                
-                // 2. PRVO ČIŠĆENJE EKRANA (Brzo)
-                gameContentDiv.classList.add('hidden'); 
-                level2TextDiv.innerHTML = '';
-                currentInputRowEl.style.display = 'none';
-                terminalContainer.style.display = 'none'; 
-                
-                window.scrollTo(0, 0); 
-                
-                // 3. Prikaz "TAČNO!" poruke na celom ekranu (BLINKA!)
-                const successMsgDiv = document.createElement('div');
-                successMsgDiv.id = 'success-message-full';
-                successMsgDiv.textContent = 'TAČNO!';
-                successMsgDiv.className = 'success-message'; 
-                successMsgDiv.style.position = 'fixed';
-                successMsgDiv.style.width = '100%';
-                successMsgDiv.style.height = '100%';
-                successMsgDiv.style.backgroundColor = 'black'; 
-                
-                document.body.appendChild(successMsgDiv);
-
-                // 4. Pauza, pa uklanjanje poruke i PRELAZAK NA NIVO 5
-                setTimeout(() => {
-                    document.body.removeChild(successMsgDiv);
-                    
-                    // Vraćanje osnovne strukture
-                    const oldTerminalContainer = terminalContainer;
-                    const oldHiddenInput = hiddenInput;
-                    document.body.innerHTML = ''; 
-                    document.body.appendChild(oldTerminalContainer);
-                    document.body.appendChild(oldHiddenInput); 
-                    oldTerminalContainer.style.display = 'block';
-                    
-                    // Nastavak na Level 5
-                    startLevel5();
-                    
-                }, 1000); 
-            }
-            
-            inputListenerLevel4 = (e) => {
-                const newInputValue = e.target.value;
-                currentInput = newInputValue.toUpperCase();
-                displayDiv.textContent = currentInput;
-            };
-
-            keypressListenerLevel4 = (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-
-                    // Čišćenje feedback-a 
-                    if (failTimer) { clearTimeout(failTimer); failTimer = null; }
-                    if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; }
-                    if (failDiv) {
-                        failDiv.classList.add('hidden');
-                        failDiv.style.display = 'none';
-                        failDiv.innerHTML = '';
-                        failDiv.style.textAlign = 'left'; 
-                        failDiv.style.color = '#00FF00'; 
-                    }
-
-                    const userAnswer = currentInput.trim().toUpperCase();
-                    
-                    if (CORRECT_ANSWER_LEVEL_4.includes(userAnswer)) {
-                        // USPEH: PRELAZAK NA NIVO 5
-                        level4SuccessTransitionToLevel5();
-
-                    } else {
-                        // NEUSPEH (Nema Hinta za Nivo 4)
-                        let failMessage = "ODGOVOR POGREŠAN.<br>Pokušajte ponovo.";
-                        
-                        showFailMessage(failMessage, { flash: false, duration: 1500, center: false }); 
-                        currentInput = '';
-                        displayDiv.textContent = '';
-                        hiddenInput.value = '';
-                        hiddenInput.focus();
-                    }
-                }
-            };
-            
-            // =================================================================
-            // NIVO 5 LOGIKA (NOVO)
-            // =================================================================
-            
-            function startLevel5() {
-                // Uklanjanje slušaoca Nivoa 4
-                hiddenInput.removeEventListener('input', inputListenerLevel4);
-                hiddenInput.removeEventListener('keydown', keypressListenerLevel4);
-                
-                // Ažuriranje podnaslova sistema
-                systemInfo.textContent = 'PRISTUP ODOBREN / NIVO PRISTUPA A5';
-                
-                // Re-aktivacija naslova i podnaslova
-                gameContentDiv.classList.remove('hidden');
-                
-                // Čišćenje samo dinamičkog sadržaja i poruka
-                successDiv.classList.add('hidden');
-                successDiv.innerHTML = '';
-                currentInputRowEl.style.display = 'none';
-                level2TextDiv.innerHTML = ''; 
-                
-                // Uklanjanje klase za veliki min-height (Nivo 2)
-                level2TextDiv.classList.remove('level-2-space'); 
-                
-                // Kuca tekst Nivoa 5
-                typeText(level2TextDiv, LEVEL_5_RIDDLE_TEXT + "<br><br>Pronađi, pročitaj pažljivo i otkrij.", 50, () => {
-                    
-                    // Priprema input za Nivo 5
-                    currentInput = '';
-                    displayDiv.textContent = '';
-                    hiddenInput.value = '';
-                    inputPromptText.textContent = 'ODGOVOR:'; 
-                    currentInputRowEl.style.display = 'flex';
-                    
-                    // Omogućava unos
-                    hiddenInput.disabled = false;
-                    if (fakeCursor) fakeCursor.style.display = 'inline-block';
-                    
-                    // SKROLOVANJE NA INPUT POLJE NAKON KUCAJNJA ZAGONETKE
-                    const scrollTargetLevel5 = currentInputRowEl.offsetTop - (window.innerHeight / 3);
-                    window.scrollTo(0, scrollTargetLevel5 > 0 ? scrollTargetLevel5 : 0);
-                    
-                    hiddenInput.focus({ preventScroll: true }); 
-
-                    // Dodavanje slušaoca Nivoa 5
-                    hiddenInput.addEventListener('input', inputListenerLevel5);
-                    hiddenInput.addEventListener('keydown', keypressListenerLevel5);
-                });
-            }
-            
-            inputListenerLevel5 = (e) => {
-                const newInputValue = e.target.value;
-                currentInput = newInputValue.toUpperCase();
-                displayDiv.textContent = currentInput;
-            };
-
-            keypressListenerLevel5 = (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-
-                    // Čišćenje feedback-a 
-                    if (failTimer) { clearTimeout(failTimer); failTimer = null; }
-                    if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; }
-                    if (failDiv) {
-                        failDiv.classList.add('hidden');
-                        failDiv.style.display = 'none';
-                        failDiv.innerHTML = '';
-                        failDiv.style.textAlign = 'left'; 
-                        failDiv.style.color = '#00FF00'; 
-                    }
-
-                    const userAnswer = currentInput.trim().toUpperCase();
-                    
-                    if (CORRECT_ANSWER_LEVEL_5.includes(userAnswer)) {
-                        // USPEH: PRELAZAK NA NIVO 6 (Placeholder)
-                        
-                        hiddenInput.disabled = true;
-                        if (fakeCursor) fakeCursor.style.display = 'none';
-                        
-                        // Privremeno: Prikaz uspeha i prelazak na krajnji placeholder
-                        showFailMessage("TAČNO. STIGLI STE DO KRAJA TRENUTNE SIMULACIJE. AŽURIRANJE ZA NIVO 6 USKORO.", { flash: false, duration: 2500, center: true }); 
-                        
-                        // Uklanjanje slušaoca Nivoa 5
-                        hiddenInput.removeEventListener('input', inputListenerLevel5);
-                        hiddenInput.removeEventListener('keydown', keypressListenerLevel5);
-                        
-                        setTimeout(() => {
-                            // Jednostavno prelazak na placeholder
-                            currentInputRowEl.style.display = 'none';
-                            level2TextDiv.innerHTML = '<br><br>ČESTITAMO! STIGLI STE DO KRAJA TRENUTNE SIMULACIJE. <br>HVALA NA UČESTVOVANJU!';
-                        }, 2600);
-
-
-                    } else {
-                        // NEUSPEH (Nema Hinta za Nivo 5)
-                        let failMessage = "ODGOVOR POGREŠAN.<br>Pokušajte ponovo.";
-                        
-                        showFailMessage(failMessage, { flash: false, duration: 1500, center: false }); 
-                        currentInput = '';
-                        displayDiv.textContent = '';
-                        hiddenInput.value = '';
-                        hiddenInput.focus();
-                    }
-                }
-            };
-
-            // =================================================================
-            // NIVO 1 LOGIKA 
-            // =================================================================
-
-            inputListenerLevel1 = (e) => {
-                const newInputValue = e.target.value;
-                currentInput = newInputValue.toUpperCase();
-                displayDiv.textContent = currentInput;
-            };
-
-            keypressListenerLevel1 = (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-
-                    // Čišćenje feedback-a
-                    if (failTimer) { clearTimeout(failTimer); failTimer = null; }
-                    if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; }
-                    if (failDiv) {
-                        failDiv.classList.add('hidden');
-                        failDiv.style.display = 'none';
-                        failDiv.innerHTML = '';
-                        failDiv.style.textAlign = 'center'; 
-                        failDiv.style.color = '#00FF00'; 
-                    }
-
-                    const userAnswer = currentInput.trim().toUpperCase();
-
-                    if (CORRECT_ANSWERS.includes(userAnswer)) {
-                        hiddenInput.disabled = true;
-                        if (fakeCursor) fakeCursor.style.display = 'none';
-
-                        hiddenInput.removeEventListener('input', inputListenerLevel1);
-                        hiddenInput.removeEventListener('keydown', keypressListenerLevel1);
-
-                        terminalContainer.classList.add('flash-red');
-
-                        setTimeout(() => {
-                            terminalContainer.classList.remove('flash-red');
-                            accessGranted(); // Poziva Level 2
-                        }, 300);
-
-                    } 
-                    // Hint za Nivo 1
-                    else if (HINT_TRIGGERS.includes(userAnswer) && !hintUsedLevel1) {
-                        
-                        hintUsedLevel1 = true; 
-                        
-                        failDiv.style.textAlign = 'left'; 
-                        
-                        typeText(failDiv, HINT_TEXT, 50);
-                        
-                        failDiv.style.color = '#00FF00'; 
-                        
-                        hiddenInput.disabled = true;
-                        if (fakeCursor) fakeCursor.style.display = 'none';
-
-                        // Vreme trajanja hint poruke
-                        setTimeout(() => {
-                            if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; }
-
-                            if (failDiv) {
-                                failDiv.classList.add('hidden');
-                                failDiv.style.display = 'none';
-                                failDiv.innerHTML = '';
-                            }
-                            
-                            failDiv.style.textAlign = 'center'; 
-                            
-                            hiddenInput.disabled = false;
-                            if (fakeCursor) fakeCursor.style.display = 'inline-block';
-
-                            currentInput = '';
-                            displayDiv.textContent = '';
-                            hiddenInput.value = '';
-                            hiddenInput.focus();
-                        }, 7150); 
-
-                    } 
-                    else {
-                        // Tretiranje pogrešnog unosa/unosa pomoći nakon što je Hint već dat
-                        attemptCount++;
-                        
-                        failDiv.style.textAlign = 'center'; 
-
-                        if (attemptCount >= MAX_ATTEMPTS) {
-                            
-                            hiddenInput.disabled = true;
-                            if (fakeCursor) fakeCursor.style.display = 'none';
-
-                            if (failDiv) {
-                                failDiv.classList.add('hidden');
-                                failDiv.innerHTML = '';
-                            }
-                            
-                            showAccessDeniedMessageAndReset();
-
-
-                        } else {
-                            // Centrirana poruka
-                            let failMessage = "PRISTUP&nbsp;ODBIJEN!<br>Pokusajte&nbsp;ponovo.";
-                            
-                            if (hintUsedLevel1 && HINT_TRIGGERS.includes(userAnswer)) {
-                                failMessage = "POMOĆ&nbsp;JE&nbsp;VEĆ&nbsp;DATA!";
-                            } 
-
-                            showFailMessage(failMessage, { flash: false, duration: 1500, center: true });
-                            
-                            currentInput = '';
-                            displayDiv.textContent = '';
-                            hiddenInput.value = '';
-                            hiddenInput.focus();
-                        }
-                    }
-                }
-            };
-            
-            // =================================================================
-            // NIVO 2 LOGIKA 
-            // =================================================================
-            
-            inputListenerLevel2 = (e) => {
-                const newInputValue = e.target.value;
-                currentInput = newInputValue.toUpperCase();
-                // Ograničavanje unosa na 2 slova (DA/NE)
-                if (currentInput.length > 2) {
-                    currentInput = currentInput.substring(0, 2);
-                    e.target.value = currentInput;
-                }
-                displayDiv.textContent = currentInput;
-            };
-            
-            keypressListenerLevel2 = (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-
-                    const userAnswer = currentInput.trim().toUpperCase();
-                    
-                    if (userAnswer === 'DA') {
-                        // PRELAZAK NA NIVO 3 (ZAGONETKU)
-                        hiddenInput.disabled = true;
-                        if (fakeCursor) fakeCursor.style.display = 'none';
-                        currentInput = '';
-                        displayDiv.textContent = '';
-                        hiddenInput.value = '';
-                        
-                        successDiv.classList.add('hidden');
-                        successDiv.innerHTML = '';
-
-                        loadLevel3WithBootSequence();
-                        
-                    } else if (userAnswer === 'NE') {
-                        // Pokretanje sekvence gašenja sistema 
-                        showFailMessage("ODGOVOR PRIHVAĆEN. STATUS: OFFLINE.", { flash: false, duration: 500, center: false });
-                        
-                        hiddenInput.disabled = true;
-                        if (fakeCursor) fakeCursor.style.display = 'none';
-                        
-                        setTimeout(startShutdownSequence, 600); // Pozivanje funkcije gašenja
-
-                    } else {
-                        // Neispravan unos
-                        showFailMessage("NEVAŽEĆI UNOS!<br>Molimo&nbsp;unesite&nbsp;DA&nbsp;ili&nbsp;NE.", { flash: true, duration: 1500, center: false });
-                        currentInput = '';
-                        displayDiv.textContent = '';
-                        hiddenInput.value = '';
-                        hiddenInput.focus();
-                    }
-                }
-            };
-            
-            // =================================================================
-            // OPŠTE FUNKCIJE 
-            // =================================================================
 
             function resetSystem() {
                 if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; }
@@ -1386,10 +1327,10 @@
                 hiddenInput.removeEventListener('keydown', keypressListenerLevel2);
                 hiddenInput.removeEventListener('input', inputListenerLevel3);
                 hiddenInput.removeEventListener('keydown', keypressListenerLevel3);
-                hiddenInput.removeEventListener('input', inputListenerLevel4); 
-                hiddenInput.removeEventListener('keydown', keypressListenerLevel4); 
-                hiddenInput.removeEventListener('input', inputListenerLevel5); // Dodato: Uklanjanje slušaoca za Nivo 5
-                hiddenInput.removeEventListener('keydown', keypressListenerLevel5); // Dodato: Uklanjanje slušaoca za Nivo 5
+                hiddenInput.removeEventListener('input', inputListenerLevel4);
+                hiddenInput.removeEventListener('keydown', keypressListenerLevel4);
+                hiddenInput.removeEventListener('input', inputListenerLevel5);
+                hiddenInput.removeEventListener('keydown', keypressListenerLevel5);
                 
                 hiddenInput.addEventListener('input', inputListenerLevel1);
                 hiddenInput.addEventListener('keydown', keypressListenerLevel1);
@@ -1421,7 +1362,7 @@
             hiddenInput.removeEventListener('keydown', keypressListenerLevel4); 
             hiddenInput.removeEventListener('input', inputListenerLevel5); 
             hiddenInput.removeEventListener('keydown', keypressListenerLevel5); 
-
+            
             hiddenInput.addEventListener('input', inputListenerLevel1);
             hiddenInput.addEventListener('keydown', keypressListenerLevel1);
 
@@ -1433,6 +1374,8 @@
             });
 
             document.body.addEventListener('click', () => {
+                // UKLONJENA INICIJALIZACIJA ZVUKA
+                
                 if (!hiddenInput.disabled) {
                     // Fokusiranje na klik uz sprečavanje skrola
                     hiddenInput.focus({ preventScroll: true }); 
