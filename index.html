@@ -242,7 +242,14 @@
             .access-denied-message { font-size: 1em; } 
             /* U mobilnom prikazu, max-width za tekst je 100% */
             #level2-text { max-width: 100%; min-height: 300px; margin-left: 0; margin-right: 0; }
-            .input-row { max-width: 100%; margin-left: 0; margin-right: 0; }
+            
+            /* KRITIČNA IZMENA: Uklanjamo gornju marginu kako bi input bio odmah ispod System Info */
+            .input-row { 
+                max-width: 100%; 
+                margin-left: 0; 
+                margin-right: 0;
+                margin-top: 0; /* NOVO: Ovo uklanja 8px prostora i podiže polje za unos */
+            }
         }
     </style>
 </head>
