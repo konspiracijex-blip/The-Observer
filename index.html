@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V39 (DODAT NIVO 10)</title>
+    <title>M4TR1X ARG - FINAL V40 (IZMENJENA PORUKA NIVO 10)</title>
     <style>
         /* *** GLOBALNI RESET I RELATIVNO POZICIONIRANJE *** */
         *, *::before, *::after {
@@ -185,9 +185,10 @@
             const RIDDLE_7_TEXT = "Transmission intercepted...\nFilter the clutter. Extract only the hidden letters.\n\n#O%P#E*N^ #T&H#E# #A%R^C&H#I%V*E#";
             const RIDDLE_7_ANSWER = "open the archive";
             
-            // NOVI NIVO 10
             const RIDDLE_8_TEXT = "Signals scrambled. Digits mask the letters. \nEach number conceals a fragment of the truth. \nDecode carefully to reveal the hidden word.\n\n[SEQUENCE]: 13 1 20 18 9 24";
             const RIDDLE_8_ANSWER = "matrix";
+            // *** OVDE JE IZMENJENA PORUKA ***
+            const RIDDLE_8_INCORRECT_MESSAGE = "INCORRECT. \nThe letters remain hidden. Re-evaluate the sequence."; 
             
             const TYPEWRITER_TEXT = "Everywhere around you are visible walls, invisible locks. The world you live in is not the one you think you know. People sleep, believing what they’re told, not what they could discover themselves. So I ask you: are you an observer or a participant? Just another number in a system that uses you, or ready to uncover the truth within the matrix and pass through it? If you seek the truth, you must earn it. The doors open only to those who understand the hidden language.\n\nAre you ready? - YES / NO";
 
@@ -383,7 +384,6 @@
                 });
             }
             
-            // NOVI NIVO: 10
             function startLevel10() {
                 inputActive = false;
                 currentLineDiv.style.display = 'none';
@@ -394,7 +394,6 @@
                 });
             }
             
-            // NOVI NIVO: 11 (Finalni izlaz)
             function startLevel11() {
                 inputActive = false;
                 currentLineDiv.style.display = 'none';
@@ -415,7 +414,7 @@
                 if (phase === 7) promptSpan.textContent = "Word: "; 
                 if (phase === 8) promptSpan.textContent = "Answer: "; 
                 if (phase === 9) promptSpan.textContent = "Key: "; 
-                if (phase === 10) promptSpan.textContent = "Decode: "; // Novi prompt
+                if (phase === 10) promptSpan.textContent = "Decode: "; 
                 if (phase === 11) promptSpan.textContent = "C:\\SYSTEM> "; 
 
                 currentLineDiv.style.display = 'flex'; 
@@ -550,7 +549,7 @@
                     outputText("ARCHIVE KEY ACCEPTED. Access granted to next layer.", false);
                     
                     setTimeout(() => {
-                        startLevel10(); // Prelazak na novi nivo 10
+                        startLevel10();
                     }, 1500);
                     
                 } else {
@@ -558,7 +557,6 @@
                 }
             }
             
-            // NOVI HANDLER: 8
             function handleRiddle8(input) {
                 if (input === RIDDLE_8_ANSWER) {
                     inputActive = false;
@@ -567,11 +565,12 @@
                     outputText("DECODING COMPLETE. The heart of the system is exposed.", false);
                     
                     setTimeout(() => {
-                        startLevel11(); // Prelazak na finalni nivo 11
+                        startLevel11(); 
                     }, 1500);
                     
                 } else {
-                    outputText("Incorrect. Re-evaluate the sequence. A=1, B=2, C=3...", true);
+                    // *** Korišćenje nove poruke za grešku ***
+                    outputText(RIDDLE_8_INCORRECT_MESSAGE, true);
                 }
             }
 
@@ -628,7 +627,7 @@
                 } else if (gamePhase === 9) {
                     handleRiddle7(inputLower); 
                 } else if (gamePhase === 10) {
-                    handleRiddle8(inputLower); // Novi handler
+                    handleRiddle8(inputLower); 
                 } else if (gamePhase === 11) {
                     handleExit(inputLower);
                 }
