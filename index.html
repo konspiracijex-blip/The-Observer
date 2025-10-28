@@ -3,18 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M4TR1X ARG - FINAL V27 (FIKS ZA 100VH VISINU)</title>
+    <title>M4TR1X ARG - FINAL V28 (TOTALNI FIKS ZA MOBILNI HEADER)</title>
     <style>
+        /* *** KOREKCIJA: TOTALNI CSS RESET ZA ELIMINACIJU SVIH RAZMAKA *** */
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%; /* Da bi body zauzeo celu visinu prozora */
+            width: 100%;
+        }
+
         /* CSS STILIZACIJA TERMINALA */
         body {
             background-color: black;
             color: #00FF00; 
             font-family: 'Courier New', monospace;
             font-size: 1.2em;
-            margin: 0;
+            
+            /* Dajemo default mali padding (za desktop) */
             padding: 20px;
-            /* **UKLANJAMO height: 100vh; DA BI JAVASCRIPT PREUZEO KONTROLU** */
-            height: 100%; /* Padamo na 100% ako JS ne uspe (manje pouzdano) */
+            
             overflow: hidden; 
             box-sizing: border-box;
             cursor: default; 
@@ -23,11 +31,11 @@
             flex-direction: column;
         }
 
-        /* MEDIA QUERY ZA MOBILNE UREĐAJE */
+        /* MEDIA QUERY ZA MOBILNE UREĐAJE (manje od 600px širine) */
         @media screen and (max-width: 600px) {
             body {
-                /* POSTAVLJAMO MINIMALAN PADDING (5px gore, 10px sa strane/dole) */
-                padding: 5px 10px 10px 10px; 
+                /* POSTAVLJAMO MINIMALAN PADDING (1px gore, 5px sa strane/dole) */
+                padding: 1px 5px 5px 5px; /* Praktično nula na vrhu */
             }
         }
 
@@ -230,17 +238,14 @@
                 return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
             }
             
-            // *** NOVI FIKS ZA MOBILNU VISINU (100vh) ***
+            // Koristi se JavaScript visina samo ako je potrebno, ali primarna kontrola je u CSS resetu.
             function setMobileHeight() {
-                // Uzima stvarnu unutrašnju visinu prozora
                 let vh = window.innerHeight * 0.01;
-                // Postavlja CSS varijablu --vh
                 document.documentElement.style.setProperty('--vh', `${vh}px`);
-                // Postavlja visinu body elementa na izračunatu vrednost
-                document.body.style.height = `calc(var(--vh, 1vh) * 100)`;
+                // Postavljamo minimalnu visinu da bi body zauzeo 100% dostupnog prostora.
+                document.body.style.minHeight = `calc(var(--vh, 1vh) * 100)`;
             }
             
-            // Pozivamo funkciju pri učitavanju i pri promeni veličine
             setMobileHeight();
             window.addEventListener('resize', setMobileHeight);
 
