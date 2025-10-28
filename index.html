@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M4TR1X ARG - FINAL V23 (FIKS ZA UNOS UNAZAD)</title>
+    <title>M4TR1X ARG - FINAL V24 (FIKS ZA MOBILNI I DESKTOP UNOS)</title>
     <style>
         /* CSS STILIZACIJA TERMINALA */
         body {
@@ -211,6 +211,12 @@
                     }
                 }
                 type();
+            }
+
+            // FUNKCIJA ZA DETEKCIJU MOBILNOG
+            function isMobileDevice() {
+                // Jednostavna provera za popularne mobilne potpise u User Agent stringu
+                return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
             }
 
 
@@ -557,11 +563,10 @@
             
             const keydownHandler = (e) => {
                 if (!inputActive) return; 
+                // Ovo je primarno za desktop. Na mobilnom hiddenInput rukuje unosom.
                 if (e.ctrlKey || e.altKey || e.metaKey) return; 
                 if (document.activeElement !== terminalDiv) return;
 
-                // Na mobilnim uređajima, ova logika se često preskače u korist hiddenInput, 
-                // ali je neophodna za desktop
                 if (e.key.length === 1 && e.key.match(/^[a-zA-Z0-9\s.,!?-]$/)) { 
                     e.preventDefault(); 
                     currentInput += e.key;
@@ -578,20 +583,19 @@
             };
             document.addEventListener('keydown', keydownHandler);
 
+            // RUKOVANJE UNOSOM IZ SKRIVENOG POLJA (hiddenInput)
             const inputHandler = () => {
                 if (!inputActive) return; 
                 
                 let rawInput = hiddenInput.value;
                 
-                // *** FIKS ZA BUG "ISPISIVANJE UNAZAD" NA MOBILNOM ***
-                // Ako mobilna tastatura automatski preokrene unos u hidden input polju,
-                // ova linija to ispravlja tako što preokreće string nazad.
-                // Ako unazad ispisivanje i dalje postoji, uklonite donji red i koristite samo 'currentInput = rawInput;'
-                currentInput = rawInput.split('').reverse().join(''); 
-                // ----------------------------------------------------
-
-                // Ako problem nije u preokretanju stringa, već samo u samom unosu
-                // currentInput = rawInput; 
+                if (isMobileDevice()) {
+                    // FIKS ZA "UNAZAD ISPISIVANJE" KOJE SE DEŠAVA SAMO NA NEKIM MOBILNIM SISTEMIMA
+                    currentInput = rawInput.split('').reverse().join(''); 
+                } else {
+                    // NORMALAN UNOS ZA DESKTOP PRETRAŽIVAČE
+                    currentInput = rawInput; 
+                }
                 
                 userInputDisplay.textContent = currentInput;
             };
@@ -599,6 +603,7 @@
 
             const changeHandler = () => {
                 if (!inputActive) return; 
+                // Koristi currentInput, koji je već obrađen u inputHandler
                 processInput(currentInput);
                 hiddenInput.value = '';
                 currentInput = '';
