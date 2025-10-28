@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M4TR1X ARG - FINAL V22 (IZMENJEN ERROR NIVO 8)</title>
+    <title>M4TR1X ARG - FINAL V23 (FIKS ZA UNOS UNAZAD)</title>
     <style>
         /* CSS STILIZACIJA TERMINALA */
         body {
@@ -553,13 +553,15 @@
                 userInputDisplay.textContent = "";
             };
 
-            // LOGIKA UNOSA I RUKOVANJE DOGAĐAJIMA (nepromenjeno)
+            // LOGIKA UNOSA I RUKOVANJE DOGAĐAJIMA 
             
             const keydownHandler = (e) => {
                 if (!inputActive) return; 
                 if (e.ctrlKey || e.altKey || e.metaKey) return; 
                 if (document.activeElement !== terminalDiv) return;
 
+                // Na mobilnim uređajima, ova logika se često preskače u korist hiddenInput, 
+                // ali je neophodna za desktop
                 if (e.key.length === 1 && e.key.match(/^[a-zA-Z0-9\s.,!?-]$/)) { 
                     e.preventDefault(); 
                     currentInput += e.key;
@@ -578,7 +580,19 @@
 
             const inputHandler = () => {
                 if (!inputActive) return; 
-                currentInput = hiddenInput.value;
+                
+                let rawInput = hiddenInput.value;
+                
+                // *** FIKS ZA BUG "ISPISIVANJE UNAZAD" NA MOBILNOM ***
+                // Ako mobilna tastatura automatski preokrene unos u hidden input polju,
+                // ova linija to ispravlja tako što preokreće string nazad.
+                // Ako unazad ispisivanje i dalje postoji, uklonite donji red i koristite samo 'currentInput = rawInput;'
+                currentInput = rawInput.split('').reverse().join(''); 
+                // ----------------------------------------------------
+
+                // Ako problem nije u preokretanju stringa, već samo u samom unosu
+                // currentInput = rawInput; 
+                
                 userInputDisplay.textContent = currentInput;
             };
             hiddenInput.addEventListener('input', inputHandler);
