@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M4TR1X ARG - FINAL V25 (FIKS ZA MOBILNI HEADER)</title>
+    <title>M4TR1X ARG - FINAL V26 (FIKS ZA MOBILNI HEADER V2)</title>
     <style>
         /* CSS STILIZACIJA TERMINALA */
         body {
@@ -19,20 +19,24 @@
             box-sizing: border-box;
             cursor: default; 
             touch-action: manipulation;
+            
+            /* Fleksbox za bolju kontrolu visine na mobilnim uređajima */
+            display: flex;
+            flex-direction: column;
         }
 
         /* MEDIA QUERY ZA MOBILNE UREĐAJE (manje od 600px širine) */
         @media screen and (max-width: 600px) {
             body {
-                /* SMANJEN PADDING ZA MOBILNE UREĐAJE */
-                padding: 10px; /* Može biti i 5px ako želite da bude još bliže vrhu */
+                /* SMANJEN GORNJI PADDING ZA MOBILNE UREĐAJE */
+                padding: 5px 10px 10px 10px; /* Top 5px, Ostalo 10px */
             }
         }
 
         #terminal {
             white-space: pre-wrap;
             flex-grow: 1; 
-            height: 100%;
+            height: 100%; /* U kombinaciji sa body flexboxom ovo daje bolju kontrolu */
             overflow-y: auto;
             outline: none; 
             transition: color 1s, background-color 1s;
