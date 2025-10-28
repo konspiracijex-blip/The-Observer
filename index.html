@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M4TR1X ARG - FINAL V26 (FIKS ZA MOBILNI HEADER V2)</title>
+    <title>M4TR1X ARG - FINAL V27 (FIKS ZA 100VH VISINU)</title>
     <style>
         /* CSS STILIZACIJA TERMINALA */
         body {
@@ -11,32 +11,30 @@
             color: #00FF00; 
             font-family: 'Courier New', monospace;
             font-size: 1.2em;
-            /* DEFAULT PADDING (ZA DESKTOP) */
             margin: 0;
             padding: 20px;
-            height: 100vh;
+            /* **UKLANJAMO height: 100vh; DA BI JAVASCRIPT PREUZEO KONTROLU** */
+            height: 100%; /* Padamo na 100% ako JS ne uspe (manje pouzdano) */
             overflow: hidden; 
             box-sizing: border-box;
             cursor: default; 
             touch-action: manipulation;
-            
-            /* Fleksbox za bolju kontrolu visine na mobilnim uređajima */
             display: flex;
             flex-direction: column;
         }
 
-        /* MEDIA QUERY ZA MOBILNE UREĐAJE (manje od 600px širine) */
+        /* MEDIA QUERY ZA MOBILNE UREĐAJE */
         @media screen and (max-width: 600px) {
             body {
-                /* SMANJEN GORNJI PADDING ZA MOBILNE UREĐAJE */
-                padding: 5px 10px 10px 10px; /* Top 5px, Ostalo 10px */
+                /* POSTAVLJAMO MINIMALAN PADDING (5px gore, 10px sa strane/dole) */
+                padding: 5px 10px 10px 10px; 
             }
         }
 
         #terminal {
             white-space: pre-wrap;
             flex-grow: 1; 
-            height: 100%; /* U kombinaciji sa body flexboxom ovo daje bolju kontrolu */
+            height: 100%; 
             overflow-y: auto;
             outline: none; 
             transition: color 1s, background-color 1s;
@@ -231,6 +229,20 @@
                 // Jednostavna provera za popularne mobilne potpise u User Agent stringu
                 return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
             }
+            
+            // *** NOVI FIKS ZA MOBILNU VISINU (100vh) ***
+            function setMobileHeight() {
+                // Uzima stvarnu unutrašnju visinu prozora
+                let vh = window.innerHeight * 0.01;
+                // Postavlja CSS varijablu --vh
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+                // Postavlja visinu body elementa na izračunatu vrednost
+                document.body.style.height = `calc(var(--vh, 1vh) * 100)`;
+            }
+            
+            // Pozivamo funkciju pri učitavanju i pri promeni veličine
+            setMobileHeight();
+            window.addEventListener('resize', setMobileHeight);
 
 
             // SEKVENCA GAŠENJA
