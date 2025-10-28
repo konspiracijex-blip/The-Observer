@@ -2,66 +2,87 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M4TR1X ARG - FINAL V30 (CILJANI RESET GORNJE IVICE)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>M4TR1X ARG - FINAL V36 (FIKSNI GORNJI PADDING)</title>
     <style>
-        /* *** GLOBALNI RESET *** */
-        html, body {
+        /* *** GLOBALNI RESET I RELATIVNO POZICIONIRANJE *** */
+        *, *::before, *::after {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
             height: 100%; 
             width: 100%;
-        }
-
-        /* CSS STILIZACIJA TERMINALA */
-        body {
+            overflow: hidden;
             background-color: black;
-            color: #00FF00; 
-            font-family: 'Courier New', monospace;
-            font-size: 1.2em;
-            
-            overflow: hidden; 
-            box-sizing: border-box;
-            cursor: default; 
-            touch-action: manipulation;
-            display: flex;
-            flex-direction: column;
+            position: relative; 
         }
-
+        
         /* CSS ZA POPRAVAK 100vh PROBLEMA NA MOBILNOM */
         :root {
             --vh: 1vh;
         }
         body {
-            height: calc(var(--vh, 1vh) * 100);
+            height: calc(var(--vh, 1vh) * 100); 
+        }
+
+        /* CSS STILIZACIJA TERMINALA - GLAVNI BODY */
+        body {
+            color: #00FF00; 
+            font-family: 'Courier New', monospace;
+            font-size: 1.2em;
+            cursor: default; 
+            touch-action: manipulation;
+            padding: 0; 
+            margin: 0; 
+            display: block; 
         }
         
+        /* *** FIKS: APSOLUTNO POZICIONIRANJE TERMINALA ZA ZALEPLJIVANJE ZA IVICE EKRANA *** */
         #terminal {
+            /* Zalepljuje terminal za ivice viewport-a, ignorišući body paddinge */
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0; 
+            
+            /* CILJANO: Gornji padding je 15px (jedna linija/enter razmaka) */
+            padding: 15px 20px 10px 20px; /* GORE: 15px, BOČNO: 20px */
+            
             white-space: pre-wrap;
-            flex-grow: 1; 
-            height: 100%; 
             overflow-y: auto;
             outline: none; 
             transition: color 1s, background-color 1s;
-            
-            /* ** DESKTOP/DEFAULT PADDING: GORE 0, OSTALO 20px ** */
-            padding: 0 20px 20px 20px; 
+            display: flex;
+            flex-direction: column;
         }
-
+        
         /* MEDIA QUERY ZA MOBILNE UREĐAJE (manje od 600px širine) */
         @media screen and (max-width: 600px) {
             #terminal {
-                /* ** MOBILNI PADDING: GORE 0, OSTALO 10px ** */
-                padding: 0 10px 10px 10px; 
+                /* Mobilni padding (Gore 10px, Bočno 10px) */
+                padding: 10px 10px 10px 10px;
             }
         }
-        
+
+        /* FIKS: Reset svih podrazumevanih margina za div elemente (za ispisane linije) */
+        /* Važno: Uklanjamo !important pravila za first-child jer sada #terminal diktira gornji razmak */
+        #output div {
+            margin: 0; 
+            padding: 0; 
+            line-height: 1.2; 
+            min-height: 0; 
+        }
+
         .shutdown {
             color: black !important;
             background-color: black !important;
         }
-
-        /* STIL ZA SKRIVENI INPUT */
+        
+        /* ... (Ostatak CSS-a je nepromenjen) ... */
         #hiddenInput {
             position: absolute;
             opacity: 0;
@@ -76,8 +97,7 @@
             -webkit-user-select: none;
             user-select: none;
         }
-
-        /* Stil za trepćući kursor */
+        
         .cursor {
             display: inline-block;
             width: 10px;
@@ -127,7 +147,7 @@
     </div>
 
     <script>
-        // JAVASCRIPT LOGIKA IGRE
+        // JAVASCRIPT LOGIKA IGRE (NEPROMENJENA)
         document.addEventListener('DOMContentLoaded', () => {
             const terminalDiv = document.getElementById('terminal');
             const outputDiv = document.getElementById('output');
@@ -137,42 +157,26 @@
             const hiddenInput = document.getElementById('hiddenInput');
             
             let inputActive = false; 
-            // Fazni tok: 1: Login, 2: YES/NO, 3: Zagonetka 1 (future), 4: Zagonetka 2 (key), 5: Zagonetka 3 (1776), 6: Zagonetka 4 (13), 7: Zagonetka 5 (shadow), 8: Zagonetka 6 (Area 51), 9: Izlaz (trinity)
             let gamePhase = 1; 
             let currentInput = ""; 
             
             const CORRECT_LOGIN = "observer"; 
             const FINAL_EXIT_CODE = "trinity"; 
             
-            // Logika Nivoa 3 (Zagonetka 1: future)
             const RIDDLE_1_TEXT = "It’s the future, a shadow that stretches before you. You can sense it, feel its shape, but it never reveals itself - always just out of reach, always waiting.";
             const RIDDLE_1_ANSWER = "future"; 
-            
-            // Logika Nivoa 4 (Zagonetka 2: key)
             const RIDDLE_2_TEXT = "Keep your steps quiet as you move through the deserted streets.\nEvery shadow stretches, every whisper hides a secret.\nYou feel it, the hidden truth, just beyond perception - waiting for the one who notices.";
             const RIDDLE_2_ANSWER = "key"; 
-            
-            // Logika Nivoa 5 (Zagonetka 3: 1776)
             const RIDDLE_3_TEXT = "True power lies hidden in the text that everyone can read, where history meets secret societies. The pyramid on the seal conceals the moment when shadows first joined forces.\n\nFind it, study it carefully, and uncover the number.";
             const RIDDLE_3_ANSWER = "1776"; 
-
-            // Logika Nivoa 6 (Zagonetka 4: 13)
             const RIDDLE_4_TEXT = "An unfinished pyramid watches over the seal, silent and looming.\nEach layer tells a story, a hidden mark of power and order.\nThe original colonies lie beneath its shadow, whispered by the ancients.\n\nDiscover the number that connects the past to the secrets above.";
             const RIDDLE_4_ANSWER = "13"; 
-
-            // Logika Nivoa 7 (Zagonetka 5: shadow)
             const RIDDLE_5_TEXT = "A message drifts through the static, a code hidden in dots and dashes.\nOnly those who listen carefully can hear what is whispered.\n\n... .... .- -.. --- .--";
             const RIDDLE_5_ANSWER = "shadow"; 
-            
-            // Logika Nivoa 8 (Zagonetka 6: Area 51)
             const RIDDLE_6_TEXT = "Accessing restricted map layer...\nDecryption needed.\nLocation Hidden in Plain Sight:\n37.247456, -115.801709";
             const RIDiddle_6_ANSWERS = ["area 51", "area51"];
-
-
-            // TEKST ZA PISAĆU MAŠINU (Uvod u Nivo 2)
             const TYPEWRITER_TEXT = "Everywhere around you are visible walls, invisible locks. The world you live in is not the one you think you know. People sleep, believing what they’re told, not what they could discover themselves. So I ask you: are you an observer or a participant? Just another number in a system that uses you, or ready to uncover the truth within the matrix and pass through it? If you seek the truth, you must earn it. The doors open only to those who understand the hidden language.\n\nAre you ready? - YES / NO";
 
-            // SEKVENCE GAŠENJA
             const SHUTDOWN_MESSAGES = [
                 { text: "Shutdown sequence initiated.", delay: 300 },
                 { text: "Closing network protocols...", delay: 200, color: '#FF0000' },
@@ -182,7 +186,6 @@
                 { text: "System powering down...", delay: 1000, color: '#FF0000' }
             ];
 
-            // BOOT SEKVENCE
             const BOOT_MESSAGES = [
                 { text: "OBSERVER BIOS v4.51 (c) 1969 OBSERVER Systems Ltd.", delay: 100 }, 
                 { text: "CPU: Intel i960GX Tactical (OK)", delay: 150 },
@@ -196,10 +199,7 @@
                 { text: "System OBSERVER 2.1 Booted. Waiting for Authentication.", delay: 800, color: '#00FF00' } 
             ];
             
-            // POMOĆNE FUNKCIJE
-            function clearScreen() {
-                outputDiv.innerHTML = '';
-            }
+            function clearScreen() { outputDiv.innerHTML = ''; }
 
             function outputText(text, isError = false, isCode = false, color = null) {
                 const p = document.createElement('div');
@@ -215,7 +215,6 @@
                 terminalDiv.scrollTop = terminalDiv.scrollHeight; 
             }
 
-            // FUNKCIJA ZA PISAĆU MAŠINU (Brzina: 8ms)
             function typeWriter(text, speed = 8, callback) {
                 const element = document.createElement('span'); 
                 const container = document.createElement('div');
@@ -240,13 +239,10 @@
                 type();
             }
 
-            // FUNKCIJA ZA DETEKCIJU MOBILNOG
             function isMobileDevice() {
-                // Jednostavna provera za popularne mobilne potpise u User Agent stringu
                 return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
             }
             
-            // Fiksiranje 100vh visine na mobilnim uređajima
             function setMobileHeight() {
                 let vh = window.innerHeight * 0.01;
                 document.documentElement.style.setProperty('--vh', `${vh}px`);
@@ -257,7 +253,6 @@
             window.addEventListener('resize', setMobileHeight);
 
 
-            // SEKVENCA GAŠENJA
             function shutdownSequence() {
                 inputActive = false;
                 currentLineDiv.style.display = 'none';
@@ -278,8 +273,6 @@
                 });
             }
 
-            // SEKVENCE IGRE
-            
             function startBootSequence() {
                 let delay = 0;
                 BOOT_MESSAGES.forEach(msg => {
@@ -313,7 +306,6 @@
                 });
             }
 
-            // NIVO 4 (ZAGONETKA 2)
             function startLevel4() {
                 inputActive = false;
                 currentLineDiv.style.display = 'none';
@@ -324,7 +316,6 @@
                 });
             }
             
-            // NIVO 5 (ZAGONETKA 3)
             function startLevel5() {
                 inputActive = false;
                 currentLineDiv.style.display = 'none';
@@ -335,7 +326,6 @@
                 });
             }
 
-            // NIVO 6 (ZAGONETKA 4)
             function startLevel6() {
                 inputActive = false;
                 currentLineDiv.style.display = 'none';
@@ -346,7 +336,6 @@
                 });
             }
 
-            // NIVO 7 (ZAGONETKA 5)
             function startLevel7() {
                 inputActive = false;
                 currentLineDiv.style.display = 'none';
@@ -357,7 +346,6 @@
                 });
             }
 
-            // NIVO 8 (ZAGONETKA 6)
             function startLevel8() {
                 inputActive = false;
                 currentLineDiv.style.display = 'none';
@@ -368,9 +356,6 @@
                 });
             }
 
-
-            // Nivo 9 je Izlaz
-            
             function activateInput(phase) {
                 gamePhase = phase;
                 if (phase === 1) promptSpan.textContent = "Login: ";
@@ -388,8 +373,6 @@
                 hiddenInput.focus(); 
             }
 
-            // LOGIKE ZA KOMANDE I ODGOVORE
-            
             function handleLogin(input) {
                 if (input === CORRECT_LOGIN) {
                     inputActive = false;
@@ -420,7 +403,6 @@
                 }
             }
             
-            // Logika Nivoa 3 (Zagonetka 1: future)
             function handleRiddle1(input) {
                 if (input === RIDDLE_1_ANSWER) {
                     inputActive = false;
@@ -430,17 +412,13 @@
                     outputText("Not everyone sees what you just uncovered.", false);
                     outputText("Proceed with caution.", false);
                     
-                    // POZIV NIVO 4 (ZAGONETKA KEY)
-                    setTimeout(() => {
-                        startLevel4(); 
-                    }, 1500);
+                    setTimeout(() => { startLevel4(); }, 1500);
                     
                 } else {
                     outputText("Incorrect. Re-read the message and try again.", true);
                 }
             }
 
-            // Logika Nivoa 4 (Zagonetka 2: key)
             function handleRiddle2(input) {
                 if (input === RIDDLE_2_ANSWER) {
                     inputActive = false;
@@ -449,17 +427,13 @@
                     outputText("ACCESS GRANTED.", false);
                     outputText("KEY detected. Proceed.", false);
                     
-                    // POZIV NIVO 5 (ZAGONETKA 1776)
-                    setTimeout(() => {
-                        startLevel5(); 
-                    }, 1500);
+                    setTimeout(() => { startLevel5(); }, 1500);
                     
                 } else {
                     outputText("Incorrect. Re-read the message and try again.", true);
                 }
             }
             
-            // Logika Nivoa 5 (Zagonetka 3: 1776)
             function handleRiddle3(input) {
                 if (input === RIDDLE_3_ANSWER) {
                     inputActive = false;
@@ -467,17 +441,13 @@
                     
                     outputText("HISTORY ACKNOWLEDGED. The circle is complete.", false);
                     
-                    // POZIV NIVO 6 (ZAGONETKA 13)
-                    setTimeout(() => {
-                        startLevel6(); 
-                    }, 1500);
+                    setTimeout(() => { startLevel6(); }, 1500);
                     
                 } else {
                     outputText("Incorrect. That number does not align with the hidden truth.", true);
                 }
             }
 
-            // Logika Nivoa 6 (Zagonetka 4: 13)
             function handleRiddle4(input) {
                 if (input === RIDDLE_4_ANSWER) {
                     inputActive = false;
@@ -485,17 +455,13 @@
                     
                     outputText("THE COLONIES REMEMBER. The final layer is exposed.", false);
                     
-                    // POZIV NIVO 7 (ZAGONETKA SHADOW)
-                    setTimeout(() => {
-                        startLevel7(); 
-                    }, 1500);
+                    setTimeout(() => { startLevel7(); }, 1500);
                     
                 } else {
                     outputText("Incorrect. The past holds the key. Re-evaluate the layers.", true);
                 }
             }
 
-            // Logika Nivoa 7 (Zagonetka 5: shadow)
             function handleRiddle5(input) {
                 if (input === RIDDLE_5_ANSWER) {
                     inputActive = false;
@@ -503,26 +469,20 @@
                     
                     outputText("CODE BROKEN. Silence speaks volumes.", false);
                     
-                    // POZIV NIVO 8 (ZAGONETKA AREA 51)
-                    setTimeout(() => {
-                        startLevel8(); 
-                    }, 1500);
+                    setTimeout(() => { startLevel8(); }, 1500);
                     
                 } else {
                     outputText("Incorrect. Listen carefully to the static. Decode the message.", true);
                 }
             }
 
-            // Logika Nivoa 8 (Zagonetka 6: Area 51)
             function handleRiddle6(input) {
-                // Provera da li je input u nizu dozvoljenih odgovora
                 if (RIDiddle_6_ANSWERS.includes(input)) {
                     inputActive = false;
                     currentLineDiv.style.display = 'none';
                     
                     outputText("LOCATION CONFIRMED. The truth is out there.", false);
                     
-                    // Čekanje 1.5 sekunde, brisanje, prelazak na Nivo 9 (Izlaz)
                     setTimeout(() => {
                         clearScreen();
                         activateInput(9); 
@@ -530,13 +490,10 @@
                     }, 1500);
                     
                 } else {
-                    // PROMENA PORUKE O GREŠCI
                     outputText("Incorrect. Decryption failed.", true);
                 }
             }
 
-
-            // Logika Nivoa 9 (Izlaz: trinity)
             function handleExit(input) {
                 if (input === FINAL_EXIT_CODE) {
                     outputText("SYSTEM EXIT CODE ACCEPTED.", false);
@@ -558,7 +515,6 @@
                 }
             }
             
-            // RUKOVODILAC UNOSOM (Glavni switch)
             const processInput = (fullInput) => {
                 if (!inputActive) return; 
                 
@@ -596,11 +552,8 @@
                 userInputDisplay.textContent = "";
             };
 
-            // LOGIKA UNOSA I RUKOVANJE DOGAĐAJIMA 
-            
             const keydownHandler = (e) => {
                 if (!inputActive) return; 
-                // Ovo je primarno za desktop. Na mobilnom hiddenInput rukuje unosom.
                 if (e.ctrlKey || e.altKey || e.metaKey) return; 
                 if (document.activeElement !== terminalDiv) return;
 
@@ -620,17 +573,14 @@
             };
             document.addEventListener('keydown', keydownHandler);
 
-            // RUKOVANJE UNOSOM IZ SKRIVENOG POLJA (hiddenInput)
             const inputHandler = () => {
                 if (!inputActive) return; 
                 
                 let rawInput = hiddenInput.value;
                 
                 if (isMobileDevice()) {
-                    // FIKS ZA "UNAZAD ISPISIVANJE" KOJE SE DEŠAVA SAMO NA NEKIM MOBILNIM SISTEMIMA
                     currentInput = rawInput.split('').reverse().join(''); 
                 } else {
-                    // NORMALAN UNOS ZA DESKTOP PRETRAŽIVAČE
                     currentInput = rawInput; 
                 }
                 
@@ -640,7 +590,6 @@
 
             const changeHandler = () => {
                 if (!inputActive) return; 
-                // Koristi currentInput, koji je već obrađen u inputHandler
                 processInput(currentInput);
                 hiddenInput.value = '';
                 currentInput = '';
@@ -657,7 +606,6 @@
             };
             terminalDiv.addEventListener('click', clickHandler);
             
-            // START GAME: Initiate Boot Sequence
             startBootSequence();
         });
     </script>
