@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V12 (SA GA4 ANALITIKOM)</title>
+    <title>M4TR1X ARG - FINAL V13 (GA4 VERIFIKACIJA)</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5EVRNMGJD2"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
     
-      // ZAMENITE 'G-XXXXXXXXXX' S VAŠIM LIČNIM GA4 MEASUREMENT ID-JEM
-      gtag('config', 'G-XXXXXXXXXX');
+      // ZAMENJENO 2/2: VAŠ GA4 ID
+      gtag('config', 'G-5EVRNMGJD2');
     </script>
     <style>
         /* *** CSS STILOVI (OSTAVLJENO ISTO) *** */
@@ -85,7 +85,6 @@
             background-color: black !important;
         }
         
-        /* FIKS V10: Uklonjena apsolutna pozicija - polje prati tok dokumenta */
         #hiddenInput {
             opacity: 0;
             height: 1px;
@@ -164,7 +163,6 @@
             // *** GA4 FUNKCIJA ZA PRAĆENJE DOGAĐAJA ***
             function trackEvent(eventName, eventParams = {}) {
                 if (typeof gtag === 'function') {
-                    // Dodajemo game_phase u sve događaje za kontekst
                     eventParams.game_phase = gamePhase;
                     gtag('event', eventName, eventParams);
                 } else {
@@ -261,7 +259,7 @@
             window.addEventListener('resize', setMobileHeight);
 
             function startCountdownAndShutdown() { 
-                trackEvent('game_end', { outcome: 'final_challenge_started' }); // GA4 praćenje
+                trackEvent('game_end', { outcome: 'final_challenge_started' }); 
                 outputText(""); outputText(""); 
                 let countdownElement = document.getElementById('countdown');
                 if (!countdownElement) { countdownElement = document.createElement('div'); countdownElement.id = 'countdown'; outputDiv.appendChild(countdownElement); }
@@ -281,7 +279,7 @@
             }
 
             function shutdownSequence(isFinal = false) {
-                trackEvent('game_end', { outcome: isFinal ? 'final_shutdown' : 'user_declined' }); // GA4 praćenje
+                trackEvent('game_end', { outcome: isFinal ? 'final_shutdown' : 'user_declined' }); 
                 inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); let delay = 0;
                 SHUTDOWN_MESSAGES.forEach(msg => {
                     delay += msg.delay;
@@ -301,7 +299,8 @@
             }
 
             function startBootSequence() {
-                trackEvent('game_start', { method: 'boot' }); // GA4 praćenje
+                // *** GA4 EVENT: POČETAK IGRE ***
+                trackEvent('game_start', { method: 'boot' }); 
                 clearScreen(); let delay = 0;
                 BOOT_MESSAGES.forEach(msg => {
                     delay += msg.delay;
@@ -312,12 +311,12 @@
                 });
             }
 
-            // Centralizovana funkcija za prelazak na novi nivo
             function transitionToLevel(phase, riddleText, delay = 1500) {
                 inputActive = false; 
                 currentLineDiv.style.display = 'none'; 
                 
-                trackEvent('level_start', { level: phase, name: `Riddle_${phase-2}` }); // GA4 praćenje
+                // *** GA4 EVENT: POČETAK NIVOA ***
+                trackEvent('level_start', { level: phase, name: `Riddle_${phase-2}` }); 
                 
                 clearScreen(); 
                 typeWriter(riddleText, 8, () => { 
@@ -337,18 +336,19 @@
             function startLevel11_Final() { 
                  inputActive = false; 
                  currentLineDiv.style.display = 'none'; 
-                 trackEvent('level_start', { level: 11, name: 'Final_Code' }); // GA4 praćenje
+                 trackEvent('level_start', { level: 11, name: 'Final_Code' }); 
                  clearScreen(); 
                  typeWriter(RIDDLE_9_TEXT, 8, () => { startCountdownAndShutdown(); }); 
             }
             
-            // Handler logika (dopunjena GA4 praćenjem)
             function handleLogin(input) { 
                 if (input === CORRECT_LOGIN) { 
-                    trackEvent('login', { success: true }); // GA4 praćenje
+                    // *** GA4 EVENT: USPEŠAN LOGIN ***
+                    trackEvent('login', { success: true }); 
                     inputActive = false; currentLineDiv.style.display = 'none'; terminalDiv.classList.remove('shutdown'); clearScreen(); outputText("ACCESS GRANTED. Entering the system...", false); setTimeout(startLevel2, 1500); 
                 } else if (input.length > 0) { 
-                    trackEvent('login', { success: false, attempt: input }); // GA4 praćenje
+                    // *** GA4 EVENT: NEUSPEŠAN LOGIN ***
+                    trackEvent('login', { success: false, attempt: input }); 
                     outputText("Unknown user. Authentication failure.", true); 
                 } else { 
                     outputText("Empty input. Try again.", true); 
@@ -356,24 +356,28 @@
             }
             function handleYesNo(input) { 
                 if (input === 'yes') { 
-                    trackEvent('choice_made', { choice: 'yes', level: 2, outcome: 'continue' }); // GA4 praćenje
+                    // *** GA4 EVENT: ODABRANO DA ***
+                    trackEvent('choice_made', { choice: 'yes', level: 2, outcome: 'continue' }); 
                     outputText("Truth acknowledged. Prepare for instruction.", false); startLevel3(); 
                 } else if (input === 'no') { 
-                    trackEvent('choice_made', { choice: 'no', level: 2, outcome: 'shutdown' }); // GA4 praćenje
+                    // *** GA4 EVENT: ODABRANO NE ***
+                    trackEvent('choice_made', { choice: 'no', level: 2, outcome: 'shutdown' }); 
                     outputText("Choice declined. Shutting down system...", false); shutdownSequence(); 
                 } else { 
-                    trackEvent('choice_made', { choice: 'invalid', level: 2 }); // GA4 praćenje
+                    trackEvent('choice_made', { choice: 'invalid', level: 2 }); 
                     outputText(`Invalid response: ${input.toUpperCase()}. Enter YES or NO.`, true); 
                 } 
             }
             function handleRiddle(level, input, correct, nextLevelFunction) {
                 if (input === correct) {
-                    trackEvent('riddle_solved', { level: level, success: true }); // GA4 praćenje
+                    // *** GA4 EVENT: ZAGONETKA REŠENA ***
+                    trackEvent('riddle_solved', { level: level, success: true }); 
                     inputActive = false; currentLineDiv.style.display = 'none'; 
-                    outputText("ACCESS GRANTED.", false); 
+                    outputText("Well done!", false); 
                     setTimeout(nextLevelFunction, 1500);
                 } else {
-                    trackEvent('riddle_solved', { level: level, success: false, attempt: input }); // GA4 praćenje
+                    // *** GA4 EVENT: ZAGONETKA POGREŠAN POKUŠAJ ***
+                    trackEvent('riddle_solved', { level: level, success: false, attempt: input }); 
                     outputText("Incorrect. Re-read the message and try again.", true);
                 }
             }
@@ -413,7 +417,7 @@
                     outputText(RIDDLE_8_INCORRECT_MESSAGE, true); 
                 } 
             }
-            // Zamenjujemo direktne pozive generičkom funkcijom tamo gde je moguće
+            
             function handleRiddle1(input) { handleRiddle(3, input, RIDDLE_1_ANSWER, startLevel4); }
             function handleRiddle2(input) { handleRiddle(4, input, RIDDLE_2_ANSWER, startLevel5); }
             function handleRiddle5(input) { handleRiddle(7, input, RIDDLE_5_ANSWER, startLevel8); }
@@ -540,11 +544,9 @@
 
                 let rawInput = hiddenInput.value;
                 
-                // Nema obrtanja, samo preuzimanje unosa
                 currentInput = rawInput; 
                 userInputDisplay.textContent = currentInput;
                 
-                // Skroluj nakon unosa/paste-a na mobilnom i forsiraj fokus nazad
                 if (isMobileDevice() || isTelegramApp) {
                     scrollToBottomSmooth(1);
                     setTimeout(() => { hiddenInput.focus(); }, 1);
