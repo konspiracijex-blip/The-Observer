@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V8 (MEKO SKROLOVANJE FIKS)</title>
+    <title>M4TR1X ARG - FINAL V9 (FIKS TREPERENJA)</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -317,18 +317,14 @@
             // *** KRAJ UTILITY I LEVEL FUNKCIJA ***
 
 
-            // *** LOGIKA UNOSA (FIKS V8 - OPTIMIZOVANO SKROLOVANJE) ***
+            // *** LOGIKA UNOSA (FIKS V9 - Minimalno odlaganje) ***
             
             function scrollToBottomSmooth(delay = 0) {
                  if (isMobileDevice() || isTelegramApp) {
                     setTimeout(() => {
-                        // Koristimo samo terminalDiv.scrollTop = terminalDiv.scrollHeight;
-                        // Time se forsira skrol *kontejnera* do kraja, umesto da browser automatski skroluje fokusirani element (koji greši)
+                        // Koristimo samo forsiranje skrola kontejnera do dna.
                         terminalDiv.scrollTop = terminalDiv.scrollHeight;
-                        
-                        // Dodatna sigurnost: prisilno skrolovanje linije unosa na dno vidljivog ekrana (block: 'end')
-                        // Sa behavior: 'auto', ovo bi trebalo da eliminiše trzaj.
-                        currentLineDiv.scrollIntoView({ behavior: 'auto', block: 'end' });
+                        // NE KORISTIMO currentLineDiv.scrollIntoView() JER ONO IZAZIVA TRZAJ
                     }, delay);
                 } else {
                     terminalDiv.scrollTop = terminalDiv.scrollHeight;
@@ -433,9 +429,9 @@
                     
                     hiddenInput.value = currentInput; 
 
-                    // *** FIKS V8: SKROLOVANJE NAKON SVAKOG UNOSA (10ms) ***
-                    // Malo odlaganje daje browseru priliku da završi iscrtavanje karaktera pre skrolovanja.
-                    scrollToBottomSmooth(10);
+                    // *** FIKS V9: SKROLOVANJE NAKON SVAKOG UNOSA (1ms) ***
+                    // Najbrži mogući skok, da nadjača sistemski pre nego što se prikaže vizuelni trzaj.
+                    scrollToBottomSmooth(1);
                 }
             };
             document.addEventListener('keydown', keydownHandler);
@@ -460,8 +456,11 @@
                      userInputDisplay.textContent = currentInput;
                 }
                 
-                // Skroluj nakon unosa/paste-a na mobilnom
-                scrollToBottomSmooth(10);
+                // Skroluj nakon unosa/paste-a na mobilnom i forsiraj fokus nazad
+                if (isMobileDevice() || isTelegramApp) {
+                    scrollToBottomSmooth(1);
+                    setTimeout(() => { hiddenInput.focus(); }, 1);
+                }
             };
             hiddenInput.addEventListener('input', inputHandler);
             // ******************************************************
