@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V10 (FIKSIRANJE POZICIJE INPUT POLJA)</title>
+    <title>M4TR1X ARG - FINAL V11 (FIKS OBRNUTOG UNOSA)</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -86,7 +86,6 @@
             border: none;
             caret-color: transparent; 
             display: inline-block; 
-            /* Prethodni: position: absolute; top: 0; left: 0; - UKLONJENO */
         }
         
         .cursor {
@@ -316,7 +315,7 @@
             // *** KRAJ UTILITY I LEVEL FUNKCIJA ***
 
 
-            // *** LOGIKA UNOSA (FIKS V10) ***
+            // *** LOGIKA UNOSA (FIKS V11 - UKLONJENO OBRTANJE) ***
             
             function scrollToBottomSmooth(delay = 0) {
                  if (isMobileDevice() || isTelegramApp) {
@@ -442,16 +441,11 @@
 
                 let rawInput = hiddenInput.value;
                 
-                if (rawInput !== currentInput) {
-                     if (isMobileDevice()) {
-                         // Za mobilni, obrtanje unosa
-                         currentInput = rawInput.split('').reverse().join(''); 
-                     } else {
-                         // Za desktop paste
-                         currentInput = rawInput; 
-                     }
-                     userInputDisplay.textContent = currentInput;
-                }
+                // *** FIKS V11: UKLONJENA LOGIKA OBRTANJA TEKSTA ***
+                // Input bi sada trebao biti ispravan zahvaljujući strukturnim fiksevima (V10).
+                currentInput = rawInput; 
+                userInputDisplay.textContent = currentInput;
+                // ************************************************
                 
                 // Skroluj nakon unosa/paste-a na mobilnom i forsiraj fokus nazad
                 if (isMobileDevice() || isTelegramApp) {
