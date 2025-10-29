@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V48.4 (GA KOD ODLOŽEN)</title>
+    <title>M4TR1X ARG - FINAL V48.7 (Telegram Ready Fiks + Bez GA)</title>
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script> 
     
     <style>
-        /* ... (CSS STILOVI OSTALI NEPROMENJENI) ... */
+        /* (CSS STILOVI OSTALI NEPROMENJENI) */
+        /* ... (sve od V48.5) ... */
         *, *::before, *::after {
             margin: 0;
             padding: 0;
@@ -21,7 +24,6 @@
             position: relative; 
         }
         
-        /* CSS ZA POPRAVAK 100vh PROBLEMA NA MOBILNOM */
         :root {
             --vh: 1vh;
         }
@@ -29,11 +31,10 @@
             height: calc(var(--vh, 1vh) * 100); 
         }
 
-        /* CSS STILIZACIJA TERMINALA - GLAVNI BODY */
         body {
             color: #00FF00; 
             font-family: 'Courier New', monospace;
-            font-size: 1.2em; /* Standardna veličina fonta */
+            font-size: 1.2em; 
             cursor: default; 
             touch-action: manipulation;
             padding: 0; 
@@ -41,18 +42,13 @@
             display: block; 
         }
         
-        /* *** FIKS: APSOLUTNO POZICIONIRANJE TERMINALA *** */
         #terminal {
-            /* Zalepljuje terminal za ivice viewport-a */
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0; 
-            
-            /* Gornji padding je MINIMALAN - 8px za Desktop */
             padding: 8px 20px 10px 20px; 
-            
             white-space: pre-wrap;
             overflow-y: auto;
             outline: none; 
@@ -61,15 +57,12 @@
             flex-direction: column;
         }
         
-        /* MEDIA QUERY ZA MOBILNE UREĐAJE (manje od 600px širine) */
         @media screen and (max-width: 600px) {
             #terminal {
-                /* Mobilni padding (Gore 5px, Bočno 10px) */
                 padding: 5px 10px 10px 10px;
             }
         }
 
-        /* FIKS: Reset svih podrazumevanih margina za div elemente (za ispisane linije) */
         #output div {
             margin: 0; 
             padding: 0; 
@@ -77,7 +70,6 @@
             min-height: 0; 
         }
 
-        /* *** AGRESIVAN RESET SAMO ZA PRVU LINIJU NAKON NOVE FAZE *** */
         #output > div:first-child {
             margin-top: 0 !important;
             padding-top: 0 !important;
@@ -137,7 +129,6 @@
             margin: 20px 0;
         }
         
-        /* Korigovan stil za tajmer - Nasleđuje body font */
         #countdown {
             margin-top: 0; 
             color: #FFFF00; 
@@ -153,7 +144,7 @@
         <input type="text" id="hiddenInput" autofocus autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="">
         
         <div id="output">
-            </div>
+        </div>
         <div id="currentLine">
             <span id="prompt"></span>
             <span id="userInputDisplay"></span>
@@ -177,7 +168,7 @@
             
             const CORRECT_LOGIN = "observer"; 
             
-            // Definicije nivoa (Ovaj deo ostaje nepromenjen)
+            // ... (Definicije nivoa ostaju iste) ...
             const RIDDLE_1_TEXT = "It’s the future, a shadow that stretches before you. You can sense it, feel its shape, but it never reveals itself - always just out of reach, always waiting.";
             const RIDDLE_1_ANSWER = "future"; 
             const RIDDLE_2_TEXT = "Keep your steps quiet as you move through the deserted streets.\nEvery shadow stretches, every whisper hides a secret.\nYou feel it, the hidden truth, just beyond perception - waiting for the one who notices.";
@@ -196,7 +187,7 @@
             const RIDDLE_8_ANSWER = "matrix";
             const RIDDLE_8_INCORRECT_MESSAGE = "INCORRECT. \nThe letters remain hidden. Re-evaluate the sequence."; 
             const RIDDLE_9_TEXT = "— TRANSMISSION INTERCEPTED —\nSignals scrambled. Numbers mask the letters.\nDecrypt the sequence to reveal the hidden word:\n\n67 79 78 83 80 73 82 65 67 89\n\nSubmit your answer to:\nkonspiracijex@gmail.com\n\nTRANSMISSION AWAITING\nKey not yet verified. \nStay alert. Further contact will follow after submission.\n//";
-            const COUNTDOWN_TIME = 60; // Sekunde
+            const COUNTDOWN_TIME = 60; 
             const TYPEWRITER_TEXT = "Everywhere around you are visible walls, invisible locks. The world you live in is not the one you think you know. People sleep, believing what they’re told, not what they could discover themselves. So I ask you: are you an observer or a participant? Just another number in a system that uses you, or ready to uncover the truth within the matrix and pass through it? If you seek the truth, you must earn it. The doors open only to those who understand the hidden language.\n\nAre you ready? - YES / NO";
             const SHUTDOWN_MESSAGES = [
                 { text: "System overload detected.", delay: 300, color: '#FFD700' }, 
@@ -219,7 +210,8 @@
                 { text: "Connecting to Gateway 01...", delay: 500 },
                 { text: "System OBSERVER 2.1 Booted. Waiting for Authentication.", delay: 800, color: '#00FF00' } 
             ];
-            
+
+            // ... (Pomoćne funkcije ostaju iste) ...
             function clearScreen() { outputDiv.innerHTML = ''; }
 
             function outputText(text, isError = false, isCode = false, color = null) {
@@ -261,7 +253,7 @@
             }
 
             function isMobileDevice() {
-                return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+                return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 0);
             }
             
             function setMobileHeight() {
@@ -273,6 +265,32 @@
             setMobileHeight();
             window.addEventListener('resize', setMobileHeight);
 
+            function shutdownSequence(isFinal = false) {
+                inputActive = false;
+                currentLineDiv.style.display = 'none';
+                clearScreen();
+
+                let delay = 0;
+                SHUTDOWN_MESSAGES.forEach(msg => {
+                    delay += msg.delay;
+                    setTimeout(() => {
+                        outputText(msg.text, false, false, msg.color);
+                        if (msg === SHUTDOWN_MESSAGES[SHUTDOWN_MESSAGES.length - 1]) {
+                            setTimeout(() => {
+                                terminalDiv.classList.add('shutdown');
+                                outputDiv.innerHTML = '';
+                                terminalDiv.innerHTML = ''; 
+                                
+                                document.removeEventListener('keydown', keydownHandler);
+                                terminalDiv.removeEventListener('click', clickHandler);
+                                hiddenInput.removeEventListener('input', inputHandler);
+                                hiddenInput.removeEventListener('change', mobileChangeHandler); 
+                            }, 500); 
+                        }
+                    }, delay);
+                });
+            }
+            
             function startCountdownAndShutdown() {
                 outputText(""); 
                 outputText(""); 
@@ -313,47 +331,30 @@
             }
 
 
-            function shutdownSequence(isFinal = false) {
-                inputActive = false;
-                currentLineDiv.style.display = 'none';
-                clearScreen();
-
-                let delay = 0;
-                SHUTDOWN_MESSAGES.forEach(msg => {
-                    delay += msg.delay;
-                    setTimeout(() => {
-                        outputText(msg.text, false, false, msg.color);
-                        if (msg === SHUTDOWN_MESSAGES[SHUTDOWN_MESSAGES.length - 1]) {
-                            setTimeout(() => {
-                                terminalDiv.classList.add('shutdown');
-                                outputDiv.innerHTML = '';
-                                terminalDiv.innerHTML = ''; 
-                                
-                                document.removeEventListener('keydown', keydownHandler);
-                                terminalDiv.removeEventListener('click', clickHandler);
-                                hiddenInput.removeEventListener('input', inputHandler);
-                                hiddenInput.removeEventListener('change', mobileChangeHandler); // Uklonjena referenca na changeHandler
-                            }, 500); 
-                        }
-                    }, delay);
-                });
-            }
-
             function startBootSequence() {
                 clearScreen(); 
-
+                // *** KRITIČNO: Startovanje igre nakon Telegram.WebApp.ready() ***
+                // Ovo osigurava da je WebView potpuno inicijalizovan
+                if (window.Telegram && window.Telegram.WebApp) {
+                    window.Telegram.WebApp.ready();
+                    // Optional: Sakrijte glavni taster
+                    window.Telegram.WebApp.MainButton.hide(); 
+                }
+                
                 let delay = 0;
                 BOOT_MESSAGES.forEach(msg => {
                     delay += msg.delay;
                     setTimeout(() => {
                         outputText(msg.text, false, false, msg.color);
                         if (msg === BOOT_MESSAGES[BOOT_MESSAGES.length - 1]) {
-                            activateInput(1); 
+                            // KRITIČNO: Odlaganje fokusa za stabilnost
+                            setTimeout(() => { activateInput(1); }, 100); 
                         }
                     }, delay);
                 });
             }
             
+            // ... (Ostale startLevelX funkcije ostaju iste) ...
             function startLevel2() {
                 inputActive = false; currentLineDiv.style.display = 'none'; clearScreen();
                 typeWriter(TYPEWRITER_TEXT, 8, () => { activateInput(2); });
@@ -395,7 +396,6 @@
                 typeWriter(RIDDLE_9_TEXT, 8, () => { startCountdownAndShutdown(); });
             }
 
-
             function activateInput(phase) {
                 gamePhase = phase;
                 if (phase === 1) promptSpan.textContent = "Login: ";
@@ -412,6 +412,7 @@
                 if (phase < 11) {
                     currentLineDiv.style.display = 'flex'; 
                     inputActive = true; 
+                    // KRITIČNO: Odmah fokusiraj input
                     hiddenInput.focus(); 
                 } else {
                     currentLineDiv.style.display = 'none';
@@ -419,10 +420,11 @@
                 }
             }
             
+            // ... (Handler funkcije ostaju iste, SVE GA POZIVE SAM UKLONIO) ...
+            
             function handleLogin(input) {
                 if (input === CORRECT_LOGIN) {
                     inputActive = false; currentLineDiv.style.display = 'none'; terminalDiv.classList.remove('shutdown');
-                    if (window.gtag) { gtag('event', 'login_success', { 'level': 1 }); }
                     clearScreen(); outputText("ACCESS GRANTED. Entering the system...", false);
                     setTimeout(startLevel2, 1500); 
                 } else if (input.length > 0) {
@@ -434,7 +436,6 @@
             
             function handleYesNo(input) {
                 if (input === 'yes') {
-                    if (window.gtag) { gtag('event', 'game_start_yes', { 'level': 2 }); }
                     outputText("Truth acknowledged. Prepare for instruction.", false);
                     startLevel3(); 
                 } else if (input === 'no') {
@@ -447,7 +448,6 @@
             
             function handleRiddle1(input) {
                 if (input === RIDDLE_1_ANSWER) {
-                    if (window.gtag) { gtag('event', 'riddle_solved', { 'level': 3, 'riddle_name': 'future' }); }
                     inputActive = false; currentLineDiv.style.display = 'none';
                     outputText("Well done!", false); outputText("Not everyone sees what you just uncovered.", false); outputText("Proceed with caution.", false);
                     setTimeout(() => { startLevel4(); }, 1500);
@@ -458,7 +458,6 @@
 
             function handleRiddle2(input) {
                 if (input === RIDDLE_2_ANSWER) {
-                    if (window.gtag) { gtag('event', 'riddle_solved', { 'level': 4, 'riddle_name': 'key' }); }
                     inputActive = false; currentLineDiv.style.display = 'none';
                     outputText("ACCESS GRANTED.", false); outputText("KEY detected. Proceed.", false);
                     setTimeout(() => { startLevel5(); }, 1500);
@@ -469,7 +468,6 @@
             
             function handleRiddle3(input) {
                 if (input === RIDDLE_3_ANSWER) {
-                    if (window.gtag) { gtag('event', 'riddle_solved', { 'level': 5, 'riddle_name': '1776' }); }
                     inputActive = false; currentLineDiv.style.display = 'none';
                     outputText("HISTORY ACKNOWLEDGED. The circle is complete.", false);
                     setTimeout(() => { startLevel6(); }, 1500);
@@ -480,7 +478,6 @@
 
             function handleRiddle4(input) {
                 if (input === RIDDLE_4_ANSWER) {
-                    if (window.gtag) { gtag('event', 'riddle_solved', { 'level': 6, 'riddle_name': '13' }); }
                     inputActive = false; currentLineDiv.style.display = 'none';
                     outputText("THE COLONIES REMEMBER. The final layer is exposed.", false);
                     setTimeout(() => { startLevel7(); }, 1500);
@@ -491,7 +488,6 @@
 
             function handleRiddle5(input) {
                 if (input === RIDDLE_5_ANSWER) {
-                    if (window.gtag) { gtag('event', 'riddle_solved', { 'level': 7, 'riddle_name': 'shadow_morse' }); }
                     inputActive = false; currentLineDiv.style.display = 'none';
                     outputText("CODE BROKEN. Silence speaks volumes.", false);
                     setTimeout(() => { startLevel8(); }, 1500);
@@ -502,7 +498,6 @@
 
             function handleRiddle6(input) {
                 if (RIDiddle_6_ANSWERS.includes(input)) {
-                    if (window.gtag) { gtag('event', 'riddle_solved', { 'level': 8, 'riddle_name': 'area51' }); }
                     inputActive = false; currentLineDiv.style.display = 'none';
                     outputText("LOCATION CONFIRMED. The truth is out there.", false);
                     setTimeout(() => { startLevel9(); }, 1500);
@@ -513,7 +508,6 @@
             
             function handleRiddle7(input) {
                 if (input === RIDDLE_7_ANSWER) {
-                    if (window.gtag) { gtag('event', 'riddle_solved', { 'level': 9, 'riddle_name': 'open_archive' }); }
                     inputActive = false; currentLineDiv.style.display = 'none';
                     outputText("ARCHIVE KEY ACCEPTED. Access granted to next layer.", false);
                     setTimeout(() => { startLevel10(); }, 1500);
@@ -524,11 +518,9 @@
             
             function handleRiddle8(input) {
                 if (input === RIDDLE_8_ANSWER) {
-                    if (window.gtag) { gtag('event', 'riddle_solved', { 'level': 10, 'riddle_name': 'matrix_sequence' }); }
                     inputActive = false; currentLineDiv.style.display = 'none';
                     outputText("DECODING COMPLETE. The heart of the system is exposed.", false);
                     setTimeout(() => {
-                        if (window.gtag) { gtag('event', 'game_completed_final_riddle'); }
                         startLevel11_Final(); 
                     }, 1500);
                 } else {
@@ -549,30 +541,19 @@
                 
                 outputText(`${promptSpan.textContent}${fullInput}`);
 
-                if (gamePhase === 1) {
-                    handleLogin(inputLower);
-                } else if (gamePhase === 2) {
-                    handleYesNo(inputLower);
-                } else if (gamePhase === 3) {
-                    handleRiddle1(inputLower);
-                } else if (gamePhase === 4) {
-                    handleRiddle2(inputLower); 
-                } else if (gamePhase === 5) {
-                    handleRiddle3(inputLower); 
-                } else if (gamePhase === 6) {
-                    handleRiddle4(inputLower); 
-                } else if (gamePhase === 7) {
-                    handleRiddle5(inputLower); 
-                } else if (gamePhase === 8) {
-                    handleRiddle6(inputLower); 
-                } else if (gamePhase === 9) {
-                    handleRiddle7(inputLower); 
-                } else if (gamePhase === 10) {
-                    handleRiddle8(inputLower); 
-                } 
+                if (gamePhase === 1) { handleLogin(inputLower); } 
+                else if (gamePhase === 2) { handleYesNo(inputLower); } 
+                else if (gamePhase === 3) { handleRiddle1(inputLower); } 
+                else if (gamePhase === 4) { handleRiddle2(inputLower); } 
+                else if (gamePhase === 5) { handleRiddle3(inputLower); } 
+                else if (gamePhase === 6) { handleRiddle4(inputLower); } 
+                else if (gamePhase === 7) { handleRiddle5(inputLower); } 
+                else if (gamePhase === 8) { handleRiddle6(inputLower); } 
+                else if (gamePhase === 9) { handleRiddle7(inputLower); } 
+                else if (gamePhase === 10) { handleRiddle8(inputLower); } 
 
                 currentInput = "";
-                hiddenInput.value = ""; // OBAVEZNO RESETOVATI VREDNOST SKRIVENOG INPUTA
+                hiddenInput.value = ""; 
                 userInputDisplay.textContent = "";
             };
 
@@ -580,23 +561,21 @@
                 if (!inputActive) return; 
                 if (e.ctrlKey || e.altKey || e.metaKey) return; 
                 
-                // RUKOVANJE UNOSOM NA DESKTOPU
                 if (e.key.length === 1 && e.key.match(/^[a-zA-Z0-9\s.,!?-]$/)) { 
                     e.preventDefault(); 
                     currentInput += e.key;
-                    hiddenInput.value = currentInput; // Sinkronizacija inputa
+                    hiddenInput.value = currentInput; 
                     userInputDisplay.textContent = currentInput;
                 } else if (e.key === 'Backspace') {
                     e.preventDefault(); 
                     currentInput = currentInput.slice(0, -1);
-                    hiddenInput.value = currentInput; // Sinkronizacija inputa
+                    hiddenInput.value = currentInput; 
                     userInputDisplay.textContent = currentInput;
                 } else if (e.key === 'Enter') {
                     e.preventDefault();
                     processInput(currentInput);
                 }
                 
-                // Održavanje fokusa na DESKTOPU
                 terminalDiv.focus(); 
             };
             document.addEventListener('keydown', keydownHandler);
@@ -604,12 +583,10 @@
             const inputHandler = () => {
                 if (!inputActive) return; 
                 
-                // Preuzima input sa mobilne tastature
                 let rawInput = hiddenInput.value;
                 currentInput = rawInput; 
                 userInputDisplay.textContent = currentInput;
                 
-                // **FIKS 1.1 za Android:** Agresivno vraćanje fokusa na touch uređajima
                 if (isMobileDevice()) {
                     hiddenInput.focus();
                 }
@@ -619,7 +596,6 @@
             const mobileChangeHandler = () => {
                  if (isMobileDevice() && inputActive) {
                     processInput(currentInput);
-                    // Održavanje fokusa nakon obrade
                     hiddenInput.focus();
                  }
             }
@@ -628,7 +604,6 @@
 
             const clickHandler = (e) => {
                 if (!inputActive) return; 
-                // **FIKS 2.1 za Mobilni:** Agresivno vraćanje fokusa na svaki klik/touch
                 e.preventDefault(); 
                 hiddenInput.focus();
             };
@@ -637,14 +612,5 @@
             startBootSequence();
         });
     </script>
-
-    <script **defer** src="https://www.googletagmanager.com/gtag/js?id=G-5EVRNMGJD2"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      
-      gtag('config', 'G-5EVRNMGJD2'); 
-    </script>
-    </body>
+</body>
 </html>
