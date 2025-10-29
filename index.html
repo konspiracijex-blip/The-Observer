@@ -4,16 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>M4TR1X ARG - FINAL V48 (FIKSIRAN UNOS NA DESKTOPU)</title>
-    
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5EVRNMGJD2"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-    
-      gtag('config', 'G-5EVRNMGJD2');
-    </script>
-
     <style>
         /* *** GLOBALNI RESET I RELATIVNO POZICIONIRANJE *** */
         *, *::before, *::after {
@@ -328,12 +318,6 @@
                     timeLeft--;
                     terminalDiv.scrollTop = terminalDiv.scrollHeight;
                 }, 1000);
-                
-                // GA: Dostignut finalni nivo/tajmer
-                gtag('event', 'final_riddle_start', {
-                    'event_category': 'ARG_Progress',
-                    'event_label': 'Final_Countdown_60s'
-                });
             }
 
 
@@ -513,22 +497,10 @@
                     clearScreen();
                     outputText("ACCESS GRANTED. Entering the system...", false);
                     
-                    // GA: Uspešan Login
-                    gtag('event', 'login', {
-                        'event_category': 'Engagement',
-                        'event_label': 'Successful_Observer_Login'
-                    });
-                    
                     setTimeout(startLevel2, 1500); 
                     
                 } else if (input.length > 0) {
                     outputText("Unknown user. Authentication failure.", true); 
-                    
-                    // GA: Neuspešan Login
-                    gtag('event', 'login', {
-                        'event_category': 'Engagement',
-                        'event_label': 'Failed_Login'
-                    });
                 } else {
                     outputText("Empty input. Try again.", true);
                 }
@@ -537,13 +509,6 @@
             function handleYesNo(input) {
                 if (input === 'yes') {
                     outputText("Truth acknowledged. Prepare for instruction.", false);
-                    
-                    // GA: Korisnik je prihvatio igru (Početak)
-                    gtag('event', 'game_start', {
-                        'event_category': 'ARG_Engagement',
-                        'event_label': 'Accepted_Challenge'
-                    });
-
                     startLevel3(); 
                 } else if (input === 'no') {
                     outputText("Choice declined. Shutting down system...", false);
@@ -562,13 +527,6 @@
                     outputText("Not everyone sees what you just uncovered.", false);
                     outputText("Proceed with caution.", false);
                     
-                    // GA: Rešena Zagonetka 1
-                    gtag('event', 'riddle_solved', {
-                        'event_category': 'ARG_Progress',
-                        'event_label': 'Riddle_1_Future',
-                        'value': 1 
-                    });
-                    
                     setTimeout(() => { startLevel4(); }, 1500);
                     
                 } else {
@@ -584,13 +542,6 @@
                     outputText("ACCESS GRANTED.", false);
                     outputText("KEY detected. Proceed.", false);
                     
-                    // GA: Rešena Zagonetka 2
-                    gtag('event', 'riddle_solved', {
-                        'event_category': 'ARG_Progress',
-                        'event_label': 'Riddle_2_Key',
-                        'value': 2
-                    });
-                    
                     setTimeout(() => { startLevel5(); }, 1500);
                     
                 } else {
@@ -604,13 +555,6 @@
                     currentLineDiv.style.display = 'none';
                     
                     outputText("HISTORY ACKNOWLEDGED. The circle is complete.", false);
-                    
-                    // GA: Rešena Zagonetka 3
-                    gtag('event', 'riddle_solved', {
-                        'event_category': 'ARG_Progress',
-                        'event_label': 'Riddle_3_1776',
-                        'value': 3
-                    });
                     
                     setTimeout(() => { startLevel6(); }, 1500);
                     
@@ -626,13 +570,6 @@
                     
                     outputText("THE COLONIES REMEMBER. The final layer is exposed.", false);
                     
-                    // GA: Rešena Zagonetka 4
-                    gtag('event', 'riddle_solved', {
-                        'event_category': 'ARG_Progress',
-                        'event_label': 'Riddle_4_13',
-                        'value': 4
-                    });
-                    
                     setTimeout(() => { startLevel7(); }, 1500);
                     
                 } else {
@@ -647,13 +584,6 @@
                     
                     outputText("CODE BROKEN. Silence speaks volumes.", false);
                     
-                    // GA: Rešena Zagonetka 5
-                    gtag('event', 'riddle_solved', {
-                        'event_category': 'ARG_Progress',
-                        'event_label': 'Riddle_5_Shadow',
-                        'value': 5
-                    });
-                    
                     setTimeout(() => { startLevel8(); }, 1500);
                     
                 } else {
@@ -667,13 +597,6 @@
                     currentLineDiv.style.display = 'none';
                     
                     outputText("LOCATION CONFIRMED. The truth is out there.", false);
-                    
-                    // GA: Rešena Zagonetka 6
-                    gtag('event', 'riddle_solved', {
-                        'event_category': 'ARG_Progress',
-                        'event_label': 'Riddle_6_Area51',
-                        'value': 6
-                    });
                     
                     setTimeout(() => {
                         startLevel9(); 
@@ -691,13 +614,6 @@
                     
                     outputText("ARCHIVE KEY ACCEPTED. Access granted to next layer.", false);
                     
-                    // GA: Rešena Zagonetka 7
-                    gtag('event', 'riddle_solved', {
-                        'event_category': 'ARG_Progress',
-                        'event_label': 'Riddle_7_OpenArchive',
-                        'value': 7
-                    });
-                    
                     setTimeout(() => {
                         startLevel10();
                     }, 1500);
@@ -713,13 +629,6 @@
                     currentLineDiv.style.display = 'none';
                     
                     outputText("DECODING COMPLETE. The heart of the system is exposed.", false);
-                    
-                    // GA: Rešena Zagonetka 8 (Pretposlednja)
-                    gtag('event', 'riddle_solved', {
-                        'event_category': 'ARG_Progress',
-                        'event_label': 'Riddle_8_Matrix',
-                        'value': 8
-                    });
                     
                     setTimeout(() => {
                         startLevel11_Final(); 
@@ -799,7 +708,6 @@
                 let rawInput = hiddenInput.value;
                 
                 if (isMobileDevice()) {
-                    // FIKS: Obrtanje stringa za Telegram Web View
                     currentInput = rawInput.split('').reverse().join(''); 
                 } else {
                     currentInput = rawInput; 
