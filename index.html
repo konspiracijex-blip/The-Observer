@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V48.26 (TOTALNA STABILNOST)</title>
+    <title>M4TR1X ARG - FINAL V48.27 (AGRESIVNI FIKS ZA TELEGRAM)</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -227,7 +227,7 @@
                 type();
             }
             
-            // Provera samo za fizičke mobilne uređaje (za obrtanje teksta i agresivan fokus)
+            // Provera samo za fizičke mobilne uređaje (za obrtanje teksta)
             function isMobileDevice() {
                 return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
             }
@@ -317,7 +317,7 @@
             // *** KRAJ UTILITY I LEVEL FUNKCIJA ***
 
 
-            // *** LOGIKA UNOSA (FIKS V48.26) ***
+            // *** LOGIKA UNOSA (FIKS V48.27) ***
             function activateInput(phase) {
                 gamePhase = phase;
                 if (phase === 1) promptSpan.textContent = "Login: ";
@@ -404,14 +404,14 @@
             hiddenInput.addEventListener('input', inputHandler);
 
             // ******************************************************
-            // *** CHANGE HANDLER (FIKS V48.26) ***
-            // Change Handler (koji se okida na PASTE i na gubljenje fokusa) je sada ISKLJUČEN 
-            // za SVE Telegram aplikacije da bi se sprečio automatski submit na prvo slovo.
+            // *** CHANGE HANDLER (V48.27) ***
+            // Change Handler (automatski submit na paste/blur) je ISKLJUČEN 
+            // za sve Telegram App (da se ne šalje jedno slovo) i za mobilne.
             // ******************************************************
             const changeHandler = () => {
                 if (!inputActive) return; 
                 
-                // IGNORE na Mobile I na BILO KOJOJ Telegram App instanci (Desktop ili Mobilna)
+                // IGNORE na Mobile I na BILO KOJOJ Telegram App instanci
                 if (isMobileDevice() || isTelegramApp) return; 
                 
                 // SAMO normalni Desktop browseri će doći do ove tačke za Paste/Submit na blur
@@ -430,12 +430,12 @@
             
 
             // ******************************************************
-            // *** BLUR HANDLER (FIKS V48.26) - SAMO ZA FIZIČKI MOBILNI ***
-            // Vraća fokus sa minimalnim odlaganjem samo na FIZIČKIM mobilnim uređajima.
+            // *** BLUR HANDLER (FIKS V48.27) - AGRESIVNO FORSIRANJE FOKUSA ZA TELEGRAM ***
+            // Vraća fokus sa minimalnim odlaganjem samo za SVE TELEGRAM aplikacije i FIZIČKE mobilne uređaje.
             // ******************************************************
             const blurHandler = () => {
-                // Provera: Da li je isključivo mobilni uređaj (isključuje Telegram Desktop)
-                if (inputActive && isMobileDevice()) { 
+                // Provera: Da li je mobilni uređaj ILI da li je Telegram aplikacija (Desktop ili Mobilna)
+                if (inputActive && (isMobileDevice() || isTelegramApp)) { 
                     setTimeout(() => {
                         hiddenInput.focus();
                     }, 1); 
