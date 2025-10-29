@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V48.18 (KONAČNI FIKS UNOSA)</title>
-    
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
+    <title>M4TR1X ARG - FINAL V48 (FIKSIRAN UNOS NA DESKTOPU)</title>
     <style>
         /* *** GLOBALNI RESET I RELATIVNO POZICIONIRANJE *** */
         *, *::before, *::after {
@@ -190,10 +187,8 @@
             const RIDDLE_4_ANSWER = "13"; 
             const RIDDLE_5_TEXT = "A message drifts through the static, a code hidden in dots and dashes.\nOnly those who listen carefully can hear what is whispered.\n\n... .... .- -.. --- .--";
             const RIDDLE_5_ANSWER = "shadow"; 
-            
-            // Ispravljen typo
-            const RIDDLE_6_ANSWERS = ["area 51", "area51"]; 
             const RIDDLE_6_TEXT = "Accessing restricted map layer...\nDecryption needed.\nLocation Hidden in Plain Sight:\n37.247456, -115.801709";
+            const RIDiddle_6_ANSWERS = ["area 51", "area51"];
             
             const RIDDLE_7_TEXT = "Transmission intercepted...\nFilter the clutter. Extract only the hidden letters.\n\n#O%P#E*N^ #T&H#E# #A%R^C&H#I%V*E#";
             const RIDDLE_7_ANSWER = "open the archive";
@@ -272,8 +267,7 @@
             }
 
             function isMobileDevice() {
-                // Proširena detekcija da uključuje i Telegram WebApp okruženje
-                return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (window.Telegram && window.Telegram.WebApp);
+                return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
             }
             
             function setMobileHeight() {
@@ -347,9 +341,7 @@
                                 document.removeEventListener('keydown', keydownHandler);
                                 terminalDiv.removeEventListener('click', clickHandler);
                                 hiddenInput.removeEventListener('input', inputHandler);
-                                // Uklanjanje i change/blur handlera
                                 hiddenInput.removeEventListener('change', changeHandler);
-                                hiddenInput.removeEventListener('blur', blurHandler); 
                             }, 500); 
                         }
                     }, delay);
@@ -600,8 +592,7 @@
             }
 
             function handleRiddle6(input) {
-                // KORIŠĆENJE ISPRAVNE KONSTANTE RIDDLE_6_ANSWERS
-                if (RIDDLE_6_ANSWERS.includes(input)) { 
+                if (RIDiddle_6_ANSWERS.includes(input)) {
                     inputActive = false;
                     currentLineDiv.style.display = 'none';
                     
@@ -684,20 +675,29 @@
                 } 
 
                 currentInput = "";
-                hiddenInput.value = ""; // Resetuj vrednost polja
                 userInputDisplay.textContent = "";
             };
 
             const keydownHandler = (e) => {
                 if (!inputActive) return; 
-                // keydownHandler sada hvata samo Enter, i na mobilnom i na desktopu
-                if (e.key === 'Enter') {
+                if (e.ctrlKey || e.altKey || e.metaKey) return; 
+                
+                // *** UKLONJENA LINIJA KOJA JE KRŠILA FOKUS NA DESKTOPU: if (document.activeElement !== terminalDiv) return;
+
+                if (e.key.length === 1 && e.key.match(/^[a-zA-Z0-9\s.,!?-]$/)) { 
+                    e.preventDefault(); 
+                    currentInput += e.key;
+                    userInputDisplay.textContent = currentInput;
+                } else if (e.key === 'Backspace') {
+                    e.preventDefault(); 
+                    currentInput = currentInput.slice(0, -1);
+                    userInputDisplay.textContent = currentInput;
+                } else if (e.key === 'Enter') {
                     e.preventDefault();
                     processInput(currentInput);
                 }
                 
                 // KRITIČNA LINIJA ZA ODRŽAVANJE FOKUSA NA DESKTOPU
-                // Na mobilnom, fokus upravlja blurHandler
                 terminalDiv.focus(); 
             };
             document.addEventListener('keydown', keydownHandler);
@@ -708,7 +708,6 @@
                 let rawInput = hiddenInput.value;
                 
                 if (isMobileDevice()) {
-                    // FIKS: Obrtanje stringa za Telegram Web View (radi i na Chrome-u mobilnom)
                     currentInput = rawInput.split('').reverse().join(''); 
                 } else {
                     currentInput = rawInput; 
@@ -718,42 +717,13 @@
             };
             hiddenInput.addEventListener('input', inputHandler);
 
-            // FUNKCIJA KOJA OKIDA SUBMIT KADA TASTATURA NESTANE (problematična na mobilnom)
             const changeHandler = () => {
                 if (!inputActive) return; 
-                
-                // Ova logika se koristi samo na desktopu (npr. nakon Paste-a ili gubitka fokusa)
                 processInput(currentInput);
-                
-                hiddenInput.value = ''; 
+                hiddenInput.value = '';
                 currentInput = '';
-                userInputDisplay.textContent = '';
             };
-            
-            // ******************************************************
-            // *** FIKS V48.18: KAČENJE changeHandler-a SAMO NA DESKTOPU ***
-            // Na mobilnom je change event isključen da bi se sprečilo automatsko submitovanje.
-            // ******************************************************
-            if (!isMobileDevice()) {
-                hiddenInput.addEventListener('change', changeHandler);
-            }
-            // ******************************************************
-
-            
-            // ******************************************************
-            // *** BLUR HANDLER (ZAKLJUČAVANJE FOKUSA) - KRITIČAN FIKS ***
-            // Vraća fokus sa minimalnim odlaganjem da bi sprečio OS da zatvori tastaturu
-            // i zadržao trenutni unos u polju.
-            // ******************************************************
-            const blurHandler = () => {
-                if (inputActive && isMobileDevice()) {
-                    setTimeout(() => {
-                        hiddenInput.focus();
-                    }, 1); 
-                }
-            };
-            hiddenInput.addEventListener('blur', blurHandler);
-            // ******************************************************
+            hiddenInput.addEventListener('change', changeHandler);
 
 
             const clickHandler = (e) => {
