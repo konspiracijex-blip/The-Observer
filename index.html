@@ -3,18 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V48.3 (NOVI FIKS ZA MOBILNI UNOS)</title>
+    <title>M4TR1X ARG - FINAL V48.4 (GA KOD ODLOŽEN)</title>
     
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5EVRNMGJD2"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      
-      gtag('config', 'G-5EVRNMGJD2'); 
-    </script>
     <style>
-        /* ... (STILOVI OSTALI NEPROMENJENI) ... */
+        /* ... (CSS STILOVI OSTALI NEPROMENJENI) ... */
         *, *::before, *::after {
             margin: 0;
             padding: 0;
@@ -109,8 +101,6 @@
             caret-color: transparent; 
             -webkit-user-select: none;
             user-select: none;
-            /* KRITIČNO: Postavljamo neku vrednost da bi se tastatura lakše aktivirala */
-            /* Zadržavamo opacity: 0 jer se na mobilnom inače vidi kursor */
         }
         
         .cursor {
@@ -230,8 +220,6 @@
                 { text: "System OBSERVER 2.1 Booted. Waiting for Authentication.", delay: 800, color: '#00FF00' } 
             ];
             
-            // ... (Funkcije clearScreen, outputText, typeWriter, isMobileDevice, setMobileHeight, startCountdownAndShutdown, shutdownSequence, startLevelX, activateInput ostaju nepromenjene) ...
-            
             function clearScreen() { outputDiv.innerHTML = ''; }
 
             function outputText(text, isError = false, isCode = false, color = null) {
@@ -344,7 +332,7 @@
                                 document.removeEventListener('keydown', keydownHandler);
                                 terminalDiv.removeEventListener('click', clickHandler);
                                 hiddenInput.removeEventListener('input', inputHandler);
-                                // Uklonjen changeHandler
+                                hiddenInput.removeEventListener('change', mobileChangeHandler); // Uklonjena referenca na changeHandler
                             }, 500); 
                         }
                     }, delay);
@@ -367,9 +355,7 @@
             }
             
             function startLevel2() {
-                inputActive = false;
-                currentLineDiv.style.display = 'none';
-                clearScreen();
+                inputActive = false; currentLineDiv.style.display = 'none'; clearScreen();
                 typeWriter(TYPEWRITER_TEXT, 8, () => { activateInput(2); });
             }
             function startLevel3() {
@@ -433,8 +419,6 @@
                 }
             }
             
-            // ... (Funkcije handleLogin do handleRiddle8 ostaju nepromenjene) ...
-
             function handleLogin(input) {
                 if (input === CORRECT_LOGIN) {
                     inputActive = false; currentLineDiv.style.display = 'none'; terminalDiv.classList.remove('shutdown');
@@ -625,18 +609,13 @@
                 currentInput = rawInput; 
                 userInputDisplay.textContent = currentInput;
                 
-                // **FIKS 1.1 za Android:** Održavanje fokusa na touch uređajima
+                // **FIKS 1.1 za Android:** Agresivno vraćanje fokusa na touch uređajima
                 if (isMobileDevice()) {
                     hiddenInput.focus();
                 }
             };
             hiddenInput.addEventListener('input', inputHandler);
 
-            // NE KORISTIMO changeHandler JER ČESTO LOMI FOKUS NA ANDROIDU.
-            // Umesto change/Enter, oslanjamo se na dugme "Next/Go/Enter" na mobilnoj tastaturi, koje zapravo okida change na kraju.
-            
-            // ALI TREBA NAM NEŠTO DA OKIDA processInput NA MOBILNOM
-            // Koristimo kombinaciju, ako je mobilni, čekamo change/enter, a input samo za prikaz
             const mobileChangeHandler = () => {
                  if (isMobileDevice() && inputActive) {
                     processInput(currentInput);
@@ -658,5 +637,14 @@
             startBootSequence();
         });
     </script>
-</body>
+
+    <script **defer** src="https://www.googletagmanager.com/gtag/js?id=G-5EVRNMGJD2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      
+      gtag('config', 'G-5EVRNMGJD2'); 
+    </script>
+    </body>
 </html>
