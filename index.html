@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V5 (FIKS SKROLOVANJA NA TASTER)</title>
+    <title>M4TR1X ARG - FINAL V6 (AGRESIVNI FIKS NA TASTER)</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -169,7 +169,7 @@
             const RIDDLE_6_ANSWERS = ["area 51", "area51"]; 
             const RIDDLE_6_TEXT = "Accessing restricted map layer...\nDecryption needed.\nLocation Hidden in Plain Sight:\n37.247456, -115.801709";
             const RIDDLE_7_TEXT = "Transmission intercepted...\nFilter the clutter. Extract only the hidden letters.\n\n#O%P#E*N^ #T&H#E# #A%R^C&H#I%V*E#";
-            const RIDDLE_7_ANSWER = "open the archive";
+            const RIDiddle_7_ANSWER = "open the archive";
             const RIDDLE_8_TEXT = "Signals scrambled. Digits mask the letters. \nEach number conceals a fragment of the truth. \nDecode carefully to reveal the hidden word.\n\n[SEQUENCE]: 13 1 20 18 9 24";
             const RIDDLE_8_ANSWER = "matrix";
             const RIDDLE_8_INCORRECT_MESSAGE = "INCORRECT. \nThe letters remain hidden. Re-evaluate the sequence."; 
@@ -338,11 +338,11 @@
                     // 1. Agresivno fokusiranje (ovo pokreće tastaturu)
                     hiddenInput.focus();
                     
-                    // 2. FIKS V4: Odlaganje skrolovanja
+                    // 2. FIKS V6: Odlaganje skrolovanja
                     // Dajemo 200ms da se virtuelna tastatura pojavi i stabilizuje viewport.
                     setTimeout(() => {
                          if (isMobileDevice() || isTelegramApp) {
-                            // Koristimo scrollIntoView na sam red unosa (block: 'end' ga gura na dno vidljivog ekrana)
+                            // Koristimo 'auto' za trenutni skok
                             currentLineDiv.scrollIntoView({ behavior: 'auto', block: 'end' });
                          } else {
                             // Za Desktop: samo osiguravamo da je terminal na dnu
@@ -427,10 +427,12 @@
                     // Ažuriraj hidden input za sinhronizaciju (iako ga ignorišemo)
                     hiddenInput.value = currentInput; 
 
-                    // *** FIKS V5: AGRESIVNO SKROLOVANJE NAKON SVAKOG UNOSA ***
-                    // Forsira se da red unosa ostane vidljiv na dnu ekrana nakon kucanja
+                    // *** FIKS V6: AGRESIVNO ODLOŽENO SKROLOVANJE NAKON SVAKOG UNOSA ***
+                    // Dodajemo minimalan setTimeout(1) da se izvrši NAKON što browser pokuša (i pogreši)
                     if (isMobileDevice() || isTelegramApp) {
-                        currentLineDiv.scrollIntoView({ behavior: 'auto', block: 'end' });
+                        setTimeout(() => {
+                            currentLineDiv.scrollIntoView({ behavior: 'auto', block: 'end' });
+                        }, 1);
                     }
                 }
             };
