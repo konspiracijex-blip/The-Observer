@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V4 (ODLOŽENI FIKS SKROLOVANJA)</title>
+    <title>M4TR1X ARG - FINAL V5 (FIKS SKROLOVANJA NA TASTER)</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -343,10 +343,7 @@
                     setTimeout(() => {
                          if (isMobileDevice() || isTelegramApp) {
                             // Koristimo scrollIntoView na sam red unosa (block: 'end' ga gura na dno vidljivog ekrana)
-                            currentLineDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                            
-                            // Kao rezervu, forsiramo i skrol kontejnera.
-                            terminalDiv.scrollTop = terminalDiv.scrollHeight;
+                            currentLineDiv.scrollIntoView({ behavior: 'auto', block: 'end' });
                          } else {
                             // Za Desktop: samo osiguravamo da je terminal na dnu
                             terminalDiv.scrollTop = terminalDiv.scrollHeight;
@@ -429,6 +426,12 @@
                     
                     // Ažuriraj hidden input za sinhronizaciju (iako ga ignorišemo)
                     hiddenInput.value = currentInput; 
+
+                    // *** FIKS V5: AGRESIVNO SKROLOVANJE NAKON SVAKOG UNOSA ***
+                    // Forsira se da red unosa ostane vidljiv na dnu ekrana nakon kucanja
+                    if (isMobileDevice() || isTelegramApp) {
+                        currentLineDiv.scrollIntoView({ behavior: 'auto', block: 'end' });
+                    }
                 }
             };
             document.addEventListener('keydown', keydownHandler);
