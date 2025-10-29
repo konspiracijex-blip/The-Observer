@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V48.28 (RUČNO PRESETANJE UNOSA)</title>
+    <title>M4TR1X ARG - FINAL V2 (FIKS SKROLOVANJA)</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -207,6 +207,7 @@
                 if (isError) { p.style.color = '#FF0000'; } 
                 else if (color) { p.style.color = color; }
                 outputDiv.appendChild(p);
+                // Održavanje skrola nakon svakog novog unosa
                 terminalDiv.scrollTop = terminalDiv.scrollHeight; 
             }
             function typeWriter(text, speed = 8, callback) {
@@ -337,6 +338,9 @@
                     // Pokušaj agresivnog fokusa
                     setTimeout(() => {
                          hiddenInput.focus();
+                         // *** FIKS V2: DODATNO AGRESIVNO SKROLOVANJE NAKON FOKUSA ***
+                         // Ovo rešava problem pomeranja ekrana zbog pojave tastature na mobilnom.
+                         terminalDiv.scrollTop = terminalDiv.scrollHeight; 
                     }, 50); 
                     
                 } else {
@@ -376,9 +380,7 @@
             };
 
             // ******************************************************
-            // *** KEYDOWN HANDLER (SRŽ FIKSA V48.28) ***
-            // Ručno presreće svaki pritisak tastera i ažurira currentInput, ignorišući input polje.
-            // ******************************************************
+            // *** KEYDOWN HANDLER (SRŽ FIKSA) ***
             const keydownHandler = (e) => {
                 if (!inputActive) return; 
                 
@@ -410,7 +412,7 @@
                 const isPrintable = e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey;
 
                 if (isPrintable) {
-                    e.preventDefault(); // KRITIČNO: Sprečava ažuriranje broken hidden input polja
+                    e.preventDefault(); 
                     
                     currentInput += e.key;
                     userInputDisplay.textContent = currentInput;
@@ -425,8 +427,6 @@
 
             // ******************************************************
             // *** INPUT HANDLER (SAMO ZA PASTE I MOBILNI IME) ***
-            // Oslanja se na hiddenInput.value SAMO za paste i unos preko virtuelne tastature (IME).
-            // ******************************************************
             const inputHandler = () => {
                 if (!inputActive) return; 
 
@@ -451,14 +451,9 @@
             hiddenInput.addEventListener('input', inputHandler);
             // ******************************************************
 
-            // Change Handler je potpuno uklonjen. Submit isključivo putem Enter.
-
             // ******************************************************
-            // *** BLUR HANDLER (FIKS V48.27) - AGRESIVNO FORSIRANJE FOKUSA ZA TELEGRAM ***
-            // Vraća fokus sa minimalnim odlaganjem samo za SVE TELEGRAM aplikacije i FIZIČKE mobilne uređaje.
-            // ******************************************************
+            // *** BLUR HANDLER (AGRESIVNO FORSIRANJE FOKUSA ZA TELEGRAM/MOBILNI) ***
             const blurHandler = () => {
-                // Provera: Da li je mobilni uređaj ILI da li je Telegram aplikacija (Desktop ili Mobilna)
                 if (inputActive && (isMobileDevice() || isTelegramApp)) { 
                     setTimeout(() => {
                         hiddenInput.focus();
