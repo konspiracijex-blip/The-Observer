@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V3 (AGRESIVNI FIKS SKROLOVANJA)</title>
+    <title>M4TR1X ARG - FINAL V4 (ODLOŽENI FIKS SKROLOVANJA)</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -335,20 +335,23 @@
                     currentLineDiv.style.display = 'flex'; 
                     inputActive = true; 
                     
-                    // Pokušaj agresivnog fokusa
+                    // 1. Agresivno fokusiranje (ovo pokreće tastaturu)
+                    hiddenInput.focus();
+                    
+                    // 2. FIKS V4: Odlaganje skrolovanja
+                    // Dajemo 200ms da se virtuelna tastatura pojavi i stabilizuje viewport.
                     setTimeout(() => {
-                         hiddenInput.focus();
-                         
-                         // *** FIKS V3: Korišćenje scrollIntoView na samom redosledu unosa ***
-                         // Ovo prisiljava browser da red unosa postavi na dno vidljivog ekrana.
                          if (isMobileDevice() || isTelegramApp) {
+                            // Koristimo scrollIntoView na sam red unosa (block: 'end' ga gura na dno vidljivog ekrana)
                             currentLineDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                            
+                            // Kao rezervu, forsiramo i skrol kontejnera.
+                            terminalDiv.scrollTop = terminalDiv.scrollHeight;
                          } else {
                             // Za Desktop: samo osiguravamo da je terminal na dnu
                             terminalDiv.scrollTop = terminalDiv.scrollHeight;
                          }
-
-                    }, 50); 
+                    }, 200); 
                     
                 } else {
                     currentLineDiv.style.display = 'none';
