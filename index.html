@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V17 (KOPIRANJE + MOBILNA TASTATURA)</title>
+    <title>M4TR1X ARG - FINAL V18 (KONAČNI FIKS ZA KOPIRANJE)</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -131,6 +131,8 @@
             align-items: baseline; 
             min-width: 100%; 
             display: none; 
+            /* VAŽNO: Omogućava da klik na prompt radi */
+            cursor: text;
         }
 
         #countdown {
@@ -182,7 +184,7 @@
             }
             // *** KRAJ GA4 FUNKCIJE ***
 
-            // *** KONSTANTE IGRE (ostale nepromenjene) ***
+            // *** KONSTANTE IGRE (nepromenjene) ***
             const CORRECT_LOGIN = "observer"; 
             const RIDDLE_1_TEXT = "It’s the future, a shadow that stretches before you. You can sense it, feel its shape, but it never reveals itself - always just out of reach, always waiting.";
             const RIDDLE_1_ANSWER = "future"; 
@@ -301,7 +303,7 @@
                                 terminalDiv.classList.add('shutdown'); outputDiv.innerHTML = ''; terminalDiv.innerHTML = ''; 
                                 document.removeEventListener('keydown', keydownHandler);
                                 hiddenInput.removeEventListener('input', inputHandler);
-                                terminalDiv.removeEventListener('click', clickHandler); // Uklanjanje click handlera
+                                currentLineDiv.removeEventListener('click', lineClickHandler); // Uklanjanje click handlera
                             }, 500); 
                         }
                     }, delay);
@@ -498,10 +500,15 @@
             };
 
             // ******************************************************
-            // *** KEYDOWN HANDLER ***
+            // *** KEYDOWN HANDLER (Ostaje isti, fokusira se na unos) ***
             const keydownHandler = (e) => {
                 if (!inputActive) return; 
                 
+                // Osigurava fokus na mobilnom/Telegramu prilikom kucanja
+                if (isTelegramApp || isMobileDevice()) {
+                     setTimeout(() => { hiddenInput.focus(); }, 1); 
+                }
+
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     processInput(currentInput);
@@ -536,7 +543,7 @@
 
 
             // ******************************************************
-            // *** INPUT HANDLER ***
+            // *** INPUT HANDLER (Ostaje isti, koristi se samo za kucanje) ***
             const inputHandler = () => {
                 if (!inputActive) return; 
 
@@ -545,24 +552,18 @@
                 currentInput = rawInput; 
                 userInputDisplay.textContent = currentInput;
                 
-                // Uklonjeno automatsko ponovno fokusiranje jer ometa selekciju
                 if (isMobileDevice() || isTelegramApp) {
                     scrollToBottomSmooth(1);
                 }
             };
             hiddenInput.addEventListener('input', inputHandler);
             // ******************************************************
-
-            // *** BLUR HANDLER JE UKLONJEN (FIKS ZA KOPIRANJE) ***
             
             // ******************************************************
-            // *** CLICK HANDLER (RE-AKTIVIRAN ZA VRAĆANJE FOKUSA/TASTATURE) ***
-            const clickHandler = (e) => {
-                if (!inputActive) return; 
-                
-                // Ako korisnik klikne bilo gde unutar terminala, a to nije sam skriveni input
-                if (e.target !== hiddenInput) {
-                    // NE KORISTIMO e.preventDefault()
+            // *** NOVI, CILJANI CLICK HANDLER (FIKS) ***
+            const lineClickHandler = () => {
+                if (inputActive) {
+                    // Fokusiranje skrivenog unosa (izaziva tastaturu na mobilnom i omogućava kucanje na desktopu)
                     hiddenInput.focus();
                     
                     // KRITIČNO za Telegram/Mobilni: Osigurajte da je tastatura prikazana
@@ -572,7 +573,9 @@
                     }
                 }
             };
-            terminalDiv.addEventListener('click', clickHandler);
+            
+            // Dodajemo handler SAMO na liniju unosa, NE NA CEO TERMINAL
+            currentLineDiv.addEventListener('click', lineClickHandler);
             // ******************************************************
             
             // POKRETANJE IGRE
