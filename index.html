@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V48.27 (AGRESIVNI FIKS ZA TELEGRAM)</title>
+    <title>M4TR1X ARG - FINAL V48.28 (RUČNO PRESETANJE UNOSA)</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -273,7 +273,6 @@
                                 document.removeEventListener('keydown', keydownHandler);
                                 terminalDiv.removeEventListener('click', clickHandler);
                                 hiddenInput.removeEventListener('input', inputHandler);
-                                hiddenInput.removeEventListener('change', changeHandler);
                                 hiddenInput.removeEventListener('blur', blurHandler); 
                             }, 500); 
                         }
@@ -317,7 +316,7 @@
             // *** KRAJ UTILITY I LEVEL FUNKCIJA ***
 
 
-            // *** LOGIKA UNOSA (FIKS V48.27) ***
+            // *** LOGIKA UNOSA (FIKS V48.28 - MANUALNI INPUT) ***
             function activateInput(phase) {
                 gamePhase = phase;
                 if (phase === 1) promptSpan.textContent = "Login: ";
@@ -376,58 +375,83 @@
                 userInputDisplay.textContent = "";
             };
 
+            // ******************************************************
+            // *** KEYDOWN HANDLER (SRŽ FIKSA V48.28) ***
+            // Ručno presreće svaki pritisak tastera i ažurira currentInput, ignorišući input polje.
+            // ******************************************************
             const keydownHandler = (e) => {
                 if (!inputActive) return; 
-                // keydownHandler hvata samo Enter za submit
+                
+                // U Telegram okruženju, forsiraj fokus nazad svaki put, jer se gubi
+                if (isTelegramApp) {
+                     setTimeout(() => { hiddenInput.focus(); }, 1); 
+                }
+
+                // 1. Enter: Submit
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     processInput(currentInput);
+                    return;
+                }
+
+                // 2. Backspace/Delete: Ručno brisanje
+                if (e.key === 'Backspace' || e.key === 'Delete') {
+                    e.preventDefault();
+                    if (currentInput.length > 0) {
+                        currentInput = currentInput.slice(0, -1);
+                        userInputDisplay.textContent = currentInput;
+                    }
+                    // Ažuriraj hidden input za sinhronizaciju (iako ga ignorišemo)
+                    hiddenInput.value = currentInput; 
+                    return;
+                }
+                
+                // 3. Printable characters: Ručno dodavanje
+                const isPrintable = e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey;
+
+                if (isPrintable) {
+                    e.preventDefault(); // KRITIČNO: Sprečava ažuriranje broken hidden input polja
+                    
+                    currentInput += e.key;
+                    userInputDisplay.textContent = currentInput;
+                    
+                    // Ažuriraj hidden input za sinhronizaciju (iako ga ignorišemo)
+                    hiddenInput.value = currentInput; 
                 }
             };
             document.addEventListener('keydown', keydownHandler);
+            // ******************************************************
 
+
+            // ******************************************************
+            // *** INPUT HANDLER (SAMO ZA PASTE I MOBILNI IME) ***
+            // Oslanja se na hiddenInput.value SAMO za paste i unos preko virtuelne tastature (IME).
+            // ******************************************************
             const inputHandler = () => {
                 if (!inputActive) return; 
-                
+
                 let rawInput = hiddenInput.value;
                 
-                // Obrtanje teksta samo za FIZIČKE mobilne uređaje (gde je to potrebno zbog nekih tastatura)
-                if (isMobileDevice()) {
-                    currentInput = rawInput.split('').reverse().join(''); 
-                } else {
-                    // Standardni unos za Desktop Browser i Telegram Desktop
-                    currentInput = rawInput; 
+                // Ako se vrednost hiddenInput promenila i ne odgovara našoj ručno izgrađenoj,
+                // to je verovatno paste operacija ili IME unos sa mobilnog.
+                if (rawInput !== currentInput) {
+                     // Ovo je paste/IME. Treba da se ažurira currentInput
+                     if (isMobileDevice()) {
+                         // Za mobilni, obrtanje unosa
+                         currentInput = rawInput.split('').reverse().join(''); 
+                     } else {
+                         // Za desktop paste
+                         currentInput = rawInput; 
+                     }
+                     userInputDisplay.textContent = currentInput;
                 }
                 
-                userInputDisplay.textContent = currentInput;
+                // Ako je Telegram Desktop, ne šaljemo ga automatski, već čekamo Enter
             };
             hiddenInput.addEventListener('input', inputHandler);
+            // ******************************************************
 
-            // ******************************************************
-            // *** CHANGE HANDLER (V48.27) ***
-            // Change Handler (automatski submit na paste/blur) je ISKLJUČEN 
-            // za sve Telegram App (da se ne šalje jedno slovo) i za mobilne.
-            // ******************************************************
-            const changeHandler = () => {
-                if (!inputActive) return; 
-                
-                // IGNORE na Mobile I na BILO KOJOJ Telegram App instanci
-                if (isMobileDevice() || isTelegramApp) return; 
-                
-                // SAMO normalni Desktop browseri će doći do ove tačke za Paste/Submit na blur
-                processInput(currentInput);
-                
-                hiddenInput.value = ''; 
-                currentInput = '';
-                userInputDisplay.textContent = '';
-            };
-            
-            // KAČENJE changeHandler-a (AKTIVNO SAMO na BROWSERU)
-            if (!isMobileDevice() && !isTelegramApp) {
-                hiddenInput.addEventListener('change', changeHandler);
-            }
-            // ******************************************************
-            
+            // Change Handler je potpuno uklonjen. Submit isključivo putem Enter.
 
             // ******************************************************
             // *** BLUR HANDLER (FIKS V48.27) - AGRESIVNO FORSIRANJE FOKUSA ZA TELEGRAM ***
