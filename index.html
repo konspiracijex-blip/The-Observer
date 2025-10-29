@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V9 (FIKS TREPERENJA)</title>
+    <title>M4TR1X ARG - FINAL V10 (FIKSIRANJE POZICIJE INPUT POLJA)</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -76,19 +76,17 @@
             background-color: black !important;
         }
         
+        /* FIKS V10: Uklonjena apsolutna pozicija - polje prati tok dokumenta */
         #hiddenInput {
-            position: absolute;
             opacity: 0;
-            top: 0;
-            left: 0;
-            height: 0;
-            width: 0;
+            height: 1px;
+            width: 1px;
             padding: 0;
             margin: 0;
             border: none;
             caret-color: transparent; 
-            -webkit-user-select: none;
-            user-select: none;
+            display: inline-block; 
+            /* Prethodni: position: absolute; top: 0; left: 0; - UKLONJENO */
         }
         
         .cursor {
@@ -129,7 +127,6 @@
 </head>
 <body>
     <div id="terminal" tabindex="0">
-        <input type="text" id="hiddenInput" autofocus autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         
         <div id="output">
             </div>
@@ -138,6 +135,8 @@
             <span id="userInputDisplay"></span>
             <span class="cursor" id="inputCursor"></span> 
         </div>
+        <input type="text" id="hiddenInput" autofocus autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+
     </div>
 
     <script>
@@ -317,14 +316,13 @@
             // *** KRAJ UTILITY I LEVEL FUNKCIJA ***
 
 
-            // *** LOGIKA UNOSA (FIKS V9 - Minimalno odlaganje) ***
+            // *** LOGIKA UNOSA (FIKS V10) ***
             
             function scrollToBottomSmooth(delay = 0) {
                  if (isMobileDevice() || isTelegramApp) {
                     setTimeout(() => {
-                        // Koristimo samo forsiranje skrola kontejnera do dna.
+                        // Samo forsiranje skrola kontejnera do dna.
                         terminalDiv.scrollTop = terminalDiv.scrollHeight;
-                        // NE KORISTIMO currentLineDiv.scrollIntoView() JER ONO IZAZIVA TRZAJ
                     }, delay);
                 } else {
                     terminalDiv.scrollTop = terminalDiv.scrollHeight;
@@ -348,7 +346,7 @@
                     currentLineDiv.style.display = 'flex'; 
                     inputActive = true; 
                     
-                    // 1. Agresivno fokusiranje (ovo pokreće tastaturu)
+                    // 1. Agresivno fokusiranje (ovo pokreće tastaturu i OS skrolovanje)
                     hiddenInput.focus();
                     
                     // 2. Inicijalno skrolovanje (odloženo 200ms)
@@ -429,8 +427,7 @@
                     
                     hiddenInput.value = currentInput; 
 
-                    // *** FIKS V9: SKROLOVANJE NAKON SVAKOG UNOSA (1ms) ***
-                    // Najbrži mogući skok, da nadjača sistemski pre nego što se prikaže vizuelni trzaj.
+                    // SKROLOVANJE NAKON SVAKOG UNOSA (1ms)
                     scrollToBottomSmooth(1);
                 }
             };
