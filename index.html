@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V48.22 (TOTALNA STABILIZACIJA)</title>
+    <title>M4TR1X ARG - FINAL V48.23 (KONAČNA IZOLACIJA UNOSA)</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -154,7 +154,7 @@
             let gamePhase = 1; 
             let currentInput = ""; 
             
-            // *** KONSTANTE IGRE (Potrebne za pokretanje) ***
+            // *** KONSTANTE IGRE (ostale nepromenjene) ***
             const CORRECT_LOGIN = "observer"; 
             const RIDDLE_1_TEXT = "It’s the future, a shadow that stretches before you. You can sense it, feel its shape, but it never reveals itself - always just out of reach, always waiting.";
             const RIDDLE_1_ANSWER = "future"; 
@@ -199,7 +199,7 @@
             ];
             // *** KRAJ KONSTANATA IGRE ***
             
-            // *** UTILITY I LEVEL FUNKCIJE (Potrebne za start) ***
+            // *** UTILITY I LEVEL FUNKCIJE (ostale nepromenjene) ***
             function clearScreen() { outputDiv.innerHTML = ''; }
             function outputText(text, isError = false, color = null) {
                 const p = document.createElement('div');
@@ -226,9 +226,17 @@
                 }
                 type();
             }
+            
+            // ******************************************************
+            // *** KRITIČNI FIKS V48.23: STRIKTNA DEFINICIJA MOBILNOG ***
+            // Uklanja detekciju Telegram WebApp za desktop klijent.
+            // ******************************************************
             function isMobileDevice() {
-                return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (window.Telegram && window.Telegram.WebApp);
+                // Proverava ISKLJUČIVO fizičke mobilne uređaje (telefone/tablete)
+                return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
             }
+            // ******************************************************
+            
             function setMobileHeight() {
                 let vh = window.innerHeight * 0.01;
                 document.documentElement.style.setProperty('--vh', `${vh}px`);
@@ -297,7 +305,7 @@
             function startLevel10() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(RIDDLE_8_TEXT, 8, () => { activateInput(10); }); }
             function startLevel11_Final() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(RIDDLE_9_TEXT, 8, () => { startCountdownAndShutdown(); }); }
             
-            // Handler logika
+            // Handler logika (nepromenjena)
             function handleLogin(input) { if (input === CORRECT_LOGIN) { inputActive = false; currentLineDiv.style.display = 'none'; terminalDiv.classList.remove('shutdown'); clearScreen(); outputText("ACCESS GRANTED. Entering the system...", false); setTimeout(startLevel2, 1500); } else if (input.length > 0) { outputText("Unknown user. Authentication failure.", true); } else { outputText("Empty input. Try again.", true); } }
             function handleYesNo(input) { if (input === 'yes') { outputText("Truth acknowledged. Prepare for instruction.", false); startLevel3(); } else if (input === 'no') { outputText("Choice declined. Shutting down system...", false); shutdownSequence(); } else { outputText(`Invalid response: ${input.toUpperCase()}. Enter YES or NO.`, true); } }
             function handleRiddle1(input) { if (input === RIDDLE_1_ANSWER) { inputActive = false; currentLineDiv.style.display = 'none'; outputText("Well done!", false); outputText("Not everyone sees what you just uncovered.", false); outputText("Proceed with caution.", false); setTimeout(() => { startLevel4(); }, 1500); } else { outputText("Incorrect. Re-read the message and try again.", true); } }
@@ -311,7 +319,7 @@
             // *** KRAJ UTILITY I LEVEL FUNKCIJA ***
 
 
-            // *** LOGIKA UNOSA (FIKS V48.22) ***
+            // *** LOGIKA UNOSA (FIKS V48.23) ***
             function activateInput(phase) {
                 gamePhase = phase;
                 if (phase === 1) promptSpan.textContent = "Login: ";
@@ -385,12 +393,17 @@
                 
                 let rawInput = hiddenInput.value;
                 
+                // ******************************************************
+                // *** FIKS V48.23: OBRTANJE TEKSTA SAMO NA MOBILNOM ***
+                // ******************************************************
                 if (isMobileDevice()) {
-                    // FIKS: Obrtanje stringa za Web View
+                    // Obrtanje stringa za Web View (potrebno samo na nekim mobilnim tastaturama)
                     currentInput = rawInput.split('').reverse().join(''); 
                 } else {
+                    // Standardni unos za Desktop Browser i Telegram Desktop
                     currentInput = rawInput; 
                 }
+                // ******************************************************
                 
                 userInputDisplay.textContent = currentInput;
             };
@@ -403,7 +416,7 @@
                 // Na mobilnom, ignore
                 if (isMobileDevice()) return;
                 
-                // Na desktopu, submit
+                // Na desktopu i Telegram Desktopu, submit (za paste i klik izvan polja)
                 processInput(currentInput);
                 
                 hiddenInput.value = ''; 
@@ -411,14 +424,14 @@
                 userInputDisplay.textContent = '';
             };
             
-            // KAČENJE changeHandler-a (SAMO DESKTOP)
+            // KAČENJE changeHandler-a (AKTIVNO na DESKTOPU i TELEGRAM DESKTOPU)
             if (!isMobileDevice()) {
                 hiddenInput.addEventListener('change', changeHandler);
             }
             
 
             // BLUR HANDLER (ZAKLJUČAVANJE FOKUSA)
-            // Vraća fokus sa minimalnim odlaganjem SAMO NA MOBILNOM (za borbu protiv zatvaranja tastature)
+            // AKTIVAN SAMO NA FIZIČKIM MOBILNIM UREĐAJIMA.
             const blurHandler = () => {
                 if (inputActive && isMobileDevice()) { 
                     setTimeout(() => {
