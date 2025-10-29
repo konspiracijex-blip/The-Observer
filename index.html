@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V48.24 (KONACNI FIKS ZA TELEGRAM DESKTOP)</title>
+    <title>M4TR1X ARG - FINAL V48.25 (TOTALNA STABILNOST)</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -317,7 +317,7 @@
             // *** KRAJ UTILITY I LEVEL FUNKCIJA ***
 
 
-            // *** LOGIKA UNOSA (FIKS V48.24) ***
+            // *** LOGIKA UNOSA (FIKS V48.25) ***
             function activateInput(phase) {
                 gamePhase = phase;
                 if (phase === 1) promptSpan.textContent = "Login: ";
@@ -425,12 +425,12 @@
             
 
             // ******************************************************
-            // *** BLUR HANDLER (FIKS V48.24) ***
-            // Vraća fokus sa minimalnim odlaganjem na FIZIČKOM MOBILNOM ILI BILO KOJOJ TELEGRAM APLIKACIJI.
+            // *** BLUR HANDLER (FIKS V48.25) - SAMO ZA FIZIČKI MOBILNI ***
+            // Vraća fokus sa minimalnim odlaganjem samo na FIZIČKIM mobilnim uređajima.
             // ******************************************************
             const blurHandler = () => {
-                // Provera: Da li je mobilni uređaj ILI da li je Telegram aplikacija (Desktop ili Mobilna)
-                if (inputActive && (isMobileDevice() || isTelegramApp)) { 
+                // Provera: Da li je isključivo mobilni uređaj (isključuje Telegram Desktop)
+                if (inputActive && isMobileDevice()) { 
                     setTimeout(() => {
                         hiddenInput.focus();
                     }, 1); 
