@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V40 (IZMENJENA PORUKA NIVO 10)</title>
+    <title>M4TR1X ARG - FINAL V47 (POPRAVLJEN UNOS)</title>
     <style>
         /* *** GLOBALNI RESET I RELATIVNO POZICIONIRANJE *** */
         *, *::before, *::after {
@@ -32,7 +32,7 @@
         body {
             color: #00FF00; 
             font-family: 'Courier New', monospace;
-            font-size: 1.2em;
+            font-size: 1.2em; /* Standardna veličina fonta */
             cursor: default; 
             touch-action: manipulation;
             padding: 0; 
@@ -136,6 +136,16 @@
             text-align: center;
             margin: 20px 0;
         }
+        
+        /* Korigovan stil za tajmer - Nasleđuje body font */
+        #countdown {
+            margin-top: 0; 
+            color: #FFFF00; 
+            font-weight: normal; 
+            text-align: left; 
+            padding-left: 0;
+            white-space: pre-wrap;
+        }
     </style>
 </head>
 <body>
@@ -166,9 +176,8 @@
             let currentInput = ""; 
             
             const CORRECT_LOGIN = "observer"; 
-            const FINAL_EXIT_CODE = "trinity"; 
             
-            // Definicije nivoa
+            // Definicije nivoa - VRAĆENE!
             const RIDDLE_1_TEXT = "It’s the future, a shadow that stretches before you. You can sense it, feel its shape, but it never reveals itself - always just out of reach, always waiting.";
             const RIDDLE_1_ANSWER = "future"; 
             const RIDDLE_2_TEXT = "Keep your steps quiet as you move through the deserted streets.\nEvery shadow stretches, every whisper hides a secret.\nYou feel it, the hidden truth, just beyond perception - waiting for the one who notices.";
@@ -187,18 +196,22 @@
             
             const RIDDLE_8_TEXT = "Signals scrambled. Digits mask the letters. \nEach number conceals a fragment of the truth. \nDecode carefully to reveal the hidden word.\n\n[SEQUENCE]: 13 1 20 18 9 24";
             const RIDDLE_8_ANSWER = "matrix";
-            // *** OVDE JE IZMENJENA PORUKA ***
             const RIDDLE_8_INCORRECT_MESSAGE = "INCORRECT. \nThe letters remain hidden. Re-evaluate the sequence."; 
+            
+            // FINALNA ZAGONETKA - AŽURIRANA
+            const RIDDLE_9_TEXT = "— TRANSMISSION INTERCEPTED —\nSignals scrambled. Numbers mask the letters.\nDecrypt the sequence to reveal the hidden word:\n\n67 79 78 83 80 73 82 65 67 89\n\nSubmit your answer to:\nkonspiracijex@gmail.com\n\nTRANSMISSION AWAITING\nKey not yet verified. \nStay alert. Further contact will follow after submission.\n//";
+            const COUNTDOWN_TIME = 60; // Sekunde
             
             const TYPEWRITER_TEXT = "Everywhere around you are visible walls, invisible locks. The world you live in is not the one you think you know. People sleep, believing what they’re told, not what they could discover themselves. So I ask you: are you an observer or a participant? Just another number in a system that uses you, or ready to uncover the truth within the matrix and pass through it? If you seek the truth, you must earn it. The doors open only to those who understand the hidden language.\n\nAre you ready? - YES / NO";
 
             const SHUTDOWN_MESSAGES = [
-                { text: "Shutdown sequence initiated.", delay: 300 },
+                { text: "System overload detected.", delay: 300, color: '#FFD700' }, 
+                { text: "Forced termination imminent.", delay: 400, color: '#FFD700' },
                 { text: "Closing network protocols...", delay: 200, color: '#FF0000' },
                 { text: "Deactivating security matrix...", delay: 400 },
                 { text: "All secure channels closing.", delay: 300 },
-                { text: "Unmounting HDD-WREN...", delay: 200 },
-                { text: "System powering down...", delay: 1000, color: '#FF0000' }
+                { text: "UNMOUNTING HDD-WREN...", delay: 500 },
+                { text: "CONNECTION TERMINATED.", delay: 1000, color: '#FF0000' }
             ];
 
             const BOOT_MESSAGES = [
@@ -267,8 +280,49 @@
             setMobileHeight();
             window.addEventListener('resize', setMobileHeight);
 
+            function startCountdownAndShutdown() {
+                // Dodavanje dva nova reda nakon teksta zagonetke
+                outputText(""); 
+                outputText(""); 
+                
+                let countdownElement = document.getElementById('countdown');
+                if (!countdownElement) {
+                    countdownElement = document.createElement('div');
+                    countdownElement.id = 'countdown';
+                    outputDiv.appendChild(countdownElement);
+                }
+                
+                let timeLeft = COUNTDOWN_TIME;
+                
+                const timerInterval = setInterval(() => {
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        shutdownSequence(true); 
+                        return;
+                    }
 
-            function shutdownSequence() {
+                    const minutes = Math.floor(timeLeft / 60);
+                    const seconds = timeLeft % 60;
+                    const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    
+                    // Ažuriran tekst tajmera
+                    countdownElement.textContent = `SYSTEM SHUTDOWN IN: ${timeString}`;
+                    
+                    if (timeLeft <= 10) {
+                        countdownElement.style.color = '#FF0000'; 
+                    } else if (timeLeft <= 30) {
+                        countdownElement.style.color = '#FFA500'; 
+                    } else {
+                        countdownElement.style.color = '#FFFF00'; 
+                    }
+
+                    timeLeft--;
+                    terminalDiv.scrollTop = terminalDiv.scrollHeight;
+                }, 1000);
+            }
+
+
+            function shutdownSequence(isFinal = false) {
                 inputActive = false;
                 currentLineDiv.style.display = 'none';
                 clearScreen();
@@ -280,8 +334,15 @@
                         outputText(msg.text, false, false, msg.color);
                         if (msg === SHUTDOWN_MESSAGES[SHUTDOWN_MESSAGES.length - 1]) {
                             setTimeout(() => {
+                                // Potpuni Blackout
                                 terminalDiv.classList.add('shutdown');
                                 outputDiv.innerHTML = '';
+                                terminalDiv.innerHTML = ''; 
+                                
+                                document.removeEventListener('keydown', keydownHandler);
+                                terminalDiv.removeEventListener('click', clickHandler);
+                                hiddenInput.removeEventListener('input', inputHandler);
+                                hiddenInput.removeEventListener('change', changeHandler);
                             }, 500); 
                         }
                     }, delay);
@@ -289,7 +350,6 @@
             }
 
             function startBootSequence() {
-                // Dodatno čišćenje za slučaj inicijalnog elementa
                 clearScreen(); 
 
                 let delay = 0;
@@ -313,7 +373,7 @@
                     activateInput(2); 
                 });
             }
-
+            
             function startLevel3() {
                 inputActive = false;
                 currentLineDiv.style.display = 'none';
@@ -394,14 +454,17 @@
                 });
             }
             
-            function startLevel11() {
+            // FINALNI NIVO: 11
+            function startLevel11_Final() {
                 inputActive = false;
                 currentLineDiv.style.display = 'none';
                 clearScreen();
 
-                activateInput(11); 
-                outputText("FINAL COMMAND REQUIRED: Enter the exit code to terminate the Matrix connection.", false);
+                typeWriter(RIDDLE_9_TEXT, 8, () => {
+                    startCountdownAndShutdown(); 
+                });
             }
+
 
             function activateInput(phase) {
                 gamePhase = phase;
@@ -415,13 +478,17 @@
                 if (phase === 8) promptSpan.textContent = "Answer: "; 
                 if (phase === 9) promptSpan.textContent = "Key: "; 
                 if (phase === 10) promptSpan.textContent = "Decode: "; 
-                if (phase === 11) promptSpan.textContent = "C:\\SYSTEM> "; 
-
-                currentLineDiv.style.display = 'flex'; 
-                inputActive = true; 
-                hiddenInput.focus(); 
+                
+                if (phase < 11) {
+                    currentLineDiv.style.display = 'flex'; 
+                    inputActive = true; 
+                    hiddenInput.focus(); 
+                } else {
+                    currentLineDiv.style.display = 'none';
+                    inputActive = false;
+                }
             }
-
+            
             function handleLogin(input) {
                 if (input === CORRECT_LOGIN) {
                     inputActive = false;
@@ -565,33 +632,11 @@
                     outputText("DECODING COMPLETE. The heart of the system is exposed.", false);
                     
                     setTimeout(() => {
-                        startLevel11(); 
+                        startLevel11_Final(); 
                     }, 1500);
                     
                 } else {
-                    // *** Korišćenje nove poruke za grešku ***
                     outputText(RIDDLE_8_INCORRECT_MESSAGE, true);
-                }
-            }
-
-            function handleExit(input) {
-                if (input === FINAL_EXIT_CODE) {
-                    outputText("SYSTEM EXIT CODE ACCEPTED.", false);
-                    outputText("Thank you, Neo. The world is saved.", false);
-                    outputText("ACCESS DEBLOCKED. Exiting the Matrix...", false);
-                    
-                    const finalMsg = document.createElement('div');
-                    finalMsg.classList.add('success-message');
-                    finalMsg.textContent = ">> GAME OVER: CONNECTION TERMINATED <<";
-                    outputDiv.appendChild(finalMsg);
-
-                    document.removeEventListener('keydown', keydownHandler);
-                    terminalDiv.removeEventListener('click', clickHandler);
-                    hiddenInput.removeEventListener('input', inputHandler);
-                    hiddenInput.removeEventListener('change', changeHandler);
-                    inputActive = false; 
-                } else {
-                    outputText("ERROR: Invalid Exit Code.", true);
                 }
             }
             
@@ -628,9 +673,7 @@
                     handleRiddle7(inputLower); 
                 } else if (gamePhase === 10) {
                     handleRiddle8(inputLower); 
-                } else if (gamePhase === 11) {
-                    handleExit(inputLower);
-                }
+                } 
 
                 currentInput = "";
                 userInputDisplay.textContent = "";
