@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V48.21 (KONAČAN FIKS DESKTOP UNOSA)</title>
+    <title>M4TR1X ARG - FINAL V48.22 (TOTALNA STABILIZACIJA)</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -154,7 +154,7 @@
             let gamePhase = 1; 
             let currentInput = ""; 
             
-            // Definicije konstanata (RIDDLE_X_TEXT, CORRECT_LOGIN, SHUTDOWN_MESSAGES itd.)
+            // *** KONSTANTE IGRE (Potrebne za pokretanje) ***
             const CORRECT_LOGIN = "observer"; 
             const RIDDLE_1_TEXT = "It’s the future, a shadow that stretches before you. You can sense it, feel its shape, but it never reveals itself - always just out of reach, always waiting.";
             const RIDDLE_1_ANSWER = "future"; 
@@ -197,10 +197,11 @@
                 { text: "Connecting to Gateway 01...", delay: 500 },
                 { text: "System OBSERVER 2.1 Booted. Waiting for Authentication.", delay: 800, color: '#00FF00' } 
             ];
+            // *** KRAJ KONSTANATA IGRE ***
             
-            // UTILITY FUNCTIONS (skraćene radi preglednosti, ali potpuno funkcionalne)
+            // *** UTILITY I LEVEL FUNKCIJE (Potrebne za start) ***
             function clearScreen() { outputDiv.innerHTML = ''; }
-            function outputText(text, isError = false, isCode = false, color = null) {
+            function outputText(text, isError = false, color = null) {
                 const p = document.createElement('div');
                 p.textContent = text;
                 if (isError) { p.style.color = '#FF0000'; } 
@@ -235,6 +236,7 @@
             }
             setMobileHeight();
             window.addEventListener('resize', setMobileHeight);
+
             function startCountdownAndShutdown() { outputText(""); outputText(""); 
                 let countdownElement = document.getElementById('countdown');
                 if (!countdownElement) { countdownElement = document.createElement('div'); countdownElement.id = 'countdown'; outputDiv.appendChild(countdownElement); }
@@ -252,12 +254,13 @@
                     terminalDiv.scrollTop = terminalDiv.scrollHeight;
                 }, 1000);
             }
+
             function shutdownSequence(isFinal = false) {
                 inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); let delay = 0;
                 SHUTDOWN_MESSAGES.forEach(msg => {
                     delay += msg.delay;
                     setTimeout(() => {
-                        outputText(msg.text, false, false, msg.color);
+                        outputText(msg.text, false, msg.color);
                         if (msg === SHUTDOWN_MESSAGES[SHUTDOWN_MESSAGES.length - 1]) {
                             setTimeout(() => {
                                 terminalDiv.classList.add('shutdown'); outputDiv.innerHTML = ''; terminalDiv.innerHTML = ''; 
@@ -271,17 +274,18 @@
                     }, delay);
                 });
             }
+
             function startBootSequence() {
                 clearScreen(); let delay = 0;
                 BOOT_MESSAGES.forEach(msg => {
                     delay += msg.delay;
                     setTimeout(() => {
-                        outputText(msg.text, false, false, msg.color);
+                        outputText(msg.text, false, msg.color);
                         if (msg === BOOT_MESSAGES[BOOT_MESSAGES.length - 1]) { activateInput(1); }
                     }, delay);
                 });
             }
-            // Funkcije startLevel2 do startLevel11_Final su izostavljene radi kraćeg koda (ali su iste kao V48.19)
+
             function startLevel2() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(TYPEWRITER_TEXT, 8, () => { activateInput(2); }); }
             function startLevel3() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(RIDDLE_1_TEXT, 8, () => { activateInput(3); }); }
             function startLevel4() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(RIDDLE_2_TEXT, 8, () => { activateInput(4); }); }
@@ -293,7 +297,7 @@
             function startLevel10() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(RIDDLE_8_TEXT, 8, () => { activateInput(10); }); }
             function startLevel11_Final() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(RIDDLE_9_TEXT, 8, () => { startCountdownAndShutdown(); }); }
             
-            // Handler logika (isto kao V48.19)
+            // Handler logika
             function handleLogin(input) { if (input === CORRECT_LOGIN) { inputActive = false; currentLineDiv.style.display = 'none'; terminalDiv.classList.remove('shutdown'); clearScreen(); outputText("ACCESS GRANTED. Entering the system...", false); setTimeout(startLevel2, 1500); } else if (input.length > 0) { outputText("Unknown user. Authentication failure.", true); } else { outputText("Empty input. Try again.", true); } }
             function handleYesNo(input) { if (input === 'yes') { outputText("Truth acknowledged. Prepare for instruction.", false); startLevel3(); } else if (input === 'no') { outputText("Choice declined. Shutting down system...", false); shutdownSequence(); } else { outputText(`Invalid response: ${input.toUpperCase()}. Enter YES or NO.`, true); } }
             function handleRiddle1(input) { if (input === RIDDLE_1_ANSWER) { inputActive = false; currentLineDiv.style.display = 'none'; outputText("Well done!", false); outputText("Not everyone sees what you just uncovered.", false); outputText("Proceed with caution.", false); setTimeout(() => { startLevel4(); }, 1500); } else { outputText("Incorrect. Re-read the message and try again.", true); } }
@@ -304,9 +308,10 @@
             function handleRiddle6(input) { if (RIDDLE_6_ANSWERS.includes(input)) { inputActive = false; currentLineDiv.style.display = 'none'; outputText("LOCATION CONFIRMED. The truth is out there.", false); setTimeout(() => { startLevel9(); }, 1500); } else { outputText("Incorrect. Decryption failed.", true); } }
             function handleRiddle7(input) { if (input === RIDDLE_7_ANSWER) { inputActive = false; currentLineDiv.style.display = 'none'; outputText("ARCHIVE KEY ACCEPTED. Access granted to next layer.", false); setTimeout(() => { startLevel10(); }, 1500); } else { outputText("Incorrect. Filter the noise and check the transmission again.", true); } }
             function handleRiddle8(input) { if (input === RIDDLE_8_ANSWER) { inputActive = false; currentLineDiv.style.display = 'none'; outputText("DECODING COMPLETE. The heart of the system is exposed.", false); setTimeout(() => { startLevel11_Final(); }, 1500); } else { outputText(RIDDLE_8_INCORRECT_MESSAGE, true); } }
-            
+            // *** KRAJ UTILITY I LEVEL FUNKCIJA ***
 
-            // *** GLAVNA LOGIKA UNOSA (FIKS V48.21) ***
+
+            // *** LOGIKA UNOSA (FIKS V48.22) ***
             function activateInput(phase) {
                 gamePhase = phase;
                 if (phase === 1) promptSpan.textContent = "Login: ";
@@ -324,7 +329,7 @@
                     currentLineDiv.style.display = 'flex'; 
                     inputActive = true; 
                     
-                    // Pokušaj agresivnog fokusa (potrebno na nekim mobilnim)
+                    // Pokušaj agresivnog fokusa
                     setTimeout(() => {
                          hiddenInput.focus();
                     }, 50); 
@@ -367,14 +372,11 @@
 
             const keydownHandler = (e) => {
                 if (!inputActive) return; 
-                // keydownHandler hvata samo Enter (i na mobilnom i na desktopu)
+                // keydownHandler hvata samo Enter za submit
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     processInput(currentInput);
                 }
-                
-                // *** KRITIČNI FIKS V48.21: UKLONJENA LINIJA KOJA JE KRALA FOKUS NA DESKTOPU ***
-                // terminalDiv.focus(); 
             };
             document.addEventListener('keydown', keydownHandler);
 
@@ -398,10 +400,10 @@
             const changeHandler = () => {
                 if (!inputActive) return; 
                 
-                // Na mobilnom, ako se dogodi change, NE procesuiramo.
+                // Na mobilnom, ignore
                 if (isMobileDevice()) return;
                 
-                // Na desktopu, submitujemo
+                // Na desktopu, submit
                 processInput(currentInput);
                 
                 hiddenInput.value = ''; 
@@ -409,8 +411,37 @@
                 userInputDisplay.textContent = '';
             };
             
-            // ******************************************************
-            // *** FIKS V48.20: KAČENJE changeHandler-a (SAMO DESKTOP) ***
-            // ******************************************************
+            // KAČENJE changeHandler-a (SAMO DESKTOP)
             if (!isMobileDevice()) {
-                hiddenInput.addEventListener('change', change
+                hiddenInput.addEventListener('change', changeHandler);
+            }
+            
+
+            // BLUR HANDLER (ZAKLJUČAVANJE FOKUSA)
+            // Vraća fokus sa minimalnim odlaganjem SAMO NA MOBILNOM (za borbu protiv zatvaranja tastature)
+            const blurHandler = () => {
+                if (inputActive && isMobileDevice()) { 
+                    setTimeout(() => {
+                        hiddenInput.focus();
+                    }, 1); 
+                }
+            };
+            hiddenInput.addEventListener('blur', blurHandler);
+
+
+            const clickHandler = (e) => {
+                if (!inputActive) return; 
+                // Osigurava da klik na bilo koji deo terminala vrati fokus
+                if (e.target !== hiddenInput) {
+                    e.preventDefault(); 
+                    hiddenInput.focus();
+                }
+            };
+            terminalDiv.addEventListener('click', clickHandler);
+            
+            // POKRETANJE IGRE
+            startBootSequence();
+        });
+    </script>
+</body>
+</html>
