@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V48.1 (SA ANALITIKOM)</title>
+    <title>M4TR1X ARG - FINAL V48.2 (FIKSIRAN UNOS NA ANDROIDU)</title>
     
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-5EVRNMGJD2"></script>
     <script>
@@ -707,7 +707,7 @@
                 if (!inputActive) return; 
                 if (e.ctrlKey || e.altKey || e.metaKey) return; 
                 
-                // Popravak za desktop verziju - uklonjena provera fokusa
+                // Ovo rukuje unosom na Desktopu
                 if (e.key.length === 1 && e.key.match(/^[a-zA-Z0-9\s.,!?-]$/)) { 
                     e.preventDefault(); 
                     currentInput += e.key;
@@ -731,21 +731,29 @@
                 
                 let rawInput = hiddenInput.value;
                 
-                if (isMobileDevice()) {
-                    currentInput = rawInput.split('').reverse().join(''); 
-                } else {
-                    currentInput = rawInput; 
-                }
+                // Pojednostavljeno: Koristimo direktan unos.
+                currentInput = rawInput; 
                 
                 userInputDisplay.textContent = currentInput;
+                
+                // *** KRITIČNA LINIJA ZA ANDROID (V48.2) ***
+                // Agresivno vraćanje fokusa osigurava da se mobilna tastatura ne zatvori nakon jednog unesenog karaktera.
+                if (isMobileDevice()) { 
+                    hiddenInput.focus();
+                }
             };
             hiddenInput.addEventListener('input', inputHandler);
 
             const changeHandler = () => {
                 if (!inputActive) return; 
+                // Ova funkcija se poziva samo na "Enter" na mobilnom
                 processInput(currentInput);
                 hiddenInput.value = '';
                 currentInput = '';
+                // Nakon obrade, ponovo agresivno postavljamo fokus
+                if (isMobileDevice()) {
+                    hiddenInput.focus();
+                }
             };
             hiddenInput.addEventListener('change', changeHandler);
 
