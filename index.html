@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V48.20 (IZOLOVANI FIKS FOKUSA)</title>
+    <title>M4TR1X ARG - FINAL V48.21 (KONAČAN FIKS DESKTOP UNOSA)</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -198,7 +198,7 @@
                 { text: "System OBSERVER 2.1 Booted. Waiting for Authentication.", delay: 800, color: '#00FF00' } 
             ];
             
-            // Utility funkcije (isto kao V48.19)
+            // UTILITY FUNCTIONS (skraćene radi preglednosti, ali potpuno funkcionalne)
             function clearScreen() { outputDiv.innerHTML = ''; }
             function outputText(text, isError = false, isCode = false, color = null) {
                 const p = document.createElement('div');
@@ -217,16 +217,11 @@
                 let i = 0;
                 function type() {
                     if (i < text.length) {
-                        if (text.charAt(i) === '\n') {
-                            element.appendChild(document.createElement('br'));
-                        } else {
-                            element.innerHTML += text.charAt(i); 
-                        }
+                        if (text.charAt(i) === '\n') { element.appendChild(document.createElement('br')); } 
+                        else { element.innerHTML += text.charAt(i); }
                         i++;
                         setTimeout(type, speed);
-                    } else if (callback) {
-                        callback();
-                    }
+                    } else if (callback) { callback(); }
                 }
                 type();
             }
@@ -240,21 +235,12 @@
             }
             setMobileHeight();
             window.addEventListener('resize', setMobileHeight);
-            function startCountdownAndShutdown() {
-                outputText(""); outputText(""); 
+            function startCountdownAndShutdown() { outputText(""); outputText(""); 
                 let countdownElement = document.getElementById('countdown');
-                if (!countdownElement) {
-                    countdownElement = document.createElement('div');
-                    countdownElement.id = 'countdown';
-                    outputDiv.appendChild(countdownElement);
-                }
+                if (!countdownElement) { countdownElement = document.createElement('div'); countdownElement.id = 'countdown'; outputDiv.appendChild(countdownElement); }
                 let timeLeft = COUNTDOWN_TIME;
                 const timerInterval = setInterval(() => {
-                    if (timeLeft <= 0) {
-                        clearInterval(timerInterval);
-                        shutdownSequence(true); 
-                        return;
-                    }
+                    if (timeLeft <= 0) { clearInterval(timerInterval); shutdownSequence(true); return; }
                     const minutes = Math.floor(timeLeft / 60);
                     const seconds = timeLeft % 60;
                     const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
@@ -267,19 +253,14 @@
                 }, 1000);
             }
             function shutdownSequence(isFinal = false) {
-                inputActive = false;
-                currentLineDiv.style.display = 'none';
-                clearScreen();
-                let delay = 0;
+                inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); let delay = 0;
                 SHUTDOWN_MESSAGES.forEach(msg => {
                     delay += msg.delay;
                     setTimeout(() => {
                         outputText(msg.text, false, false, msg.color);
                         if (msg === SHUTDOWN_MESSAGES[SHUTDOWN_MESSAGES.length - 1]) {
                             setTimeout(() => {
-                                terminalDiv.classList.add('shutdown');
-                                outputDiv.innerHTML = '';
-                                terminalDiv.innerHTML = ''; 
+                                terminalDiv.classList.add('shutdown'); outputDiv.innerHTML = ''; terminalDiv.innerHTML = ''; 
                                 document.removeEventListener('keydown', keydownHandler);
                                 terminalDiv.removeEventListener('click', clickHandler);
                                 hiddenInput.removeEventListener('input', inputHandler);
@@ -291,19 +272,15 @@
                 });
             }
             function startBootSequence() {
-                clearScreen(); 
-                let delay = 0;
+                clearScreen(); let delay = 0;
                 BOOT_MESSAGES.forEach(msg => {
                     delay += msg.delay;
                     setTimeout(() => {
                         outputText(msg.text, false, false, msg.color);
-                        if (msg === BOOT_MESSAGES[BOOT_MESSAGES.length - 1]) {
-                            activateInput(1); 
-                        }
+                        if (msg === BOOT_MESSAGES[BOOT_MESSAGES.length - 1]) { activateInput(1); }
                     }, delay);
                 });
             }
-            
             // Funkcije startLevel2 do startLevel11_Final su izostavljene radi kraćeg koda (ali su iste kao V48.19)
             function startLevel2() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(TYPEWRITER_TEXT, 8, () => { activateInput(2); }); }
             function startLevel3() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(RIDDLE_1_TEXT, 8, () => { activateInput(3); }); }
@@ -329,7 +306,7 @@
             function handleRiddle8(input) { if (input === RIDDLE_8_ANSWER) { inputActive = false; currentLineDiv.style.display = 'none'; outputText("DECODING COMPLETE. The heart of the system is exposed.", false); setTimeout(() => { startLevel11_Final(); }, 1500); } else { outputText(RIDDLE_8_INCORRECT_MESSAGE, true); } }
             
 
-            // *** GLAVNA LOGIKA UNOSA (FIKS V48.20) ***
+            // *** GLAVNA LOGIKA UNOSA (FIKS V48.21) ***
             function activateInput(phase) {
                 gamePhase = phase;
                 if (phase === 1) promptSpan.textContent = "Login: ";
@@ -396,8 +373,8 @@
                     processInput(currentInput);
                 }
                 
-                // Vraća fokus na Terminal Div na Desktopu (standardno ponašanje)
-                terminalDiv.focus(); 
+                // *** KRITIČNI FIKS V48.21: UKLONJENA LINIJA KOJA JE KRALA FOKUS NA DESKTOPU ***
+                // terminalDiv.focus(); 
             };
             document.addEventListener('keydown', keydownHandler);
 
@@ -436,38 +413,4 @@
             // *** FIKS V48.20: KAČENJE changeHandler-a (SAMO DESKTOP) ***
             // ******************************************************
             if (!isMobileDevice()) {
-                hiddenInput.addEventListener('change', changeHandler);
-            }
-            // ******************************************************
-            
-
-            // ******************************************************
-            // *** BLUR HANDLER (ZAKLJUČAVANJE FOKUSA) - KRITIČAN FIKS V48.20 ***
-            // Vraća fokus sa minimalnim odlaganjem SAMO NA MOBILNOM.
-            // ******************************************************
-            const blurHandler = () => {
-                if (inputActive && isMobileDevice()) { // DODAT USLOV isMobileDevice()
-                    setTimeout(() => {
-                        hiddenInput.focus();
-                    }, 1); 
-                }
-            };
-            hiddenInput.addEventListener('blur', blurHandler);
-            // ******************************************************
-
-
-            const clickHandler = (e) => {
-                if (!inputActive) return; 
-                // Osigurava da klik na bilo koji deo terminala vrati fokus
-                if (e.target !== hiddenInput) {
-                    e.preventDefault(); 
-                    hiddenInput.focus();
-                }
-            };
-            terminalDiv.addEventListener('click', clickHandler);
-            
-            startBootSequence();
-        });
-    </script>
-</body>
-</html>
+                hiddenInput.addEventListener('change', change
