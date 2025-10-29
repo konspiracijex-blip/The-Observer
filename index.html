@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V15 (POTPUNO OMOGUĆENO KOPIRANJE)</title>
+    <title>M4TR1X ARG - FINAL V16 (FIKSIRANO KOPIRANJE)</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -39,17 +39,16 @@
             color: #00FF00; 
             font-family: 'Courier New', monospace;
             font-size: 1.2em; 
-            /* Uklonjen cursor: default; i touch-action: manipulation; je zadržan */
             touch-action: manipulation;
             padding: 0; 
             margin: 0; 
             display: block; 
             
             /* OMOGUĆAVANJE SELEKCIJE TEKSTA NA SVIM UREĐAJIMA */
-            -webkit-user-select: text !important; /* Za Safari */
-            -moz-user-select: text !important;    /* Za Firefox */
-            -ms-user-select: text !important;     /* Za IE/Edge */
-            user-select: text !important;         /* Standard */
+            -webkit-user-select: text !important; 
+            -moz-user-select: text !important;    
+            -ms-user-select: text !important;     
+            user-select: text !important;         
         }
         
         #terminal {
@@ -71,7 +70,7 @@
             -moz-user-select: text !important;
             -ms-user-select: text !important;
             user-select: text !important;
-            cursor: text; /* Promenjen kursor da signalizira tekst */
+            cursor: text; 
         }
         
         @media screen and (max-width: 600px) {
@@ -302,7 +301,7 @@
                                 terminalDiv.classList.add('shutdown'); outputDiv.innerHTML = ''; terminalDiv.innerHTML = ''; 
                                 document.removeEventListener('keydown', keydownHandler);
                                 hiddenInput.removeEventListener('input', inputHandler);
-                                hiddenInput.removeEventListener('blur', blurHandler); 
+                                // Uklonjena blurHandler, pa nema event listenera za uklanjanje
                             }, 500); 
                         }
                     }, delay);
@@ -499,7 +498,7 @@
             };
 
             // ******************************************************
-            // *** KEYDOWN HANDLER (Ostaje nepromenjen) ***
+            // *** KEYDOWN HANDLER ***
             const keydownHandler = (e) => {
                 if (!inputActive) return; 
                 
@@ -541,7 +540,7 @@
 
 
             // ******************************************************
-            // *** INPUT HANDLER (Ostaje nepromenjen) ***
+            // *** INPUT HANDLER ***
             const inputHandler = () => {
                 if (!inputActive) return; 
 
@@ -558,22 +557,18 @@
             hiddenInput.addEventListener('input', inputHandler);
             // ******************************************************
 
+            // *** BLUR HANDLER JE UKLONJEN DA BI SE OMOGUĆILO KOPIRANJE ***
+            
             // ******************************************************
-            // *** BLUR HANDLER (Ostaje nepromenjen) ***
-            const blurHandler = () => {
-                if (inputActive && (isMobileDevice() || isTelegramApp)) { 
-                    setTimeout(() => {
-                        hiddenInput.focus();
-                    }, 1); 
+            // *** CLICK HANDLER (vraćen za re-focus na desktopu, ali bez preventDefault!) ***
+            const clickHandler = (e) => {
+                if (!inputActive) return; 
+                // Ako kliknete bilo gde osim na polje za unos, fokusirajte input, ali NE SPREČAVAJTE default akciju (selekciju)
+                if (e.target !== hiddenInput) {
+                    // hiddenInput.focus(); // Uklonjeno jer je ovo prekidalo dugu gestu pritiska na mobilnom
                 }
             };
-            hiddenInput.addEventListener('blur', blurHandler);
-            // ******************************************************
-
-
-            // *** CLICK HANDLER JE U POTPUNOSTI UKLONJEN (FIKS) ***
-            // Uklonjen je kod koji je automatski fokusirao input na svaki klik,
-            // što je ometalo selekciju teksta (dugi pritisak na mobilnom).
+            // terminalDiv.addEventListener('click', clickHandler); // Ostavljamo uklonjeno, jer je i ovo agresivno
 
             
             // POKRETANJE IGRE
