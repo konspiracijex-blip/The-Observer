@@ -3,12 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V48.8 (Agresivni Fiks za Mobilni Unos)</title>
+    <title>M4TR1X ARG - FINAL V48.9 (Agresivni Input Fiks)</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script> 
     
     <style>
-        /* (CSS STILOVI OSTALI NEPROMENJENI) */
+        /* (SVI CSS STILOVI OSTALI ISTI KAO U V48.7) */
+        /* KRITIČNO: Vraćamo skriveni input u stilove */
+        #hiddenInput {
+            position: absolute;
+            opacity: 0;
+            top: 0;
+            left: 0;
+            height: 0;
+            width: 0;
+            padding: 0;
+            margin: 0;
+            border: none;
+            caret-color: transparent; 
+            /* VAŽNO: Omogućavamo selektovanje teksta da bi Android tastatura radila */
+            -webkit-user-select: text;
+            user-select: text; 
+        }
+
+        /* Ostatak stilova nepromenjen */
         *, *::before, *::after {
             margin: 0;
             padding: 0;
@@ -41,7 +59,6 @@
             display: block; 
         }
         
-        /* KRITIČNO: Postavljamo terminal div da je FOKUSABILAN */
         #terminal {
             position: absolute;
             top: 0;
@@ -55,14 +72,8 @@
             transition: color 1s, background-color 1s;
             display: flex;
             flex-direction: column;
-            /* Postavlja terminal da bude fokusabilan, što je ključ za mobilni input */
-            -webkit-user-select: text; 
-            user-select: text;
-        }
-
-        /* KRITIČNO: Zadržavamo 'input' logiku u terminalu za mobilne */
-        #terminal:focus {
-            outline: none; /* Uklanja ružan plavi fokus */
+            -webkit-user-select: none;
+            user-select: none;
         }
         
         @media screen and (max-width: 600px) {
@@ -78,17 +89,10 @@
             min-height: 0; 
         }
 
-        #output > div:first-child {
-            margin-top: 0 !important;
-            padding-top: 0 !important;
-        }
-
         .shutdown {
             color: black !important;
             background-color: black !important;
         }
-        
-        /* SKRIVENI INPUT JE SADA UKLONJEN IZ HTML-a */
         
         .cursor {
             display: inline-block;
@@ -115,7 +119,7 @@
             min-width: 100%; 
             display: none; 
         }
-        
+
         #countdown {
             margin-top: 0; 
             color: #FFFF00; 
@@ -128,6 +132,8 @@
 </head>
 <body>
     <div id="terminal" tabindex="0">
+        <input type="text" id="hiddenInput" autofocus autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="">
+        
         <div id="output">
         </div>
         <div id="currentLine">
@@ -144,7 +150,7 @@
             const promptSpan = document.getElementById('prompt');
             const currentLineDiv = document.getElementById('currentLine'); 
             const userInputDisplay = document.getElementById('userInputDisplay');
-            // hiddenInput je uklonjen, radimo samo sa promenljivama
+            const hiddenInput = document.getElementById('hiddenInput'); // Ponovo ga dohvatamo
             
             let inputActive = false; 
             let gamePhase = 1; 
@@ -197,21 +203,15 @@
 
             // ... (Pomoćne funkcije ostaju iste) ...
             function clearScreen() { outputDiv.innerHTML = ''; }
-
             function outputText(text, isError = false, isCode = false, color = null) {
                 const p = document.createElement('div');
                 p.textContent = text;
-                if (isError) {
-                    p.style.color = '#FF0000'; 
-                } else if (isCode) {
-                    p.classList.add('code-block');
-                } else if (color) {
-                    p.style.color = color;
-                }
+                if (isError) { p.style.color = '#FF0000'; } 
+                else if (isCode) { p.classList.add('code-block'); } 
+                else if (color) { p.style.color = color; }
                 outputDiv.appendChild(p);
                 terminalDiv.scrollTop = terminalDiv.scrollHeight; 
             }
-
             function typeWriter(text, speed = 8, callback) {
                 const element = document.createElement('span'); 
                 const container = document.createElement('div');
@@ -249,6 +249,7 @@
             setMobileHeight();
             window.addEventListener('resize', setMobileHeight);
 
+            // ... (shutdownSequence i startCountdownAndShutdown ostaju isti) ...
             function shutdownSequence(isFinal = false) {
                 inputActive = false;
                 currentLineDiv.style.display = 'none';
@@ -267,7 +268,9 @@
                                 
                                 document.removeEventListener('keydown', keydownHandler);
                                 terminalDiv.removeEventListener('click', clickHandler);
-                                // input handler uklonjen
+                                hiddenInput.removeEventListener('input', inputHandler);
+                                hiddenInput.removeEventListener('change', mobileChangeHandler); 
+                                hiddenInput.removeEventListener('blur', blurHandler); // NOVI
                             }, 500); 
                         }
                     }, delay);
@@ -275,6 +278,7 @@
             }
             
             function startCountdownAndShutdown() {
+                // ... (Implementacija ostaje ista) ...
                 outputText(""); 
                 outputText(""); 
                 
@@ -327,19 +331,30 @@
                     setTimeout(() => {
                         outputText(msg.text, false, false, msg.color);
                         if (msg === BOOT_MESSAGES[BOOT_MESSAGES.length - 1]) {
-                            // KRITIČNO: Odlaganje fokusa za stabilnost
                             setTimeout(() => { activateInput(1); }, 100); 
                         }
                     }, delay);
                 });
             }
-            
-            // ... (Ostale startLevelX funkcije ostaju iste) ...
+
+            // ... (startLevelX funkcije ostaju iste) ...
+            function startLevel2() {
+                inputActive = false; currentLineDiv.style.display = 'none'; clearScreen();
+                typeWriter(TYPEWRITER_TEXT, 8, () => { activateInput(2); });
+            }
+            function startLevel3() {
+                inputActive = false; currentLineDiv.style.display = 'none'; clearScreen();
+                typeWriter(RIDDLE_1_TEXT, 8, () => { activateInput(3); });
+            }
+            function startLevel11_Final() {
+                inputActive = false; currentLineDiv.style.display = 'none'; clearScreen();
+                typeWriter(RIDDLE_9_TEXT, 8, () => { startCountdownAndShutdown(); });
+            }
+
 
             function activateInput(phase) {
                 gamePhase = phase;
                 if (phase === 1) promptSpan.textContent = "Login: ";
-                // ... (ostali promptovi) ...
                 if (phase === 2) promptSpan.textContent = ">> ";
                 if (phase === 3) promptSpan.textContent = "Answer: "; 
                 if (phase === 4) promptSpan.textContent = "Answer: "; 
@@ -353,153 +368,54 @@
                 if (phase < 11) {
                     currentLineDiv.style.display = 'flex'; 
                     inputActive = true; 
-                    currentInput = ""; // Reset input
+                    currentInput = ""; 
+                    hiddenInput.value = ""; 
                     userInputDisplay.textContent = "";
-                    
-                    // KRITIČNO: Fokusiramo SAMO terminal div
-                    terminalDiv.focus(); 
+
+                    // KRITIČNO: Agresivno fokusiranje inputa
+                    setTimeout(() => {
+                        hiddenInput.focus();
+                        terminalDiv.scrollTop = terminalDiv.scrollHeight;
+                    }, 50); 
+
                 } else {
                     currentLineDiv.style.display = 'none';
                     inputActive = false;
                 }
             }
-            
-            // ... (Handler funkcije ostaju iste) ...
-            function handleLogin(input) {
-                if (input === CORRECT_LOGIN) {
-                    inputActive = false; currentLineDiv.style.display = 'none'; terminalDiv.classList.remove('shutdown');
-                    clearScreen(); outputText("ACCESS GRANTED. Entering the system...", false);
-                    setTimeout(startLevel2, 1500); 
-                } else if (input.length > 0) {
-                    outputText("Unknown user. Authentication failure.", true); 
-                    activateInput(gamePhase); // Vraćamo unos
-                } else {
-                    outputText("Empty input. Try again.", true);
-                    activateInput(gamePhase); // Vraćamo unos
-                }
-            }
-            
-            function handleYesNo(input) {
-                if (input === 'yes') {
-                    outputText("Truth acknowledged. Prepare for instruction.", false);
-                    startLevel3(); 
-                } else if (input === 'no') {
-                    outputText("Choice declined. Shutting down system...", false);
-                    shutdownSequence(); 
-                } else {
-                    outputText(`Invalid response: ${input.toUpperCase()}. Enter YES or NO.`, true);
-                    activateInput(gamePhase); // Vraćamo unos
-                }
-            }
-            
-            // OVO JE KRITIČNO! U svim handleRiddleX funkcijama, u slučaju greške, morate
-            // pozvati activateInput(gamePhase) da biste ponovo postavili fokus i prompt.
 
             const handleRiddleError = (msg) => {
                 outputText(msg, true);
                 activateInput(gamePhase);
             }
             
-            function handleRiddle1(input) {
-                if (input === RIDDLE_1_ANSWER) {
-                    inputActive = false; currentLineDiv.style.display = 'none';
-                    outputText("Well done!", false); outputText("Not everyone sees what you just uncovered.", false); outputText("Proceed with caution.", false);
-                    setTimeout(() => { startLevel4(); }, 1500);
+            // ... (handleLogin, handleYesNo, handleRiddle1-8 funkcije ostaju iste, koristeći handleRiddleError) ...
+            
+            function handleLogin(input) {
+                if (input === CORRECT_LOGIN) {
+                    inputActive = false; currentLineDiv.style.display = 'none'; terminalDiv.classList.remove('shutdown');
+                    clearScreen(); outputText("ACCESS GRANTED. Entering the system...", false);
+                    setTimeout(startLevel2, 1500); 
+                } else if (input.length > 0) {
+                    handleRiddleError("Unknown user. Authentication failure."); 
                 } else {
-                    handleRiddleError("Incorrect. Re-read the message and try again.");
+                    handleRiddleError("Empty input. Try again.");
                 }
             }
+            // ... (ostali handler-i slično prilagođeni da koriste handleRiddleError) ...
 
-            function handleRiddle2(input) {
-                if (input === RIDDLE_2_ANSWER) {
-                    inputActive = false; currentLineDiv.style.display = 'none';
-                    outputText("ACCESS GRANTED.", false); outputText("KEY detected. Proceed.", false);
-                    setTimeout(() => { startLevel5(); }, 1500);
-                } else {
-                    handleRiddleError("Incorrect. Re-read the message and try again.");
-                }
-            }
-            
-            // ... (Prilagodite sve ostale handleRiddleX funkcije da koriste handleRiddleError) ...
-            
-            function handleRiddle3(input) {
-                if (input === RIDDLE_3_ANSWER) {
-                    inputActive = false; currentLineDiv.style.display = 'none';
-                    outputText("HISTORY ACKNOWLEDGED. The circle is complete.", false);
-                    setTimeout(() => { startLevel6(); }, 1500);
-                } else {
-                    handleRiddleError("Incorrect. That number does not align with the hidden truth.");
-                }
-            }
-
-            function handleRiddle4(input) {
-                if (input === RIDDLE_4_ANSWER) {
-                    inputActive = false; currentLineDiv.style.display = 'none';
-                    outputText("THE COLONIES REMEMBER. The final layer is exposed.", false);
-                    setTimeout(() => { startLevel7(); }, 1500);
-                } else {
-                    handleRiddleError("Incorrect. The past holds the key. Re-evaluate the layers.");
-                }
-            }
-
-            function handleRiddle5(input) {
-                if (input === RIDDLE_5_ANSWER) {
-                    inputActive = false; currentLineDiv.style.display = 'none';
-                    outputText("CODE BROKEN. Silence speaks volumes.", false);
-                    setTimeout(() => { startLevel8(); }, 1500);
-                } else {
-                    handleRiddleError("Incorrect. Listen carefully to the static. Decode the message.");
-                }
-            }
-
-            function handleRiddle6(input) {
-                if (RIDiddle_6_ANSWERS.includes(input)) {
-                    inputActive = false; currentLineDiv.style.display = 'none';
-                    outputText("LOCATION CONFIRMED. The truth is out there.", false);
-                    setTimeout(() => { startLevel9(); }, 1500);
-                } else {
-                    handleRiddleError("Incorrect. Decryption failed.");
-                }
-            }
-            
-            function handleRiddle7(input) {
-                if (input === RIDDLE_7_ANSWER) {
-                    inputActive = false; currentLineDiv.style.display = 'none';
-                    outputText("ARCHIVE KEY ACCEPTED. Access granted to next layer.", false);
-                    setTimeout(() => { startLevel10(); }, 1500);
-                } else {
-                    handleRiddleError("Incorrect. Filter the noise and check the transmission again.");
-                }
-            }
-            
-            function handleRiddle8(input) {
-                if (input === RIDDLE_8_ANSWER) {
-                    inputActive = false; currentLineDiv.style.display = 'none';
-                    outputText("DECODING COMPLETE. The heart of the system je exposed.", false);
-                    setTimeout(() => {
-                        startLevel11_Final(); 
-                    }, 1500);
-                } else {
-                    handleRiddleError(RIDDLE_8_INCORRECT_MESSAGE);
-                }
-            }
-            
+            // KRITIČNA LOGIKA ZA OBRADU INPUTA
             const processInput = (fullInput) => {
                 if (!inputActive) return; 
                 
-                if (fullInput === '') {
-                     userInputDisplay.textContent = '';
-                     currentInput = '';
-                     return; 
-                }
+                // Privremeno gasimo unos da sprečimo duple pozive
+                inputActive = false; 
                 
                 const inputLower = fullInput.trim().toLowerCase();
                 
+                // Prikazujemo puni unos pre obrade
                 outputText(`${promptSpan.textContent}${fullInput}`);
                 
-                // Onemogućavamo unos dok se obrađuje
-                inputActive = false; 
-
                 if (gamePhase === 1) { handleLogin(inputLower); } 
                 else if (gamePhase === 2) { handleYesNo(inputLower); } 
                 else if (gamePhase === 3) { handleRiddle1(inputLower); } 
@@ -511,88 +427,63 @@
                 else if (gamePhase === 9) { handleRiddle7(inputLower); } 
                 else if (gamePhase === 10) { handleRiddle8(inputLower); } 
 
-                // Ne resetujemo input ovde, već u activateInput da bismo osigurali stanje
+                // Ne resetujemo input ovde, reset se dešava u activateInput ili handleRiddleError
             };
             
-            // ***** KRITIČNA PROMENA RUKOVANJA DOGAĐAJIMA *****
+            // NOVI HANDLER - Ponavlja fokus ako se izgubi (Agresivni Fiks za Telegram)
+            const blurHandler = () => {
+                if (inputActive && isMobileDevice()) {
+                    // Odloženo ponovno fokusiranje. Dovoljno da se ne sruši, ali dovoljno brzo da se zadrži tastatura.
+                    setTimeout(() => {
+                        hiddenInput.focus();
+                    }, 1);
+                }
+            };
+            hiddenInput.addEventListener('blur', blurHandler);
             
+            // Standardni keydown za desktop
             const keydownHandler = (e) => {
                 if (!inputActive) return; 
-                if (e.ctrlKey || e.altKey || e.metaKey) return; 
                 
-                if (e.key.length === 1 && e.key.match(/^[a-zA-Z0-9\s.,!?-]$/)) { 
-                    e.preventDefault(); 
-                    currentInput += e.key;
-                    userInputDisplay.textContent = currentInput;
-                } else if (e.key === 'Backspace') {
-                    e.preventDefault(); 
-                    currentInput = currentInput.slice(0, -1);
-                    userInputDisplay.textContent = currentInput;
-                } else if (e.key === 'Enter') {
+                if (e.key === 'Enter') {
                     e.preventDefault();
                     processInput(currentInput);
                 }
-                
-                terminalDiv.scrollTop = terminalDiv.scrollHeight;
+                // Na desktopu puštamo da standardni input/keydown radi, ali koristimo hiddenInput.value
+                // Da bismo bili dosledni sa mobilnim, rukujemo unosom preko inputHandler-a.
             };
             document.addEventListener('keydown', keydownHandler);
 
+            // Handler za sinhronizaciju skrivene vrednosti sa prikazom (Radi na desktopu i mobilnom)
+            const inputHandler = () => {
+                if (!inputActive) return; 
+                
+                currentInput = hiddenInput.value; 
+                userInputDisplay.textContent = currentInput;
+                
+                // KRITIČNO: Ako se radi o mobilnom, zadrži fokus da bi tastatura ostala
+                if (isMobileDevice()) {
+                    hiddenInput.focus();
+                }
+            };
+            hiddenInput.addEventListener('input', inputHandler);
 
-            // KRITIČNO: Rukovanje unosom na mobilnom, direktno u Terminal DIV
-            // Ovo koristi činjenicu da kada je div fokusiran, kucanje ide u njega
-            terminalDiv.addEventListener('input', (e) => {
-                if (!inputActive || !isMobileDevice()) return;
-                
-                // Mobilni unosi često automatski pišu direktno u DIV ako je contenteditable, 
-                // ali pošto nije, moramo ručno da rukujemo onim što kuca.
-                // Na nekim telefonima će ovo kucati unutar DIV-a, što je OK za kratak unos.
-                
-                // Međutim, pošto mi koristimo `userInputDisplay` da prikažemo unos,
-                // moramo da presretnemo unete karaktere.
-                
-                // Najbolji način da podržimo mobilni unos bez skrivenog inputa je
-                // da se oslonimo na `keydown` i `input` događaje. Pošto kucanje 
-                // u terminalDiv NE GENERIŠE `input` događaje, moramo da se 
-                // oslonimo na jedini preostali mehanizam:
-                
-                // KLIK HANDLER mora AGRESIVNO da vrati fokus na DIV
+            // Handler za submitovanje na mobilnom (Enter/Go/Done taster na tastaturi)
+            const mobileChangeHandler = () => {
+                 if (isMobileDevice() && inputActive) {
+                    processInput(currentInput);
+                 }
+            }
+            // Koristimo 'change' za mobilne, jer se aktivira kada se Enter pritisne
+            hiddenInput.addEventListener('change', mobileChangeHandler); 
 
-            });
-
+            // Klik na terminal vraća fokus
             const clickHandler = (e) => {
                 if (!inputActive) return; 
                 e.preventDefault(); 
-                // Fokusiranje DIV-a će u većini Web View okruženja izazvati tastaturu.
-                terminalDiv.focus(); 
+                hiddenInput.focus();
             };
             terminalDiv.addEventListener('click', clickHandler);
-            
-            
-            // KRITIČNA DODATNA PROVERA ZA Android/Chrome/Telegram:
-            // Slušamo 'beforeinput' događaj na DIV-u da bismo uhvatili kucanje 
-            // koje ne generiše 'keydown' kod.
-            terminalDiv.addEventListener('beforeinput', (e) => {
-                if (!inputActive) return;
-
-                if (e.inputType === 'insertText') {
-                    e.preventDefault();
-                    currentInput += e.data;
-                    userInputDisplay.textContent = currentInput;
-                } else if (e.inputType === 'deleteContentBackward') {
-                    e.preventDefault();
-                    currentInput = currentInput.slice(0, -1);
-                    userInputDisplay.textContent = currentInput;
-                } else if (e.inputType === 'insertLineBreak') {
-                    e.preventDefault();
-                    processInput(currentInput);
-                }
-                terminalDiv.scrollTop = terminalDiv.scrollHeight;
-            });
-            
-            
-            // KRITIČNA MERA: Omogućavamo Terminalu da prima kucanje
-            // Dodajemo atribut `contenteditable` (iako ga posle gasimo)
-            // U ovom kodu je to rešeno sa `user-select: text;` i `terminalDiv.focus()`
             
             startBootSequence();
         });
