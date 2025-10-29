@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V16 (FIKSIRANO KOPIRANJE)</title>
+    <title>M4TR1X ARG - FINAL V17 (KOPIRANJE + MOBILNA TASTATURA)</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -301,7 +301,7 @@
                                 terminalDiv.classList.add('shutdown'); outputDiv.innerHTML = ''; terminalDiv.innerHTML = ''; 
                                 document.removeEventListener('keydown', keydownHandler);
                                 hiddenInput.removeEventListener('input', inputHandler);
-                                // Uklonjena blurHandler, pa nema event listenera za uklanjanje
+                                terminalDiv.removeEventListener('click', clickHandler); // Uklanjanje click handlera
                             }, 500); 
                         }
                     }, delay);
@@ -502,10 +502,6 @@
             const keydownHandler = (e) => {
                 if (!inputActive) return; 
                 
-                if (isTelegramApp) {
-                     setTimeout(() => { hiddenInput.focus(); }, 1); 
-                }
-
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     processInput(currentInput);
@@ -549,27 +545,35 @@
                 currentInput = rawInput; 
                 userInputDisplay.textContent = currentInput;
                 
+                // Uklonjeno automatsko ponovno fokusiranje jer ometa selekciju
                 if (isMobileDevice() || isTelegramApp) {
                     scrollToBottomSmooth(1);
-                    setTimeout(() => { hiddenInput.focus(); }, 1);
                 }
             };
             hiddenInput.addEventListener('input', inputHandler);
             // ******************************************************
 
-            // *** BLUR HANDLER JE UKLONJEN DA BI SE OMOGUĆILO KOPIRANJE ***
+            // *** BLUR HANDLER JE UKLONJEN (FIKS ZA KOPIRANJE) ***
             
             // ******************************************************
-            // *** CLICK HANDLER (vraćen za re-focus na desktopu, ali bez preventDefault!) ***
+            // *** CLICK HANDLER (RE-AKTIVIRAN ZA VRAĆANJE FOKUSA/TASTATURE) ***
             const clickHandler = (e) => {
                 if (!inputActive) return; 
-                // Ako kliknete bilo gde osim na polje za unos, fokusirajte input, ali NE SPREČAVAJTE default akciju (selekciju)
+                
+                // Ako korisnik klikne bilo gde unutar terminala, a to nije sam skriveni input
                 if (e.target !== hiddenInput) {
-                    // hiddenInput.focus(); // Uklonjeno jer je ovo prekidalo dugu gestu pritiska na mobilnom
+                    // NE KORISTIMO e.preventDefault()
+                    hiddenInput.focus();
+                    
+                    // KRITIČNO za Telegram/Mobilni: Osigurajte da je tastatura prikazana
+                    if (isTelegramApp || isMobileDevice()) {
+                        setTimeout(() => { hiddenInput.focus(); }, 10);
+                        scrollToBottomSmooth(50); 
+                    }
                 }
             };
-            // terminalDiv.addEventListener('click', clickHandler); // Ostavljamo uklonjeno, jer je i ovo agresivno
-
+            terminalDiv.addEventListener('click', clickHandler);
+            // ******************************************************
             
             // POKRETANJE IGRE
             startBootSequence();
