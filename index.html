@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V48.23 (KONAČNA IZOLACIJA UNOSA)</title>
+    <title>M4TR1X ARG - FINAL V48.24 (KONACNI FIKS ZA TELEGRAM DESKTOP)</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -227,16 +227,14 @@
                 type();
             }
             
-            // ******************************************************
-            // *** KRITIČNI FIKS V48.23: STRIKTNA DEFINICIJA MOBILNOG ***
-            // Uklanja detekciju Telegram WebApp za desktop klijent.
-            // ******************************************************
+            // Provera samo za fizičke mobilne uređaje (za obrtanje teksta)
             function isMobileDevice() {
-                // Proverava ISKLJUČIVO fizičke mobilne uređaje (telefone/tablete)
                 return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
             }
-            // ******************************************************
-            
+
+            // Provera da li se nalazimo u Telegram WebApp okruženju (Desktop ili Mobilni)
+            const isTelegramApp = (window.Telegram && window.Telegram.WebApp);
+
             function setMobileHeight() {
                 let vh = window.innerHeight * 0.01;
                 document.documentElement.style.setProperty('--vh', `${vh}px`);
@@ -319,7 +317,7 @@
             // *** KRAJ UTILITY I LEVEL FUNKCIJA ***
 
 
-            // *** LOGIKA UNOSA (FIKS V48.23) ***
+            // *** LOGIKA UNOSA (FIKS V48.24) ***
             function activateInput(phase) {
                 gamePhase = phase;
                 if (phase === 1) promptSpan.textContent = "Login: ";
@@ -393,17 +391,13 @@
                 
                 let rawInput = hiddenInput.value;
                 
-                // ******************************************************
-                // *** FIKS V48.23: OBRTANJE TEKSTA SAMO NA MOBILNOM ***
-                // ******************************************************
+                // Obrtanje teksta samo za FIZIČKE mobilne uređaje (gde je to potrebno zbog nekih tastatura)
                 if (isMobileDevice()) {
-                    // Obrtanje stringa za Web View (potrebno samo na nekim mobilnim tastaturama)
                     currentInput = rawInput.split('').reverse().join(''); 
                 } else {
                     // Standardni unos za Desktop Browser i Telegram Desktop
                     currentInput = rawInput; 
                 }
-                // ******************************************************
                 
                 userInputDisplay.textContent = currentInput;
             };
@@ -430,16 +424,20 @@
             }
             
 
-            // BLUR HANDLER (ZAKLJUČAVANJE FOKUSA)
-            // AKTIVAN SAMO NA FIZIČKIM MOBILNIM UREĐAJIMA.
+            // ******************************************************
+            // *** BLUR HANDLER (FIKS V48.24) ***
+            // Vraća fokus sa minimalnim odlaganjem na FIZIČKOM MOBILNOM ILI BILO KOJOJ TELEGRAM APLIKACIJI.
+            // ******************************************************
             const blurHandler = () => {
-                if (inputActive && isMobileDevice()) { 
+                // Provera: Da li je mobilni uređaj ILI da li je Telegram aplikacija (Desktop ili Mobilna)
+                if (inputActive && (isMobileDevice() || isTelegramApp)) { 
                     setTimeout(() => {
                         hiddenInput.focus();
                     }, 1); 
                 }
             };
             hiddenInput.addEventListener('blur', blurHandler);
+            // ******************************************************
 
 
             const clickHandler = (e) => {
