@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V47 (POPRAVLJEN UNOS)</title>
+    <title>M4TR1X ARG - FINAL V48 (FIKSIRAN UNOS NA DESKTOPU)</title>
     <style>
         /* *** GLOBALNI RESET I RELATIVNO POZICIONIRANJE *** */
         *, *::before, *::after {
@@ -87,7 +87,6 @@
             background-color: black !important;
         }
         
-        /* ... (Ostatak CSS-a je nepromenjen) ... */
         #hiddenInput {
             position: absolute;
             opacity: 0;
@@ -177,7 +176,7 @@
             
             const CORRECT_LOGIN = "observer"; 
             
-            // Definicije nivoa - VRAĆENE!
+            // Definicije nivoa
             const RIDDLE_1_TEXT = "It’s the future, a shadow that stretches before you. You can sense it, feel its shape, but it never reveals itself - always just out of reach, always waiting.";
             const RIDDLE_1_ANSWER = "future"; 
             const RIDDLE_2_TEXT = "Keep your steps quiet as you move through the deserted streets.\nEvery shadow stretches, every whisper hides a secret.\nYou feel it, the hidden truth, just beyond perception - waiting for the one who notices.";
@@ -198,7 +197,7 @@
             const RIDDLE_8_ANSWER = "matrix";
             const RIDDLE_8_INCORRECT_MESSAGE = "INCORRECT. \nThe letters remain hidden. Re-evaluate the sequence."; 
             
-            // FINALNA ZAGONETKA - AŽURIRANA
+            // FINALNA ZAGONETKA (V46)
             const RIDDLE_9_TEXT = "— TRANSMISSION INTERCEPTED —\nSignals scrambled. Numbers mask the letters.\nDecrypt the sequence to reveal the hidden word:\n\n67 79 78 83 80 73 82 65 67 89\n\nSubmit your answer to:\nkonspiracijex@gmail.com\n\nTRANSMISSION AWAITING\nKey not yet verified. \nStay alert. Further contact will follow after submission.\n//";
             const COUNTDOWN_TIME = 60; // Sekunde
             
@@ -682,7 +681,8 @@
             const keydownHandler = (e) => {
                 if (!inputActive) return; 
                 if (e.ctrlKey || e.altKey || e.metaKey) return; 
-                if (document.activeElement !== terminalDiv) return;
+                
+                // *** UKLONJENA LINIJA KOJA JE KRŠILA FOKUS NA DESKTOPU: if (document.activeElement !== terminalDiv) return;
 
                 if (e.key.length === 1 && e.key.match(/^[a-zA-Z0-9\s.,!?-]$/)) { 
                     e.preventDefault(); 
@@ -696,6 +696,8 @@
                     e.preventDefault();
                     processInput(currentInput);
                 }
+                
+                // KRITIČNA LINIJA ZA ODRŽAVANJE FOKUSA NA DESKTOPU
                 terminalDiv.focus(); 
             };
             document.addEventListener('keydown', keydownHandler);
