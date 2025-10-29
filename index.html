@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V48 (FIKSIRAN UNOS NA DESKTOPU)</title>
+    <title>M4TR1X ARG - FINAL V48.15 (POTPUNI FIKS UNOSA)</title>
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
     <style>
         /* *** GLOBALNI RESET I RELATIVNO POZICIONIRANJE *** */
         *, *::before, *::after {
@@ -187,8 +190,10 @@
             const RIDDLE_4_ANSWER = "13"; 
             const RIDDLE_5_TEXT = "A message drifts through the static, a code hidden in dots and dashes.\nOnly those who listen carefully can hear what is whispered.\n\n... .... .- -.. --- .--";
             const RIDDLE_5_ANSWER = "shadow"; 
+            
+            // KRITIČNO ISPRAVLJEN TYPO: RIDDLE_6_ANSWERS umesto RIDiddle_6_ANSWERS
+            const RIDDLE_6_ANSWERS = ["area 51", "area51"]; 
             const RIDDLE_6_TEXT = "Accessing restricted map layer...\nDecryption needed.\nLocation Hidden in Plain Sight:\n37.247456, -115.801709";
-            const RIDiddle_6_ANSWERS = ["area 51", "area51"];
             
             const RIDDLE_7_TEXT = "Transmission intercepted...\nFilter the clutter. Extract only the hidden letters.\n\n#O%P#E*N^ #T&H#E# #A%R^C&H#I%V*E#";
             const RIDDLE_7_ANSWER = "open the archive";
@@ -267,7 +272,8 @@
             }
 
             function isMobileDevice() {
-                return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+                // Koristimo i window.Telegram.WebApp za preciznu detekciju WebView-a
+                return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (window.Telegram && window.Telegram.WebApp);
             }
             
             function setMobileHeight() {
@@ -342,6 +348,7 @@
                                 terminalDiv.removeEventListener('click', clickHandler);
                                 hiddenInput.removeEventListener('input', inputHandler);
                                 hiddenInput.removeEventListener('change', changeHandler);
+                                hiddenInput.removeEventListener('blur', blurHandler); // Uklanjanje i blur handlera
                             }, 500); 
                         }
                     }, delay);
@@ -592,7 +599,8 @@
             }
 
             function handleRiddle6(input) {
-                if (RIDiddle_6_ANSWERS.includes(input)) {
+                // KORIŠĆENJE ISPRAVNE KONSTANTE RIDDLE_6_ANSWERS
+                if (RIDDLE_6_ANSWERS.includes(input)) { 
                     inputActive = false;
                     currentLineDiv.style.display = 'none';
                     
@@ -682,8 +690,6 @@
                 if (!inputActive) return; 
                 if (e.ctrlKey || e.altKey || e.metaKey) return; 
                 
-                // *** UKLONJENA LINIJA KOJA JE KRŠILA FOKUS NA DESKTOPU: if (document.activeElement !== terminalDiv) return;
-
                 if (e.key.length === 1 && e.key.match(/^[a-zA-Z0-9\s.,!?-]$/)) { 
                     e.preventDefault(); 
                     currentInput += e.key;
@@ -708,6 +714,7 @@
                 let rawInput = hiddenInput.value;
                 
                 if (isMobileDevice()) {
+                    // FIKS: Obrtanje stringa za Telegram Web View
                     currentInput = rawInput.split('').reverse().join(''); 
                 } else {
                     currentInput = rawInput; 
@@ -724,6 +731,20 @@
                 currentInput = '';
             };
             hiddenInput.addEventListener('change', changeHandler);
+            
+            // ******************************************************
+            // *** NOVO: KRITIČNI BLUR HANDLER ZA MOBILNI FOKUS ***
+            // *** OVO SPREČAVA ZATVARANJE TASTATURE NAKON JEDNOG SLOVA
+            // ******************************************************
+            const blurHandler = () => {
+                if (inputActive && isMobileDevice()) {
+                    setTimeout(() => {
+                        hiddenInput.focus();
+                    }, 1); // 1ms odlaganja je ključno za ponovno otvaranje
+                }
+            };
+            hiddenInput.addEventListener('blur', blurHandler);
+            // ******************************************************
 
 
             const clickHandler = (e) => {
