@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V13 (GA4 VERIFIKACIJA)</title>
+    <title>M4TR1X ARG - FINAL V14 (OMOGUĆENO KOPIRANJE)</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -13,11 +13,10 @@
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
     
-      // ZAMENJENO 2/2: VAŠ GA4 ID
       gtag('config', 'G-5EVRNMGJD2');
     </script>
     <style>
-        /* *** CSS STILOVI (OSTAVLJENO ISTO) *** */
+        /* *** CSS STILOVI (Korigovan deo za kopiranje/selekciju) *** */
         *, *::before, *::after {
             margin: 0;
             padding: 0;
@@ -40,11 +39,17 @@
             color: #00FF00; 
             font-family: 'Courier New', monospace;
             font-size: 1.2em; 
-            cursor: default; 
+            /* Uklonjen cursor: default; da bi se omogućio I-beam za selekciju */
             touch-action: manipulation;
             padding: 0; 
             margin: 0; 
             display: block; 
+            
+            /* OMOGUĆAVANJE SELEKCIJE TEKSTA NA SVIM UREĐAJIMA */
+            -webkit-user-select: text !important; /* Za Safari */
+            -moz-user-select: text !important;    /* Za Firefox */
+            -ms-user-select: text !important;     /* Za IE/Edge */
+            user-select: text !important;         /* Standard */
         }
         
         #terminal {
@@ -60,6 +65,13 @@
             transition: color 1s, background-color 1s;
             display: flex;
             flex-direction: column;
+            
+            /* OMOGUĆAVANJE SELEKCIJE I U TERMINALU */
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            -ms-user-select: text !important;
+            user-select: text !important;
+            cursor: text; /* Promenjen kursor da signalizira tekst */
         }
         
         @media screen and (max-width: 600px) {
@@ -299,7 +311,6 @@
             }
 
             function startBootSequence() {
-                // *** GA4 EVENT: POČETAK IGRE ***
                 trackEvent('game_start', { method: 'boot' }); 
                 clearScreen(); let delay = 0;
                 BOOT_MESSAGES.forEach(msg => {
@@ -315,7 +326,6 @@
                 inputActive = false; 
                 currentLineDiv.style.display = 'none'; 
                 
-                // *** GA4 EVENT: POČETAK NIVOA ***
                 trackEvent('level_start', { level: phase, name: `Riddle_${phase-2}` }); 
                 
                 clearScreen(); 
@@ -343,11 +353,9 @@
             
             function handleLogin(input) { 
                 if (input === CORRECT_LOGIN) { 
-                    // *** GA4 EVENT: USPEŠAN LOGIN ***
                     trackEvent('login', { success: true }); 
                     inputActive = false; currentLineDiv.style.display = 'none'; terminalDiv.classList.remove('shutdown'); clearScreen(); outputText("ACCESS GRANTED. Entering the system...", false); setTimeout(startLevel2, 1500); 
                 } else if (input.length > 0) { 
-                    // *** GA4 EVENT: NEUSPEŠAN LOGIN ***
                     trackEvent('login', { success: false, attempt: input }); 
                     outputText("Unknown user. Authentication failure.", true); 
                 } else { 
@@ -356,11 +364,9 @@
             }
             function handleYesNo(input) { 
                 if (input === 'yes') { 
-                    // *** GA4 EVENT: ODABRANO DA ***
                     trackEvent('choice_made', { choice: 'yes', level: 2, outcome: 'continue' }); 
                     outputText("Truth acknowledged. Prepare for instruction.", false); startLevel3(); 
                 } else if (input === 'no') { 
-                    // *** GA4 EVENT: ODABRANO NE ***
                     trackEvent('choice_made', { choice: 'no', level: 2, outcome: 'shutdown' }); 
                     outputText("Choice declined. Shutting down system...", false); shutdownSequence(); 
                 } else { 
@@ -370,13 +376,11 @@
             }
             function handleRiddle(level, input, correct, nextLevelFunction) {
                 if (input === correct) {
-                    // *** GA4 EVENT: ZAGONETKA REŠENA ***
                     trackEvent('riddle_solved', { level: level, success: true }); 
                     inputActive = false; currentLineDiv.style.display = 'none'; 
                     outputText("Well done!", false); 
                     setTimeout(nextLevelFunction, 1500);
                 } else {
-                    // *** GA4 EVENT: ZAGONETKA POGREŠAN POKUŠAJ ***
                     trackEvent('riddle_solved', { level: level, success: false, attempt: input }); 
                     outputText("Incorrect. Re-read the message and try again.", true);
                 }
@@ -570,8 +574,8 @@
 
             const clickHandler = (e) => {
                 if (!inputActive) return; 
+                // Uklanjamo e.preventDefault() ovde da bismo dozvolili selekciju teksta na klik
                 if (e.target !== hiddenInput) {
-                    e.preventDefault(); 
                     hiddenInput.focus();
                 }
             };
