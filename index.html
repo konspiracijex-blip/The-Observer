@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V48.17 (KONAČNI FIKS UNOSA)</title>
+    <title>M4TR1X ARG - FINAL V48.18 (KONAČNI FIKS UNOSA)</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -347,6 +347,7 @@
                                 document.removeEventListener('keydown', keydownHandler);
                                 terminalDiv.removeEventListener('click', clickHandler);
                                 hiddenInput.removeEventListener('input', inputHandler);
+                                // Uklanjanje i change/blur handlera
                                 hiddenInput.removeEventListener('change', changeHandler);
                                 hiddenInput.removeEventListener('blur', blurHandler); 
                             }, 500); 
@@ -689,28 +690,14 @@
 
             const keydownHandler = (e) => {
                 if (!inputActive) return; 
-                if (e.ctrlKey || e.altKey || e.metaKey) return; 
-                
-                if (e.key.length === 1 && e.key.match(/^[a-zA-Z0-9\s.,!?-]$/)) { 
-                    // Dozvoli default ponasanje da se input upiše u skriveno polje
-                    // ali mi ručno upravljamo prikazom
-                    // e.preventDefault(); 
-                    
-                    // Ova logika je sada u inputHandleru
-                    // currentInput += e.key; 
-                    // userInputDisplay.textContent = currentInput;
-                    
-                } else if (e.key === 'Backspace') {
-                    // e.preventDefault();
-                    // currentInput = currentInput.slice(0, -1);
-                    // userInputDisplay.textContent = currentInput;
-                    
-                } else if (e.key === 'Enter') {
+                // keydownHandler sada hvata samo Enter, i na mobilnom i na desktopu
+                if (e.key === 'Enter') {
                     e.preventDefault();
                     processInput(currentInput);
                 }
                 
                 // KRITIČNA LINIJA ZA ODRŽAVANJE FOKUSA NA DESKTOPU
+                // Na mobilnom, fokus upravlja blurHandler
                 terminalDiv.focus(); 
             };
             document.addEventListener('keydown', keydownHandler);
@@ -721,7 +708,7 @@
                 let rawInput = hiddenInput.value;
                 
                 if (isMobileDevice()) {
-                    // FIKS: Obrtanje stringa za Telegram Web View
+                    // FIKS: Obrtanje stringa za Telegram Web View (radi i na Chrome-u mobilnom)
                     currentInput = rawInput.split('').reverse().join(''); 
                 } else {
                     currentInput = rawInput; 
@@ -731,31 +718,32 @@
             };
             hiddenInput.addEventListener('input', inputHandler);
 
-            // FUNKCIJA KOJA OKIDA SUBMIT KADA TASTATURA NESTANE
+            // FUNKCIJA KOJA OKIDA SUBMIT KADA TASTATURA NESTANE (problematična na mobilnom)
             const changeHandler = () => {
                 if (!inputActive) return; 
                 
-                // ******************************************************
-                // *** KRITIČNA LOGIKA V48.17 - IGNORISANJE UNOSA NA MOBILNOM ***
-                // Ako je mobilni uređaj I ako je uneto SAMO jedno slovo, to je sigurno
-                // automatsko submitovanje. U tom slučaju, samo resetuj input polja.
-                // ******************************************************
-                if (isMobileDevice() && currentInput.length <= 1 && currentInput.length > 0) {
-                    hiddenInput.value = '';
-                    currentInput = '';
-                    userInputDisplay.textContent = '';
-                    return; 
-                }
-
-                // Samo ako je uneseno više karaktera (npr. paste), procesuiraj.
+                // Ova logika se koristi samo na desktopu (npr. nakon Paste-a ili gubitka fokusa)
                 processInput(currentInput);
+                
+                hiddenInput.value = ''; 
+                currentInput = '';
+                userInputDisplay.textContent = '';
             };
-            // Kačenje change handlera na svim platformama, ali sa zaštitom unutar funkcije
-            hiddenInput.addEventListener('change', changeHandler);
+            
+            // ******************************************************
+            // *** FIKS V48.18: KAČENJE changeHandler-a SAMO NA DESKTOPU ***
+            // Na mobilnom je change event isključen da bi se sprečilo automatsko submitovanje.
+            // ******************************************************
+            if (!isMobileDevice()) {
+                hiddenInput.addEventListener('change', changeHandler);
+            }
+            // ******************************************************
 
             
             // ******************************************************
-            // *** BLUR HANDLER (ZAKLJUČAVANJE FOKUSA) ***
+            // *** BLUR HANDLER (ZAKLJUČAVANJE FOKUSA) - KRITIČAN FIKS ***
+            // Vraća fokus sa minimalnim odlaganjem da bi sprečio OS da zatvori tastaturu
+            // i zadržao trenutni unos u polju.
             // ******************************************************
             const blurHandler = () => {
                 if (inputActive && isMobileDevice()) {
