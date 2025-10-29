@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V7 (DUPLO SKROLOVANJE FIKS)</title>
+    <title>M4TR1X ARG - FINAL V8 (MEKO SKROLOVANJE FIKS)</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -317,7 +317,24 @@
             // *** KRAJ UTILITY I LEVEL FUNKCIJA ***
 
 
-            // *** LOGIKA UNOSA (FIKS V48.28 - MANUALNI INPUT) ***
+            // *** LOGIKA UNOSA (FIKS V8 - OPTIMIZOVANO SKROLOVANJE) ***
+            
+            function scrollToBottomSmooth(delay = 0) {
+                 if (isMobileDevice() || isTelegramApp) {
+                    setTimeout(() => {
+                        // Koristimo samo terminalDiv.scrollTop = terminalDiv.scrollHeight;
+                        // Time se forsira skrol *kontejnera* do kraja, umesto da browser automatski skroluje fokusirani element (koji greši)
+                        terminalDiv.scrollTop = terminalDiv.scrollHeight;
+                        
+                        // Dodatna sigurnost: prisilno skrolovanje linije unosa na dno vidljivog ekrana (block: 'end')
+                        // Sa behavior: 'auto', ovo bi trebalo da eliminiše trzaj.
+                        currentLineDiv.scrollIntoView({ behavior: 'auto', block: 'end' });
+                    }, delay);
+                } else {
+                    terminalDiv.scrollTop = terminalDiv.scrollHeight;
+                }
+            }
+            
             function activateInput(phase) {
                 gamePhase = phase;
                 if (phase === 1) promptSpan.textContent = "Login: ";
@@ -338,20 +355,8 @@
                     // 1. Agresivno fokusiranje (ovo pokreće tastaturu)
                     hiddenInput.focus();
                     
-                    // 2. FIKS V7: Odlaganje skrolovanja
-                    // Dajemo 200ms da se virtuelna tastatura pojavi i stabilizuje viewport.
-                    setTimeout(() => {
-                         if (isMobileDevice() || isTelegramApp) {
-                            // GLAVNO KOREKTIVNO SKROLOVANJE
-                            currentLineDiv.scrollIntoView({ behavior: 'auto', block: 'end' });
-                            
-                            // SEKUNDARNA SIGURNOST: skroluj i roditeljski kontejner (terminal)
-                            terminalDiv.scrollTop = terminalDiv.scrollHeight;
-                         } else {
-                            // Za Desktop
-                            terminalDiv.scrollTop = terminalDiv.scrollHeight;
-                         }
-                    }, 200); 
+                    // 2. Inicijalno skrolovanje (odloženo 200ms)
+                    scrollToBottomSmooth(200);
                     
                 } else {
                     currentLineDiv.style.display = 'none';
@@ -413,7 +418,6 @@
                         currentInput = currentInput.slice(0, -1);
                         userInputDisplay.textContent = currentInput;
                     }
-                    // Ažuriraj hidden input za sinhronizaciju (iako ga ignorišemo)
                     hiddenInput.value = currentInput; 
                     return;
                 }
@@ -427,18 +431,11 @@
                     currentInput += e.key;
                     userInputDisplay.textContent = currentInput;
                     
-                    // Ažuriraj hidden input za sinhronizaciju (iako ga ignorišemo)
                     hiddenInput.value = currentInput; 
 
-                    // *** FIKS V7: AGRESIVNO ODLOŽENO SKROLOVANJE NAKON SVAKOG UNOSA (50ms) ***
-                    // 50ms je empirijski bolji tajming da se uhvati trenutak nakon što OS pokuša skrolovanje.
-                    if (isMobileDevice() || isTelegramApp) {
-                        setTimeout(() => {
-                            currentLineDiv.scrollIntoView({ behavior: 'auto', block: 'end' });
-                            // SEKUNDARNA SIGURNOST
-                            terminalDiv.scrollTop = terminalDiv.scrollHeight;
-                        }, 50);
-                    }
+                    // *** FIKS V8: SKROLOVANJE NAKON SVAKOG UNOSA (10ms) ***
+                    // Malo odlaganje daje browseru priliku da završi iscrtavanje karaktera pre skrolovanja.
+                    scrollToBottomSmooth(10);
                 }
             };
             document.addEventListener('keydown', keydownHandler);
@@ -452,10 +449,7 @@
 
                 let rawInput = hiddenInput.value;
                 
-                // Ako se vrednost hiddenInput promenila i ne odgovara našoj ručno izgrađenoj,
-                // to je verovatno paste operacija ili IME unos sa mobilnog.
                 if (rawInput !== currentInput) {
-                     // Ovo je paste/IME. Treba da se ažurira currentInput
                      if (isMobileDevice()) {
                          // Za mobilni, obrtanje unosa
                          currentInput = rawInput.split('').reverse().join(''); 
@@ -466,13 +460,8 @@
                      userInputDisplay.textContent = currentInput;
                 }
                 
-                // Uvek skroluj nakon unosa/paste-a na mobilnom
-                 if (isMobileDevice() || isTelegramApp) {
-                    setTimeout(() => {
-                        currentLineDiv.scrollIntoView({ behavior: 'auto', block: 'end' });
-                        terminalDiv.scrollTop = terminalDiv.scrollHeight;
-                    }, 50);
-                }
+                // Skroluj nakon unosa/paste-a na mobilnom
+                scrollToBottomSmooth(10);
             };
             hiddenInput.addEventListener('input', inputHandler);
             // ******************************************************
