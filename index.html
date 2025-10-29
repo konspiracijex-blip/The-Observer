@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V48.15 (POTPUNI FIKS UNOSA)</title>
+    <title>M4TR1X ARG - FINAL V48.16 (TRAJNI FIKS UNOSA)</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -191,7 +191,7 @@
             const RIDDLE_5_TEXT = "A message drifts through the static, a code hidden in dots and dashes.\nOnly those who listen carefully can hear what is whispered.\n\n... .... .- -.. --- .--";
             const RIDDLE_5_ANSWER = "shadow"; 
             
-            // KRITIČNO ISPRAVLJEN TYPO: RIDDLE_6_ANSWERS umesto RIDiddle_6_ANSWERS
+            // Ispravljen typo
             const RIDDLE_6_ANSWERS = ["area 51", "area51"]; 
             const RIDDLE_6_TEXT = "Accessing restricted map layer...\nDecryption needed.\nLocation Hidden in Plain Sight:\n37.247456, -115.801709";
             
@@ -272,7 +272,7 @@
             }
 
             function isMobileDevice() {
-                // Koristimo i window.Telegram.WebApp za preciznu detekciju WebView-a
+                // Proširena detekcija da uključuje i Telegram WebApp okruženje
                 return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (window.Telegram && window.Telegram.WebApp);
             }
             
@@ -348,7 +348,7 @@
                                 terminalDiv.removeEventListener('click', clickHandler);
                                 hiddenInput.removeEventListener('input', inputHandler);
                                 hiddenInput.removeEventListener('change', changeHandler);
-                                hiddenInput.removeEventListener('blur', blurHandler); // Uklanjanje i blur handlera
+                                hiddenInput.removeEventListener('blur', blurHandler); 
                             }, 500); 
                         }
                     }, delay);
@@ -724,23 +724,33 @@
             };
             hiddenInput.addEventListener('input', inputHandler);
 
+            // FUNKCIJA KOJA OKIDA SUBMIT KADA TASTATURA NESTANE
             const changeHandler = () => {
                 if (!inputActive) return; 
                 processInput(currentInput);
                 hiddenInput.value = '';
                 currentInput = '';
             };
-            hiddenInput.addEventListener('change', changeHandler);
             
             // ******************************************************
-            // *** NOVO: KRITIČNI BLUR HANDLER ZA MOBILNI FOKUS ***
-            // *** OVO SPREČAVA ZATVARANJE TASTATURE NAKON JEDNOG SLOVA
+            // *** FIKS V48.16: NE KORISTI changeHandler NA MOBILNOM ***
+            // ******************************************************
+            if (!isMobileDevice()) {
+                // Samo na Desktopu dozvoli change event (za lepljenje teksta ili gubitak fokusa)
+                hiddenInput.addEventListener('change', changeHandler);
+            }
+            // Na mobilnom, oslanjamo se ISKLJUČIVO na taster 'Enter' na virtuelnoj tastaturi.
+            // ******************************************************
+
+            
+            // ******************************************************
+            // *** BLUR HANDLER (ZAKLJUČAVANJE FOKUSA) ***
             // ******************************************************
             const blurHandler = () => {
                 if (inputActive && isMobileDevice()) {
                     setTimeout(() => {
                         hiddenInput.focus();
-                    }, 1); // 1ms odlaganja je ključno za ponovno otvaranje
+                    }, 1); 
                 }
             };
             hiddenInput.addEventListener('blur', blurHandler);
