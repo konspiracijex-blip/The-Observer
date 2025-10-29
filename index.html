@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V48.16 (TRAJNI FIKS UNOSA)</title>
+    <title>M4TR1X ARG - FINAL V48.17 (KONAČNI FIKS UNOSA)</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -683,6 +683,7 @@
                 } 
 
                 currentInput = "";
+                hiddenInput.value = ""; // Resetuj vrednost polja
                 userInputDisplay.textContent = "";
             };
 
@@ -691,13 +692,19 @@
                 if (e.ctrlKey || e.altKey || e.metaKey) return; 
                 
                 if (e.key.length === 1 && e.key.match(/^[a-zA-Z0-9\s.,!?-]$/)) { 
-                    e.preventDefault(); 
-                    currentInput += e.key;
-                    userInputDisplay.textContent = currentInput;
+                    // Dozvoli default ponasanje da se input upiše u skriveno polje
+                    // ali mi ručno upravljamo prikazom
+                    // e.preventDefault(); 
+                    
+                    // Ova logika je sada u inputHandleru
+                    // currentInput += e.key; 
+                    // userInputDisplay.textContent = currentInput;
+                    
                 } else if (e.key === 'Backspace') {
-                    e.preventDefault(); 
-                    currentInput = currentInput.slice(0, -1);
-                    userInputDisplay.textContent = currentInput;
+                    // e.preventDefault();
+                    // currentInput = currentInput.slice(0, -1);
+                    // userInputDisplay.textContent = currentInput;
+                    
                 } else if (e.key === 'Enter') {
                     e.preventDefault();
                     processInput(currentInput);
@@ -727,20 +734,24 @@
             // FUNKCIJA KOJA OKIDA SUBMIT KADA TASTATURA NESTANE
             const changeHandler = () => {
                 if (!inputActive) return; 
+                
+                // ******************************************************
+                // *** KRITIČNA LOGIKA V48.17 - IGNORISANJE UNOSA NA MOBILNOM ***
+                // Ako je mobilni uređaj I ako je uneto SAMO jedno slovo, to je sigurno
+                // automatsko submitovanje. U tom slučaju, samo resetuj input polja.
+                // ******************************************************
+                if (isMobileDevice() && currentInput.length <= 1 && currentInput.length > 0) {
+                    hiddenInput.value = '';
+                    currentInput = '';
+                    userInputDisplay.textContent = '';
+                    return; 
+                }
+
+                // Samo ako je uneseno više karaktera (npr. paste), procesuiraj.
                 processInput(currentInput);
-                hiddenInput.value = '';
-                currentInput = '';
             };
-            
-            // ******************************************************
-            // *** FIKS V48.16: NE KORISTI changeHandler NA MOBILNOM ***
-            // ******************************************************
-            if (!isMobileDevice()) {
-                // Samo na Desktopu dozvoli change event (za lepljenje teksta ili gubitak fokusa)
-                hiddenInput.addEventListener('change', changeHandler);
-            }
-            // Na mobilnom, oslanjamo se ISKLJUČIVO na taster 'Enter' na virtuelnoj tastaturi.
-            // ******************************************************
+            // Kačenje change handlera na svim platformama, ali sa zaštitom unutar funkcije
+            hiddenInput.addEventListener('change', changeHandler);
 
             
             // ******************************************************
