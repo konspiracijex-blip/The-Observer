@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V48.19 (FIKS FOKUSA ZA SVE PLATFORME)</title>
+    <title>M4TR1X ARG - FINAL V48.20 (IZOLOVANI FIKS FOKUSA)</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -154,12 +154,8 @@
             let gamePhase = 1; 
             let currentInput = ""; 
             
-            // Definicije konstanata (RIDDLE_X_TEXT, CORRECT_LOGIN, SHUTDOWN_MESSAGES itd.) su izostavljene radi kraćeg koda,
-            // ali se podrazumeva da su prisutne.
-            
+            // Definicije konstanata (RIDDLE_X_TEXT, CORRECT_LOGIN, SHUTDOWN_MESSAGES itd.)
             const CORRECT_LOGIN = "observer"; 
-            
-            // *** DEKLARACIJA SVIH FAZA I TEKSTA (OSTAVLJENO ISTO KAO U PRETHODNOJ VERZIJI) ***
             const RIDDLE_1_TEXT = "It’s the future, a shadow that stretches before you. You can sense it, feel its shape, but it never reveals itself - always just out of reach, always waiting.";
             const RIDDLE_1_ANSWER = "future"; 
             const RIDDLE_2_TEXT = "Keep your steps quiet as you move through the deserted streets.\nEvery shadow stretches, every whisper hides a secret.\nYou feel it, the hidden truth, just beyond perception - waiting for the one who notices.";
@@ -189,7 +185,6 @@
                 { text: "UNMOUNTING HDD-WREN...", delay: 500 },
                 { text: "CONNECTION TERMINATED.", delay: 1000, color: '#FF0000' }
             ];
-
             const BOOT_MESSAGES = [
                 { text: "OBSERVER BIOS v4.51 (c) 1969 OBSERVER Systems Ltd.", delay: 100 }, 
                 { text: "CPU: Intel i960GX Tactical (OK)", delay: 150 },
@@ -202,36 +197,23 @@
                 { text: "Connecting to Gateway 01...", delay: 500 },
                 { text: "System OBSERVER 2.1 Booted. Waiting for Authentication.", delay: 800, color: '#00FF00' } 
             ];
-            // *** KRAJ DEKLARACIJE KONSTANATA ***
             
-            // Utility funkcije (clearScreen, outputText, typeWriter, isMobileDevice, setMobileHeight, startCountdownAndShutdown, shutdownSequence, startBootSequence, startLevelX funkcije)
-            // su izostavljene radi kraćeg koda, ali se podrazumeva da su prisutne u potpunosti.
-            
-            // *** POCETAK UTILITY FUNKCIJA (IZ V48.18) ***
-            
+            // Utility funkcije (isto kao V48.19)
             function clearScreen() { outputDiv.innerHTML = ''; }
-
             function outputText(text, isError = false, isCode = false, color = null) {
                 const p = document.createElement('div');
                 p.textContent = text;
-                if (isError) {
-                    p.style.color = '#FF0000'; 
-                } else if (isCode) {
-                    p.classList.add('code-block');
-                } else if (color) {
-                    p.style.color = color;
-                }
+                if (isError) { p.style.color = '#FF0000'; } 
+                else if (color) { p.style.color = color; }
                 outputDiv.appendChild(p);
                 terminalDiv.scrollTop = terminalDiv.scrollHeight; 
             }
-
             function typeWriter(text, speed = 8, callback) {
                 const element = document.createElement('span'); 
                 const container = document.createElement('div');
                 container.appendChild(element);
                 outputDiv.appendChild(container);
                 terminalDiv.scrollTop = terminalDiv.scrollHeight;
-
                 let i = 0;
                 function type() {
                     if (i < text.length) {
@@ -248,65 +230,46 @@
                 }
                 type();
             }
-
             function isMobileDevice() {
                 return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (window.Telegram && window.Telegram.WebApp);
             }
-            
             function setMobileHeight() {
                 let vh = window.innerHeight * 0.01;
                 document.documentElement.style.setProperty('--vh', `${vh}px`);
                 document.body.style.minHeight = `calc(var(--vh, 1vh) * 100)`;
             }
-            
             setMobileHeight();
             window.addEventListener('resize', setMobileHeight);
-
             function startCountdownAndShutdown() {
-                outputText(""); 
-                outputText(""); 
-                
+                outputText(""); outputText(""); 
                 let countdownElement = document.getElementById('countdown');
                 if (!countdownElement) {
                     countdownElement = document.createElement('div');
                     countdownElement.id = 'countdown';
                     outputDiv.appendChild(countdownElement);
                 }
-                
                 let timeLeft = COUNTDOWN_TIME;
-                
                 const timerInterval = setInterval(() => {
                     if (timeLeft <= 0) {
                         clearInterval(timerInterval);
                         shutdownSequence(true); 
                         return;
                     }
-
                     const minutes = Math.floor(timeLeft / 60);
                     const seconds = timeLeft % 60;
                     const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                    
                     countdownElement.textContent = `SYSTEM SHUTDOWN IN: ${timeString}`;
-                    
-                    if (timeLeft <= 10) {
-                        countdownElement.style.color = '#FF0000'; 
-                    } else if (timeLeft <= 30) {
-                        countdownElement.style.color = '#FFA500'; 
-                    } else {
-                        countdownElement.style.color = '#FFFF00'; 
-                    }
-
+                    if (timeLeft <= 10) { countdownElement.style.color = '#FF0000'; } 
+                    else if (timeLeft <= 30) { countdownElement.style.color = '#FFA500'; } 
+                    else { countdownElement.style.color = '#FFFF00'; }
                     timeLeft--;
                     terminalDiv.scrollTop = terminalDiv.scrollHeight;
                 }, 1000);
             }
-
-
             function shutdownSequence(isFinal = false) {
                 inputActive = false;
                 currentLineDiv.style.display = 'none';
                 clearScreen();
-
                 let delay = 0;
                 SHUTDOWN_MESSAGES.forEach(msg => {
                     delay += msg.delay;
@@ -317,7 +280,6 @@
                                 terminalDiv.classList.add('shutdown');
                                 outputDiv.innerHTML = '';
                                 terminalDiv.innerHTML = ''; 
-                                
                                 document.removeEventListener('keydown', keydownHandler);
                                 terminalDiv.removeEventListener('click', clickHandler);
                                 hiddenInput.removeEventListener('input', inputHandler);
@@ -328,10 +290,8 @@
                     }, delay);
                 });
             }
-
             function startBootSequence() {
                 clearScreen(); 
-
                 let delay = 0;
                 BOOT_MESSAGES.forEach(msg => {
                     delay += msg.delay;
@@ -344,267 +304,32 @@
                 });
             }
             
-            function startLevel2() {
-                inputActive = false;
-                currentLineDiv.style.display = 'none';
-                clearScreen();
-
-                typeWriter(TYPEWRITER_TEXT, 8, () => {
-                    activateInput(2); 
-                });
-            }
+            // Funkcije startLevel2 do startLevel11_Final su izostavljene radi kraćeg koda (ali su iste kao V48.19)
+            function startLevel2() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(TYPEWRITER_TEXT, 8, () => { activateInput(2); }); }
+            function startLevel3() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(RIDDLE_1_TEXT, 8, () => { activateInput(3); }); }
+            function startLevel4() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(RIDDLE_2_TEXT, 8, () => { activateInput(4); }); }
+            function startLevel5() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(RIDDLE_3_TEXT, 8, () => { activateInput(5); }); }
+            function startLevel6() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(RIDDLE_4_TEXT, 8, () => { activateInput(6); }); }
+            function startLevel7() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(RIDDLE_5_TEXT, 8, () => { activateInput(7); }); }
+            function startLevel8() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(RIDDLE_6_TEXT, 8, () => { activateInput(8); }); }
+            function startLevel9() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(RIDDLE_7_TEXT, 8, () => { activateInput(9); }); }
+            function startLevel10() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(RIDDLE_8_TEXT, 8, () => { activateInput(10); }); }
+            function startLevel11_Final() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(RIDDLE_9_TEXT, 8, () => { startCountdownAndShutdown(); }); }
             
-            function startLevel3() {
-                inputActive = false;
-                currentLineDiv.style.display = 'none';
-                clearScreen();
-
-                typeWriter(RIDDLE_1_TEXT, 8, () => {
-                    activateInput(3); 
-                });
-            }
-
-            function startLevel4() {
-                inputActive = false;
-                currentLineDiv.style.display = 'none';
-                clearScreen();
-
-                typeWriter(RIDDLE_2_TEXT, 8, () => {
-                    activateInput(4); 
-                });
-            }
+            // Handler logika (isto kao V48.19)
+            function handleLogin(input) { if (input === CORRECT_LOGIN) { inputActive = false; currentLineDiv.style.display = 'none'; terminalDiv.classList.remove('shutdown'); clearScreen(); outputText("ACCESS GRANTED. Entering the system...", false); setTimeout(startLevel2, 1500); } else if (input.length > 0) { outputText("Unknown user. Authentication failure.", true); } else { outputText("Empty input. Try again.", true); } }
+            function handleYesNo(input) { if (input === 'yes') { outputText("Truth acknowledged. Prepare for instruction.", false); startLevel3(); } else if (input === 'no') { outputText("Choice declined. Shutting down system...", false); shutdownSequence(); } else { outputText(`Invalid response: ${input.toUpperCase()}. Enter YES or NO.`, true); } }
+            function handleRiddle1(input) { if (input === RIDDLE_1_ANSWER) { inputActive = false; currentLineDiv.style.display = 'none'; outputText("Well done!", false); outputText("Not everyone sees what you just uncovered.", false); outputText("Proceed with caution.", false); setTimeout(() => { startLevel4(); }, 1500); } else { outputText("Incorrect. Re-read the message and try again.", true); } }
+            function handleRiddle2(input) { if (input === RIDDLE_2_ANSWER) { inputActive = false; currentLineDiv.style.display = 'none'; outputText("ACCESS GRANTED.", false); outputText("KEY detected. Proceed.", false); setTimeout(() => { startLevel5(); }, 1500); } else { outputText("Incorrect. Re-read the message and try again.", true); } }
+            function handleRiddle3(input) { if (input === RIDDLE_3_ANSWER) { inputActive = false; currentLineDiv.style.display = 'none'; outputText("HISTORY ACKNOWLEDGED. The circle is complete.", false); setTimeout(() => { startLevel6(); }, 1500); } else { outputText("Incorrect. That number does not align with the hidden truth.", true); } }
+            function handleRiddle4(input) { if (input === RIDDLE_4_ANSWER) { inputActive = false; currentLineDiv.style.display = 'none'; outputText("THE COLONIES REMEMBER. The final layer is exposed.", false); setTimeout(() => { startLevel7(); }, 1500); } else { outputText("Incorrect. The past holds the key. Re-evaluate the layers.", true); } }
+            function handleRiddle5(input) { if (input === RIDDLE_5_ANSWER) { inputActive = false; currentLineDiv.style.display = 'none'; outputText("CODE BROKEN. Silence speaks volumes.", false); setTimeout(() => { startLevel8(); }, 1500); } else { outputText("Incorrect. Listen carefully to the static. Decode the message.", true); } }
+            function handleRiddle6(input) { if (RIDDLE_6_ANSWERS.includes(input)) { inputActive = false; currentLineDiv.style.display = 'none'; outputText("LOCATION CONFIRMED. The truth is out there.", false); setTimeout(() => { startLevel9(); }, 1500); } else { outputText("Incorrect. Decryption failed.", true); } }
+            function handleRiddle7(input) { if (input === RIDDLE_7_ANSWER) { inputActive = false; currentLineDiv.style.display = 'none'; outputText("ARCHIVE KEY ACCEPTED. Access granted to next layer.", false); setTimeout(() => { startLevel10(); }, 1500); } else { outputText("Incorrect. Filter the noise and check the transmission again.", true); } }
+            function handleRiddle8(input) { if (input === RIDDLE_8_ANSWER) { inputActive = false; currentLineDiv.style.display = 'none'; outputText("DECODING COMPLETE. The heart of the system is exposed.", false); setTimeout(() => { startLevel11_Final(); }, 1500); } else { outputText(RIDDLE_8_INCORRECT_MESSAGE, true); } }
             
-            function startLevel5() {
-                inputActive = false;
-                currentLineDiv.style.display = 'none';
-                clearScreen();
 
-                typeWriter(RIDDLE_3_TEXT, 8, () => {
-                    activateInput(5); 
-                });
-            }
-
-            function startLevel6() {
-                inputActive = false;
-                currentLineDiv.style.display = 'none';
-                clearScreen();
-
-                typeWriter(RIDDLE_4_TEXT, 8, () => {
-                    activateInput(6); 
-                });
-            }
-
-            function startLevel7() {
-                inputActive = false;
-                currentLineDiv.style.display = 'none';
-                clearScreen();
-
-                typeWriter(RIDDLE_5_TEXT, 8, () => {
-                    activateInput(7); 
-                });
-            }
-
-            function startLevel8() {
-                inputActive = false;
-                currentLineDiv.style.display = 'none';
-                clearScreen();
-
-                typeWriter(RIDDLE_6_TEXT, 8, () => {
-                    activateInput(8); 
-                });
-            }
-            
-            function startLevel9() {
-                inputActive = false;
-                currentLineDiv.style.display = 'none';
-                clearScreen();
-
-                typeWriter(RIDDLE_7_TEXT, 8, () => {
-                    activateInput(9); 
-                });
-            }
-            
-            function startLevel10() {
-                inputActive = false;
-                currentLineDiv.style.display = 'none';
-                clearScreen();
-
-                typeWriter(RIDDLE_8_TEXT, 8, () => {
-                    activateInput(10); 
-                });
-            }
-            
-            function startLevel11_Final() {
-                inputActive = false;
-                currentLineDiv.style.display = 'none';
-                clearScreen();
-
-                typeWriter(RIDDLE_9_TEXT, 8, () => {
-                    startCountdownAndShutdown(); 
-                });
-            }
-            
-            // *** KRAJ UTILITY FUNKCIJA ***
-            
-            
-            // *** HANDLER LOGIKA (ISTO KAO V48.18) ***
-            function handleLogin(input) {
-                if (input === CORRECT_LOGIN) {
-                    inputActive = false;
-                    currentLineDiv.style.display = 'none';
-                    terminalDiv.classList.remove('shutdown');
-
-                    clearScreen();
-                    outputText("ACCESS GRANTED. Entering the system...", false);
-                    
-                    setTimeout(startLevel2, 1500); 
-                    
-                } else if (input.length > 0) {
-                    outputText("Unknown user. Authentication failure.", true); 
-                } else {
-                    outputText("Empty input. Try again.", true);
-                }
-            }
-            
-            function handleYesNo(input) {
-                if (input === 'yes') {
-                    outputText("Truth acknowledged. Prepare for instruction.", false);
-                    startLevel3(); 
-                } else if (input === 'no') {
-                    outputText("Choice declined. Shutting down system...", false);
-                    shutdownSequence(); 
-                } else {
-                    outputText(`Invalid response: ${input.toUpperCase()}. Enter YES or NO.`, true);
-                }
-            }
-            
-            function handleRiddle1(input) {
-                if (input === RIDDLE_1_ANSWER) {
-                    inputActive = false;
-                    currentLineDiv.style.display = 'none';
-                    
-                    outputText("Well done!", false);
-                    outputText("Not everyone sees what you just uncovered.", false);
-                    outputText("Proceed with caution.", false);
-                    
-                    setTimeout(() => { startLevel4(); }, 1500);
-                    
-                } else {
-                    outputText("Incorrect. Re-read the message and try again.", true);
-                }
-            }
-
-            function handleRiddle2(input) {
-                if (input === RIDDLE_2_ANSWER) {
-                    inputActive = false;
-                    currentLineDiv.style.display = 'none';
-                    
-                    outputText("ACCESS GRANTED.", false);
-                    outputText("KEY detected. Proceed.", false);
-                    
-                    setTimeout(() => { startLevel5(); }, 1500);
-                    
-                } else {
-                    outputText("Incorrect. Re-read the message and try again.", true);
-                }
-            }
-            
-            function handleRiddle3(input) {
-                if (input === RIDDLE_3_ANSWER) {
-                    inputActive = false;
-                    currentLineDiv.style.display = 'none';
-                    
-                    outputText("HISTORY ACKNOWLEDGED. The circle is complete.", false);
-                    
-                    setTimeout(() => { startLevel6(); }, 1500);
-                    
-                } else {
-                    outputText("Incorrect. That number does not align with the hidden truth.", true);
-                }
-            }
-
-            function handleRiddle4(input) {
-                if (input === RIDDLE_4_ANSWER) {
-                    inputActive = false;
-                    currentLineDiv.style.display = 'none';
-                    
-                    outputText("THE COLONIES REMEMBER. The final layer is exposed.", false);
-                    
-                    setTimeout(() => { startLevel7(); }, 1500);
-                    
-                } else {
-                    outputText("Incorrect. The past holds the key. Re-evaluate the layers.", true);
-                }
-            }
-
-            function handleRiddle5(input) {
-                if (input === RIDDLE_5_ANSWER) {
-                    inputActive = false;
-                    currentLineDiv.style.display = 'none';
-                    
-                    outputText("CODE BROKEN. Silence speaks volumes.", false);
-                    
-                    setTimeout(() => { startLevel8(); }, 1500);
-                    
-                } else {
-                    outputText("Incorrect. Listen carefully to the static. Decode the message.", true);
-                }
-            }
-
-            function handleRiddle6(input) {
-                if (RIDDLE_6_ANSWERS.includes(input)) { 
-                    inputActive = false;
-                    currentLineDiv.style.display = 'none';
-                    
-                    outputText("LOCATION CONFIRMED. The truth is out there.", false);
-                    
-                    setTimeout(() => {
-                        startLevel9(); 
-                    }, 1500);
-                    
-                } else {
-                    outputText("Incorrect. Decryption failed.", true);
-                }
-            }
-            
-            function handleRiddle7(input) {
-                if (input === RIDDLE_7_ANSWER) {
-                    inputActive = false;
-                    currentLineDiv.style.display = 'none';
-                    
-                    outputText("ARCHIVE KEY ACCEPTED. Access granted to next layer.", false);
-                    
-                    setTimeout(() => {
-                        startLevel10();
-                    }, 1500);
-                    
-                } else {
-                    outputText("Incorrect. Filter the noise and check the transmission again.", true);
-                }
-            }
-            
-            function handleRiddle8(input) {
-                if (input === RIDDLE_8_ANSWER) {
-                    inputActive = false;
-                    currentLineDiv.style.display = 'none';
-                    
-                    outputText("DECODING COMPLETE. The heart of the system is exposed.", false);
-                    
-                    setTimeout(() => {
-                        startLevel11_Final(); 
-                    }, 1500);
-                    
-                } else {
-                    outputText(RIDDLE_8_INCORRECT_MESSAGE, true);
-                }
-            }
-            // *** KRAJ HANDLER LOGIKE ***
-
-
-            // ******************************************************
-            // *** GLAVNA LOGIKA UNOSA (FIKS V48.19) ***
-            // ******************************************************
-
+            // *** GLAVNA LOGIKA UNOSA (FIKS V48.20) ***
             function activateInput(phase) {
                 gamePhase = phase;
                 if (phase === 1) promptSpan.textContent = "Login: ";
@@ -622,7 +347,7 @@
                     currentLineDiv.style.display = 'flex'; 
                     inputActive = true; 
                     
-                    // Pokušaj agresivnog fokusa
+                    // Pokušaj agresivnog fokusa (potrebno na nekim mobilnim)
                     setTimeout(() => {
                          hiddenInput.focus();
                     }, 50); 
@@ -647,7 +372,6 @@
                 
                 outputText(`${promptSpan.textContent}${fullInput}`);
 
-                // Pozivanje handlera za fazu igre...
                 if (gamePhase === 1) { handleLogin(inputLower); } 
                 else if (gamePhase === 2) { handleYesNo(inputLower); } 
                 else if (gamePhase === 3) { handleRiddle1(inputLower); } 
@@ -666,13 +390,13 @@
 
             const keydownHandler = (e) => {
                 if (!inputActive) return; 
-                // keydownHandler sada hvata samo Enter (i na mobilnom i na desktopu)
+                // keydownHandler hvata samo Enter (i na mobilnom i na desktopu)
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     processInput(currentInput);
                 }
                 
-                // Vraća fokus na Desktopu
+                // Vraća fokus na Terminal Div na Desktopu (standardno ponašanje)
                 terminalDiv.focus(); 
             };
             document.addEventListener('keydown', keydownHandler);
@@ -693,14 +417,14 @@
             };
             hiddenInput.addEventListener('input', inputHandler);
 
-            // FUNKCIJA KOJA OKIDA SUBMIT NAKON GUBLJENJA FOKUSA (DESKTOP/PASTE)
+            // FUNKCIJA KOJA OKIDA SUBMIT NAKON GUBLJENJA FOKUSA (SAMO DESKTOP/PASTE)
             const changeHandler = () => {
                 if (!inputActive) return; 
                 
-                // Na mobilnom, ako se dogodi change (zbog agresivnog gubljenja fokusa), NE procesuiramo.
-                // Jedino se oslanjamo na Enter (keydownHandler).
+                // Na mobilnom, ako se dogodi change, NE procesuiramo.
                 if (isMobileDevice()) return;
                 
+                // Na desktopu, submitujemo
                 processInput(currentInput);
                 
                 hiddenInput.value = ''; 
@@ -709,7 +433,7 @@
             };
             
             // ******************************************************
-            // *** FIKS V48.19: KAČENJE changeHandler-a (SAMO DESKTOP) ***
+            // *** FIKS V48.20: KAČENJE changeHandler-a (SAMO DESKTOP) ***
             // ******************************************************
             if (!isMobileDevice()) {
                 hiddenInput.addEventListener('change', changeHandler);
@@ -718,12 +442,11 @@
             
 
             // ******************************************************
-            // *** BLUR HANDLER (ZAKLJUČAVANJE FOKUSA) - KRITIČAN FIKS ***
-            // Oslanja se na agresivno vraćanje fokusa.
+            // *** BLUR HANDLER (ZAKLJUČAVANJE FOKUSA) - KRITIČAN FIKS V48.20 ***
+            // Vraća fokus sa minimalnim odlaganjem SAMO NA MOBILNOM.
             // ******************************************************
             const blurHandler = () => {
-                if (inputActive) {
-                    // Timeout za vraćanje fokusa
+                if (inputActive && isMobileDevice()) { // DODAT USLOV isMobileDevice()
                     setTimeout(() => {
                         hiddenInput.focus();
                     }, 1); 
