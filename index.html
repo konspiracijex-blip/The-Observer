@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V48 (FIKSIRAN UNOS NA DESKTOPU)</title>
+    <title>M4TR1X ARG - FINAL V48.19 (FIKS FOKUSA ZA SVE PLATFORME)</title>
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
     <style>
-        /* *** GLOBALNI RESET I RELATIVNO POZICIONIRANJE *** */
+        /* *** CSS STILOVI (OSTAVLJENO ISTO) *** */
         *, *::before, *::after {
             margin: 0;
             padding: 0;
@@ -20,19 +23,14 @@
             position: relative; 
         }
         
-        /* CSS ZA POPRAVAK 100vh PROBLEMA NA MOBILNOM */
         :root {
             --vh: 1vh;
         }
         body {
             height: calc(var(--vh, 1vh) * 100); 
-        }
-
-        /* CSS STILIZACIJA TERMINALA - GLAVNI BODY */
-        body {
             color: #00FF00; 
             font-family: 'Courier New', monospace;
-            font-size: 1.2em; /* Standardna veličina fonta */
+            font-size: 1.2em; 
             cursor: default; 
             touch-action: manipulation;
             padding: 0; 
@@ -40,18 +38,13 @@
             display: block; 
         }
         
-        /* *** FIKS: APSOLUTNO POZICIONIRANJE TERMINALA *** */
         #terminal {
-            /* Zalepljuje terminal za ivice viewport-a */
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0; 
-            
-            /* Gornji padding je MINIMALAN - 8px za Desktop */
             padding: 8px 20px 10px 20px; 
-            
             white-space: pre-wrap;
             overflow-y: auto;
             outline: none; 
@@ -60,15 +53,12 @@
             flex-direction: column;
         }
         
-        /* MEDIA QUERY ZA MOBILNE UREĐAJE (manje od 600px širine) */
         @media screen and (max-width: 600px) {
             #terminal {
-                /* Mobilni padding (Gore 5px, Bočno 10px) */
                 padding: 5px 10px 10px 10px;
             }
         }
 
-        /* FIKS: Reset svih podrazumevanih margina za div elemente (za ispisane linije) */
         #output div {
             margin: 0; 
             padding: 0; 
@@ -76,7 +66,6 @@
             min-height: 0; 
         }
 
-        /* *** AGRESIVAN RESET SAMO ZA PRVU LINIJU NAKON NOVE FAZE *** */
         #output > div:first-child {
             margin-top: 0 !important;
             padding-top: 0 !important;
@@ -128,15 +117,6 @@
             display: none; 
         }
 
-        .success-message {
-            color: #00FF00;
-            font-size: 1.5em;
-            font-weight: bold;
-            text-align: center;
-            margin: 20px 0;
-        }
-        
-        /* Korigovan stil za tajmer - Nasleđuje body font */
         #countdown {
             margin-top: 0; 
             color: #FFFF00; 
@@ -174,9 +154,12 @@
             let gamePhase = 1; 
             let currentInput = ""; 
             
+            // Definicije konstanata (RIDDLE_X_TEXT, CORRECT_LOGIN, SHUTDOWN_MESSAGES itd.) su izostavljene radi kraćeg koda,
+            // ali se podrazumeva da su prisutne.
+            
             const CORRECT_LOGIN = "observer"; 
             
-            // Definicije nivoa
+            // *** DEKLARACIJA SVIH FAZA I TEKSTA (OSTAVLJENO ISTO KAO U PRETHODNOJ VERZIJI) ***
             const RIDDLE_1_TEXT = "It’s the future, a shadow that stretches before you. You can sense it, feel its shape, but it never reveals itself - always just out of reach, always waiting.";
             const RIDDLE_1_ANSWER = "future"; 
             const RIDDLE_2_TEXT = "Keep your steps quiet as you move through the deserted streets.\nEvery shadow stretches, every whisper hides a secret.\nYou feel it, the hidden truth, just beyond perception - waiting for the one who notices.";
@@ -187,22 +170,16 @@
             const RIDDLE_4_ANSWER = "13"; 
             const RIDDLE_5_TEXT = "A message drifts through the static, a code hidden in dots and dashes.\nOnly those who listen carefully can hear what is whispered.\n\n... .... .- -.. --- .--";
             const RIDDLE_5_ANSWER = "shadow"; 
+            const RIDDLE_6_ANSWERS = ["area 51", "area51"]; 
             const RIDDLE_6_TEXT = "Accessing restricted map layer...\nDecryption needed.\nLocation Hidden in Plain Sight:\n37.247456, -115.801709";
-            const RIDiddle_6_ANSWERS = ["area 51", "area51"];
-            
             const RIDDLE_7_TEXT = "Transmission intercepted...\nFilter the clutter. Extract only the hidden letters.\n\n#O%P#E*N^ #T&H#E# #A%R^C&H#I%V*E#";
             const RIDDLE_7_ANSWER = "open the archive";
-            
             const RIDDLE_8_TEXT = "Signals scrambled. Digits mask the letters. \nEach number conceals a fragment of the truth. \nDecode carefully to reveal the hidden word.\n\n[SEQUENCE]: 13 1 20 18 9 24";
             const RIDDLE_8_ANSWER = "matrix";
             const RIDDLE_8_INCORRECT_MESSAGE = "INCORRECT. \nThe letters remain hidden. Re-evaluate the sequence."; 
-            
-            // FINALNA ZAGONETKA (V46)
             const RIDDLE_9_TEXT = "— TRANSMISSION INTERCEPTED —\nSignals scrambled. Numbers mask the letters.\nDecrypt the sequence to reveal the hidden word:\n\n67 79 78 83 80 73 82 65 67 89\n\nSubmit your answer to:\nkonspiracijex@gmail.com\n\nTRANSMISSION AWAITING\nKey not yet verified. \nStay alert. Further contact will follow after submission.\n//";
-            const COUNTDOWN_TIME = 60; // Sekunde
-            
+            const COUNTDOWN_TIME = 60; 
             const TYPEWRITER_TEXT = "Everywhere around you are visible walls, invisible locks. The world you live in is not the one you think you know. People sleep, believing what they’re told, not what they could discover themselves. So I ask you: are you an observer or a participant? Just another number in a system that uses you, or ready to uncover the truth within the matrix and pass through it? If you seek the truth, you must earn it. The doors open only to those who understand the hidden language.\n\nAre you ready? - YES / NO";
-
             const SHUTDOWN_MESSAGES = [
                 { text: "System overload detected.", delay: 300, color: '#FFD700' }, 
                 { text: "Forced termination imminent.", delay: 400, color: '#FFD700' },
@@ -225,6 +202,12 @@
                 { text: "Connecting to Gateway 01...", delay: 500 },
                 { text: "System OBSERVER 2.1 Booted. Waiting for Authentication.", delay: 800, color: '#00FF00' } 
             ];
+            // *** KRAJ DEKLARACIJE KONSTANATA ***
+            
+            // Utility funkcije (clearScreen, outputText, typeWriter, isMobileDevice, setMobileHeight, startCountdownAndShutdown, shutdownSequence, startBootSequence, startLevelX funkcije)
+            // su izostavljene radi kraćeg koda, ali se podrazumeva da su prisutne u potpunosti.
+            
+            // *** POCETAK UTILITY FUNKCIJA (IZ V48.18) ***
             
             function clearScreen() { outputDiv.innerHTML = ''; }
 
@@ -267,7 +250,7 @@
             }
 
             function isMobileDevice() {
-                return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+                return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (window.Telegram && window.Telegram.WebApp);
             }
             
             function setMobileHeight() {
@@ -280,7 +263,6 @@
             window.addEventListener('resize', setMobileHeight);
 
             function startCountdownAndShutdown() {
-                // Dodavanje dva nova reda nakon teksta zagonetke
                 outputText(""); 
                 outputText(""); 
                 
@@ -304,7 +286,6 @@
                     const seconds = timeLeft % 60;
                     const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                     
-                    // Ažuriran tekst tajmera
                     countdownElement.textContent = `SYSTEM SHUTDOWN IN: ${timeString}`;
                     
                     if (timeLeft <= 10) {
@@ -333,7 +314,6 @@
                         outputText(msg.text, false, false, msg.color);
                         if (msg === SHUTDOWN_MESSAGES[SHUTDOWN_MESSAGES.length - 1]) {
                             setTimeout(() => {
-                                // Potpuni Blackout
                                 terminalDiv.classList.add('shutdown');
                                 outputDiv.innerHTML = '';
                                 terminalDiv.innerHTML = ''; 
@@ -342,6 +322,7 @@
                                 terminalDiv.removeEventListener('click', clickHandler);
                                 hiddenInput.removeEventListener('input', inputHandler);
                                 hiddenInput.removeEventListener('change', changeHandler);
+                                hiddenInput.removeEventListener('blur', blurHandler); 
                             }, 500); 
                         }
                     }, delay);
@@ -453,7 +434,6 @@
                 });
             }
             
-            // FINALNI NIVO: 11
             function startLevel11_Final() {
                 inputActive = false;
                 currentLineDiv.style.display = 'none';
@@ -463,31 +443,11 @@
                     startCountdownAndShutdown(); 
                 });
             }
-
-
-            function activateInput(phase) {
-                gamePhase = phase;
-                if (phase === 1) promptSpan.textContent = "Login: ";
-                if (phase === 2) promptSpan.textContent = ">> ";
-                if (phase === 3) promptSpan.textContent = "Answer: "; 
-                if (phase === 4) promptSpan.textContent = "Answer: "; 
-                if (phase === 5) promptSpan.textContent = "Number: "; 
-                if (phase === 6) promptSpan.textContent = "Number: "; 
-                if (phase === 7) promptSpan.textContent = "Word: "; 
-                if (phase === 8) promptSpan.textContent = "Answer: "; 
-                if (phase === 9) promptSpan.textContent = "Key: "; 
-                if (phase === 10) promptSpan.textContent = "Decode: "; 
-                
-                if (phase < 11) {
-                    currentLineDiv.style.display = 'flex'; 
-                    inputActive = true; 
-                    hiddenInput.focus(); 
-                } else {
-                    currentLineDiv.style.display = 'none';
-                    inputActive = false;
-                }
-            }
             
+            // *** KRAJ UTILITY FUNKCIJA ***
+            
+            
+            // *** HANDLER LOGIKA (ISTO KAO V48.18) ***
             function handleLogin(input) {
                 if (input === CORRECT_LOGIN) {
                     inputActive = false;
@@ -592,7 +552,7 @@
             }
 
             function handleRiddle6(input) {
-                if (RIDiddle_6_ANSWERS.includes(input)) {
+                if (RIDDLE_6_ANSWERS.includes(input)) { 
                     inputActive = false;
                     currentLineDiv.style.display = 'none';
                     
@@ -638,7 +598,42 @@
                     outputText(RIDDLE_8_INCORRECT_MESSAGE, true);
                 }
             }
-            
+            // *** KRAJ HANDLER LOGIKE ***
+
+
+            // ******************************************************
+            // *** GLAVNA LOGIKA UNOSA (FIKS V48.19) ***
+            // ******************************************************
+
+            function activateInput(phase) {
+                gamePhase = phase;
+                if (phase === 1) promptSpan.textContent = "Login: ";
+                if (phase === 2) promptSpan.textContent = ">> ";
+                if (phase === 3) promptSpan.textContent = "Answer: "; 
+                if (phase === 4) promptSpan.textContent = "Answer: "; 
+                if (phase === 5) promptSpan.textContent = "Number: "; 
+                if (phase === 6) promptSpan.textContent = "Number: "; 
+                if (phase === 7) promptSpan.textContent = "Word: "; 
+                if (phase === 8) promptSpan.textContent = "Answer: "; 
+                if (phase === 9) promptSpan.textContent = "Key: "; 
+                if (phase === 10) promptSpan.textContent = "Decode: "; 
+                
+                if (phase < 11) {
+                    currentLineDiv.style.display = 'flex'; 
+                    inputActive = true; 
+                    
+                    // Pokušaj agresivnog fokusa
+                    setTimeout(() => {
+                         hiddenInput.focus();
+                    }, 50); 
+                    
+                } else {
+                    currentLineDiv.style.display = 'none';
+                    inputActive = false;
+                }
+            }
+
+
             const processInput = (fullInput) => {
                 if (!inputActive) return; 
                 
@@ -652,52 +647,32 @@
                 
                 outputText(`${promptSpan.textContent}${fullInput}`);
 
-                if (gamePhase === 1) {
-                    handleLogin(inputLower);
-                } else if (gamePhase === 2) {
-                    handleYesNo(inputLower);
-                } else if (gamePhase === 3) {
-                    handleRiddle1(inputLower);
-                } else if (gamePhase === 4) {
-                    handleRiddle2(inputLower); 
-                } else if (gamePhase === 5) {
-                    handleRiddle3(inputLower); 
-                } else if (gamePhase === 6) {
-                    handleRiddle4(inputLower); 
-                } else if (gamePhase === 7) {
-                    handleRiddle5(inputLower); 
-                } else if (gamePhase === 8) {
-                    handleRiddle6(inputLower); 
-                } else if (gamePhase === 9) {
-                    handleRiddle7(inputLower); 
-                } else if (gamePhase === 10) {
-                    handleRiddle8(inputLower); 
-                } 
+                // Pozivanje handlera za fazu igre...
+                if (gamePhase === 1) { handleLogin(inputLower); } 
+                else if (gamePhase === 2) { handleYesNo(inputLower); } 
+                else if (gamePhase === 3) { handleRiddle1(inputLower); } 
+                else if (gamePhase === 4) { handleRiddle2(inputLower); } 
+                else if (gamePhase === 5) { handleRiddle3(inputLower); } 
+                else if (gamePhase === 6) { handleRiddle4(inputLower); } 
+                else if (gamePhase === 7) { handleRiddle5(inputLower); } 
+                else if (gamePhase === 8) { handleRiddle6(inputLower); } 
+                else if (gamePhase === 9) { handleRiddle7(inputLower); } 
+                else if (gamePhase === 10) { handleRiddle8(inputLower); } 
 
                 currentInput = "";
+                hiddenInput.value = ""; 
                 userInputDisplay.textContent = "";
             };
 
             const keydownHandler = (e) => {
                 if (!inputActive) return; 
-                if (e.ctrlKey || e.altKey || e.metaKey) return; 
-                
-                // *** UKLONJENA LINIJA KOJA JE KRŠILA FOKUS NA DESKTOPU: if (document.activeElement !== terminalDiv) return;
-
-                if (e.key.length === 1 && e.key.match(/^[a-zA-Z0-9\s.,!?-]$/)) { 
-                    e.preventDefault(); 
-                    currentInput += e.key;
-                    userInputDisplay.textContent = currentInput;
-                } else if (e.key === 'Backspace') {
-                    e.preventDefault(); 
-                    currentInput = currentInput.slice(0, -1);
-                    userInputDisplay.textContent = currentInput;
-                } else if (e.key === 'Enter') {
+                // keydownHandler sada hvata samo Enter (i na mobilnom i na desktopu)
+                if (e.key === 'Enter') {
                     e.preventDefault();
                     processInput(currentInput);
                 }
                 
-                // KRITIČNA LINIJA ZA ODRŽAVANJE FOKUSA NA DESKTOPU
+                // Vraća fokus na Desktopu
                 terminalDiv.focus(); 
             };
             document.addEventListener('keydown', keydownHandler);
@@ -708,6 +683,7 @@
                 let rawInput = hiddenInput.value;
                 
                 if (isMobileDevice()) {
+                    // FIKS: Obrtanje stringa za Web View
                     currentInput = rawInput.split('').reverse().join(''); 
                 } else {
                     currentInput = rawInput; 
@@ -717,17 +693,49 @@
             };
             hiddenInput.addEventListener('input', inputHandler);
 
+            // FUNKCIJA KOJA OKIDA SUBMIT NAKON GUBLJENJA FOKUSA (DESKTOP/PASTE)
             const changeHandler = () => {
                 if (!inputActive) return; 
+                
+                // Na mobilnom, ako se dogodi change (zbog agresivnog gubljenja fokusa), NE procesuiramo.
+                // Jedino se oslanjamo na Enter (keydownHandler).
+                if (isMobileDevice()) return;
+                
                 processInput(currentInput);
-                hiddenInput.value = '';
+                
+                hiddenInput.value = ''; 
                 currentInput = '';
+                userInputDisplay.textContent = '';
             };
-            hiddenInput.addEventListener('change', changeHandler);
+            
+            // ******************************************************
+            // *** FIKS V48.19: KAČENJE changeHandler-a (SAMO DESKTOP) ***
+            // ******************************************************
+            if (!isMobileDevice()) {
+                hiddenInput.addEventListener('change', changeHandler);
+            }
+            // ******************************************************
+            
+
+            // ******************************************************
+            // *** BLUR HANDLER (ZAKLJUČAVANJE FOKUSA) - KRITIČAN FIKS ***
+            // Oslanja se na agresivno vraćanje fokusa.
+            // ******************************************************
+            const blurHandler = () => {
+                if (inputActive) {
+                    // Timeout za vraćanje fokusa
+                    setTimeout(() => {
+                        hiddenInput.focus();
+                    }, 1); 
+                }
+            };
+            hiddenInput.addEventListener('blur', blurHandler);
+            // ******************************************************
 
 
             const clickHandler = (e) => {
                 if (!inputActive) return; 
+                // Osigurava da klik na bilo koji deo terminala vrati fokus
                 if (e.target !== hiddenInput) {
                     e.preventDefault(); 
                     hiddenInput.focus();
