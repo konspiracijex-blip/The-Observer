@@ -3,10 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V11 (FIKS OBRNUTOG UNOSA)</title>
+    <title>M4TR1X ARG - FINAL V12 (SA GA4 ANALITIKOM)</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+    
+      // ZAMENITE 'G-XXXXXXXXXX' S VAŠIM LIČNIM GA4 MEASUREMENT ID-JEM
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
     <style>
         /* *** CSS STILOVI (OSTAVLJENO ISTO) *** */
         *, *::before, *::after {
@@ -152,6 +161,18 @@
             let gamePhase = 1; 
             let currentInput = ""; 
             
+            // *** GA4 FUNKCIJA ZA PRAĆENJE DOGAĐAJA ***
+            function trackEvent(eventName, eventParams = {}) {
+                if (typeof gtag === 'function') {
+                    // Dodajemo game_phase u sve događaje za kontekst
+                    eventParams.game_phase = gamePhase;
+                    gtag('event', eventName, eventParams);
+                } else {
+                    console.log(`[GA4 Event - ${eventName}]`, eventParams);
+                }
+            }
+            // *** KRAJ GA4 FUNKCIJE ***
+
             // *** KONSTANTE IGRE (ostale nepromenjene) ***
             const CORRECT_LOGIN = "observer"; 
             const RIDDLE_1_TEXT = "It’s the future, a shadow that stretches before you. You can sense it, feel its shape, but it never reveals itself - always just out of reach, always waiting.";
@@ -197,7 +218,7 @@
             ];
             // *** KRAJ KONSTANATA IGRE ***
             
-            // *** UTILITY I LEVEL FUNKCIJE (ostale nepromenjene) ***
+            // *** UTILITY I LEVEL FUNKCIJE (dopunjene GA4 praćenjem) ***
             function clearScreen() { outputDiv.innerHTML = ''; }
             function outputText(text, isError = false, color = null) {
                 const p = document.createElement('div');
@@ -205,7 +226,6 @@
                 if (isError) { p.style.color = '#FF0000'; } 
                 else if (color) { p.style.color = color; }
                 outputDiv.appendChild(p);
-                // Održavanje skrola nakon svakog novog unosa
                 terminalDiv.scrollTop = terminalDiv.scrollHeight; 
             }
             function typeWriter(text, speed = 8, callback) {
@@ -226,12 +246,10 @@
                 type();
             }
             
-            // Provera samo za fizičke mobilne uređaje (za obrtanje teksta)
             function isMobileDevice() {
                 return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
             }
 
-            // Provera da li se nalazimo u Telegram WebApp okruženju (Desktop ili Mobilni)
             const isTelegramApp = (window.Telegram && window.Telegram.WebApp);
 
             function setMobileHeight() {
@@ -242,7 +260,9 @@
             setMobileHeight();
             window.addEventListener('resize', setMobileHeight);
 
-            function startCountdownAndShutdown() { outputText(""); outputText(""); 
+            function startCountdownAndShutdown() { 
+                trackEvent('game_end', { outcome: 'final_challenge_started' }); // GA4 praćenje
+                outputText(""); outputText(""); 
                 let countdownElement = document.getElementById('countdown');
                 if (!countdownElement) { countdownElement = document.createElement('div'); countdownElement.id = 'countdown'; outputDiv.appendChild(countdownElement); }
                 let timeLeft = COUNTDOWN_TIME;
@@ -261,6 +281,7 @@
             }
 
             function shutdownSequence(isFinal = false) {
+                trackEvent('game_end', { outcome: isFinal ? 'final_shutdown' : 'user_declined' }); // GA4 praćenje
                 inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); let delay = 0;
                 SHUTDOWN_MESSAGES.forEach(msg => {
                     delay += msg.delay;
@@ -280,6 +301,7 @@
             }
 
             function startBootSequence() {
+                trackEvent('game_start', { method: 'boot' }); // GA4 praćenje
                 clearScreen(); let delay = 0;
                 BOOT_MESSAGES.forEach(msg => {
                     delay += msg.delay;
@@ -290,37 +312,121 @@
                 });
             }
 
-            function startLevel2() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(TYPEWRITER_TEXT, 8, () => { activateInput(2); }); }
-            function startLevel3() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(RIDDLE_1_TEXT, 8, () => { activateInput(3); }); }
-            function startLevel4() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(RIDDLE_2_TEXT, 8, () => { activateInput(4); }); }
-            function startLevel5() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(RIDDLE_3_TEXT, 8, () => { activateInput(5); }); }
-            function startLevel6() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(RIDDLE_4_TEXT, 8, () => { activateInput(6); }); }
-            function startLevel7() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(RIDDLE_5_TEXT, 8, () => { activateInput(7); }); }
-            function startLevel8() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(RIDDLE_6_TEXT, 8, () => { activateInput(8); }); }
-            function startLevel9() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(RIDDLE_7_TEXT, 8, () => { activateInput(9); }); }
-            function startLevel10() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(RIDDLE_8_TEXT, 8, () => { activateInput(10); }); }
-            function startLevel11_Final() { inputActive = false; currentLineDiv.style.display = 'none'; clearScreen(); typeWriter(RIDDLE_9_TEXT, 8, () => { startCountdownAndShutdown(); }); }
+            // Centralizovana funkcija za prelazak na novi nivo
+            function transitionToLevel(phase, riddleText, delay = 1500) {
+                inputActive = false; 
+                currentLineDiv.style.display = 'none'; 
+                
+                trackEvent('level_start', { level: phase, name: `Riddle_${phase-2}` }); // GA4 praćenje
+                
+                clearScreen(); 
+                typeWriter(riddleText, 8, () => { 
+                    activateInput(phase); 
+                });
+            }
             
-            // Handler logika (nepromenjena)
-            function handleLogin(input) { if (input === CORRECT_LOGIN) { inputActive = false; currentLineDiv.style.display = 'none'; terminalDiv.classList.remove('shutdown'); clearScreen(); outputText("ACCESS GRANTED. Entering the system...", false); setTimeout(startLevel2, 1500); } else if (input.length > 0) { outputText("Unknown user. Authentication failure.", true); } else { outputText("Empty input. Try again.", true); } }
-            function handleYesNo(input) { if (input === 'yes') { outputText("Truth acknowledged. Prepare for instruction.", false); startLevel3(); } else if (input === 'no') { outputText("Choice declined. Shutting down system...", false); shutdownSequence(); } else { outputText(`Invalid response: ${input.toUpperCase()}. Enter YES or NO.`, true); } }
-            function handleRiddle1(input) { if (input === RIDDLE_1_ANSWER) { inputActive = false; currentLineDiv.style.display = 'none'; outputText("Well done!", false); outputText("Not everyone sees what you just uncovered.", false); outputText("Proceed with caution.", false); setTimeout(() => { startLevel4(); }, 1500); } else { outputText("Incorrect. Re-read the message and try again.", true); } }
-            function handleRiddle2(input) { if (input === RIDDLE_2_ANSWER) { inputActive = false; currentLineDiv.style.display = 'none'; outputText("ACCESS GRANTED.", false); outputText("KEY detected. Proceed.", false); setTimeout(() => { startLevel5(); }, 1500); } else { outputText("Incorrect. Re-read the message and try again.", true); } }
-            function handleRiddle3(input) { if (input === RIDDLE_3_ANSWER) { inputActive = false; currentLineDiv.style.display = 'none'; outputText("HISTORY ACKNOWLEDGED. The circle is complete.", false); setTimeout(() => { startLevel6(); }, 1500); } else { outputText("Incorrect. That number does not align with the hidden truth.", true); } }
-            function handleRiddle4(input) { if (input === RIDDLE_4_ANSWER) { inputActive = false; currentLineDiv.style.display = 'none'; outputText("THE COLONIES REMEMBER. The final layer is exposed.", false); setTimeout(() => { startLevel7(); }, 1500); } else { outputText("Incorrect. The past holds the key. Re-evaluate the layers.", true); } }
-            function handleRiddle5(input) { if (input === RIDDLE_5_ANSWER) { inputActive = false; currentLineDiv.style.display = 'none'; outputText("CODE BROKEN. Silence speaks volumes.", false); setTimeout(() => { startLevel8(); }, 1500); } else { outputText("Incorrect. Listen carefully to the static. Decode the message.", true); } }
-            function handleRiddle6(input) { if (RIDDLE_6_ANSWERS.includes(input)) { inputActive = false; currentLineDiv.style.display = 'none'; outputText("LOCATION CONFIRMED. The truth is out there.", false); setTimeout(() => { startLevel9(); }, 1500); } else { outputText("Incorrect. Decryption failed.", true); } }
-            function handleRiddle7(input) { if (input === RIDDLE_7_ANSWER) { inputActive = false; currentLineDiv.style.display = 'none'; outputText("ARCHIVE KEY ACCEPTED. Access granted to next layer.", false); setTimeout(() => { startLevel10(); }, 1500); } else { outputText("Incorrect. Filter the noise and check the transmission again.", true); } }
-            function handleRiddle8(input) { if (input === RIDDLE_8_ANSWER) { inputActive = false; currentLineDiv.style.display = 'none'; outputText("DECODING COMPLETE. The heart of the system is exposed.", false); setTimeout(() => { startLevel11_Final(); }, 1500); } else { outputText(RIDDLE_8_INCORRECT_MESSAGE, true); } }
+            function startLevel2() { transitionToLevel(2, TYPEWRITER_TEXT); }
+            function startLevel3() { transitionToLevel(3, RIDDLE_1_TEXT); }
+            function startLevel4() { transitionToLevel(4, RIDDLE_2_TEXT); }
+            function startLevel5() { transitionToLevel(5, RIDDLE_3_TEXT); }
+            function startLevel6() { transitionToLevel(6, RIDDLE_4_TEXT); }
+            function startLevel7() { transitionToLevel(7, RIDDLE_5_TEXT); }
+            function startLevel8() { transitionToLevel(8, RIDDLE_6_TEXT); }
+            function startLevel9() { transitionToLevel(9, RIDDLE_7_TEXT); }
+            function startLevel10() { transitionToLevel(10, RIDDLE_8_TEXT); }
+            function startLevel11_Final() { 
+                 inputActive = false; 
+                 currentLineDiv.style.display = 'none'; 
+                 trackEvent('level_start', { level: 11, name: 'Final_Code' }); // GA4 praćenje
+                 clearScreen(); 
+                 typeWriter(RIDDLE_9_TEXT, 8, () => { startCountdownAndShutdown(); }); 
+            }
+            
+            // Handler logika (dopunjena GA4 praćenjem)
+            function handleLogin(input) { 
+                if (input === CORRECT_LOGIN) { 
+                    trackEvent('login', { success: true }); // GA4 praćenje
+                    inputActive = false; currentLineDiv.style.display = 'none'; terminalDiv.classList.remove('shutdown'); clearScreen(); outputText("ACCESS GRANTED. Entering the system...", false); setTimeout(startLevel2, 1500); 
+                } else if (input.length > 0) { 
+                    trackEvent('login', { success: false, attempt: input }); // GA4 praćenje
+                    outputText("Unknown user. Authentication failure.", true); 
+                } else { 
+                    outputText("Empty input. Try again.", true); 
+                } 
+            }
+            function handleYesNo(input) { 
+                if (input === 'yes') { 
+                    trackEvent('choice_made', { choice: 'yes', level: 2, outcome: 'continue' }); // GA4 praćenje
+                    outputText("Truth acknowledged. Prepare for instruction.", false); startLevel3(); 
+                } else if (input === 'no') { 
+                    trackEvent('choice_made', { choice: 'no', level: 2, outcome: 'shutdown' }); // GA4 praćenje
+                    outputText("Choice declined. Shutting down system...", false); shutdownSequence(); 
+                } else { 
+                    trackEvent('choice_made', { choice: 'invalid', level: 2 }); // GA4 praćenje
+                    outputText(`Invalid response: ${input.toUpperCase()}. Enter YES or NO.`, true); 
+                } 
+            }
+            function handleRiddle(level, input, correct, nextLevelFunction) {
+                if (input === correct) {
+                    trackEvent('riddle_solved', { level: level, success: true }); // GA4 praćenje
+                    inputActive = false; currentLineDiv.style.display = 'none'; 
+                    outputText("ACCESS GRANTED.", false); 
+                    setTimeout(nextLevelFunction, 1500);
+                } else {
+                    trackEvent('riddle_solved', { level: level, success: false, attempt: input }); // GA4 praćenje
+                    outputText("Incorrect. Re-read the message and try again.", true);
+                }
+            }
+            function handleRiddle3(input) { 
+                if (input === RIDDLE_3_ANSWER) {
+                     trackEvent('riddle_solved', { level: 5, success: true });
+                     inputActive = false; currentLineDiv.style.display = 'none'; outputText("HISTORY ACKNOWLEDGED. The circle is complete.", false); setTimeout(() => { startLevel6(); }, 1500); 
+                } else { 
+                    trackEvent('riddle_solved', { level: 5, success: false, attempt: input });
+                    outputText("Incorrect. That number does not align with the hidden truth.", true); 
+                } 
+            }
+            function handleRiddle4(input) { 
+                if (input === RIDDLE_4_ANSWER) { 
+                    trackEvent('riddle_solved', { level: 6, success: true });
+                    inputActive = false; currentLineDiv.style.display = 'none'; outputText("THE COLONIES REMEMBER. The final layer is exposed.", false); setTimeout(() => { startLevel7(); }, 1500); 
+                } else { 
+                    trackEvent('riddle_solved', { level: 6, success: false, attempt: input });
+                    outputText("Incorrect. The past holds the key. Re-evaluate the layers.", true); 
+                } 
+            }
+            function handleRiddle6(input) { 
+                 if (RIDDLE_6_ANSWERS.includes(input)) { 
+                     trackEvent('riddle_solved', { level: 8, success: true });
+                     inputActive = false; currentLineDiv.style.display = 'none'; outputText("LOCATION CONFIRMED. The truth is out there.", false); setTimeout(() => { startLevel9(); }, 1500); 
+                 } else { 
+                     trackEvent('riddle_solved', { level: 8, success: false, attempt: input });
+                     outputText("Incorrect. Decryption failed.", true); 
+                 } 
+            }
+            function handleRiddle8(input) { 
+                if (input === RIDDLE_8_ANSWER) { 
+                    trackEvent('riddle_solved', { level: 10, success: true });
+                    inputActive = false; currentLineDiv.style.display = 'none'; outputText("DECODING COMPLETE. The heart of the system is exposed.", false); setTimeout(() => { startLevel11_Final(); }, 1500); 
+                } else { 
+                    trackEvent('riddle_solved', { level: 10, success: false, attempt: input });
+                    outputText(RIDDLE_8_INCORRECT_MESSAGE, true); 
+                } 
+            }
+            // Zamenjujemo direktne pozive generičkom funkcijom tamo gde je moguće
+            function handleRiddle1(input) { handleRiddle(3, input, RIDDLE_1_ANSWER, startLevel4); }
+            function handleRiddle2(input) { handleRiddle(4, input, RIDDLE_2_ANSWER, startLevel5); }
+            function handleRiddle5(input) { handleRiddle(7, input, RIDDLE_5_ANSWER, startLevel8); }
+            function handleRiddle7(input) { handleRiddle(9, input, RIDDLE_7_ANSWER, startLevel10); }
+
             // *** KRAJ UTILITY I LEVEL FUNKCIJA ***
 
 
-            // *** LOGIKA UNOSA (FIKS V11 - UKLONJENO OBRTANJE) ***
+            // *** LOGIKA UNOSA ***
             
             function scrollToBottomSmooth(delay = 0) {
                  if (isMobileDevice() || isTelegramApp) {
                     setTimeout(() => {
-                        // Samo forsiranje skrola kontejnera do dna.
                         terminalDiv.scrollTop = terminalDiv.scrollHeight;
                     }, delay);
                 } else {
@@ -345,10 +451,8 @@
                     currentLineDiv.style.display = 'flex'; 
                     inputActive = true; 
                     
-                    // 1. Agresivno fokusiranje (ovo pokreće tastaturu i OS skrolovanje)
                     hiddenInput.focus();
                     
-                    // 2. Inicijalno skrolovanje (odloženo 200ms)
                     scrollToBottomSmooth(200);
                     
                 } else {
@@ -388,23 +492,20 @@
             };
 
             // ******************************************************
-            // *** KEYDOWN HANDLER (SRŽ FIKSA) ***
+            // *** KEYDOWN HANDLER ***
             const keydownHandler = (e) => {
                 if (!inputActive) return; 
                 
-                // U Telegram okruženju, forsiraj fokus nazad svaki put, jer se gubi
                 if (isTelegramApp) {
                      setTimeout(() => { hiddenInput.focus(); }, 1); 
                 }
 
-                // 1. Enter: Submit
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     processInput(currentInput);
                     return;
                 }
 
-                // 2. Backspace/Delete: Ručno brisanje
                 if (e.key === 'Backspace' || e.key === 'Delete') {
                     e.preventDefault();
                     if (currentInput.length > 0) {
@@ -415,7 +516,6 @@
                     return;
                 }
                 
-                // 3. Printable characters: Ručno dodavanje
                 const isPrintable = e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey;
 
                 if (isPrintable) {
@@ -426,7 +526,6 @@
                     
                     hiddenInput.value = currentInput; 
 
-                    // SKROLOVANJE NAKON SVAKOG UNOSA (1ms)
                     scrollToBottomSmooth(1);
                 }
             };
@@ -435,17 +534,15 @@
 
 
             // ******************************************************
-            // *** INPUT HANDLER (SAMO ZA PASTE I MOBILNI IME) ***
+            // *** INPUT HANDLER ***
             const inputHandler = () => {
                 if (!inputActive) return; 
 
                 let rawInput = hiddenInput.value;
                 
-                // *** FIKS V11: UKLONJENA LOGIKA OBRTANJA TEKSTA ***
-                // Input bi sada trebao biti ispravan zahvaljujući strukturnim fiksevima (V10).
+                // Nema obrtanja, samo preuzimanje unosa
                 currentInput = rawInput; 
                 userInputDisplay.textContent = currentInput;
-                // ************************************************
                 
                 // Skroluj nakon unosa/paste-a na mobilnom i forsiraj fokus nazad
                 if (isMobileDevice() || isTelegramApp) {
@@ -457,7 +554,7 @@
             // ******************************************************
 
             // ******************************************************
-            // *** BLUR HANDLER (AGRESIVNO FORSIRANJE FOKUSA ZA TELEGRAM/MOBILNI) ***
+            // *** BLUR HANDLER ***
             const blurHandler = () => {
                 if (inputActive && (isMobileDevice() || isTelegramApp)) { 
                     setTimeout(() => {
@@ -471,7 +568,6 @@
 
             const clickHandler = (e) => {
                 if (!inputActive) return; 
-                // Osigurava da klik na bilo koji deo terminala vrati fokus
                 if (e.target !== hiddenInput) {
                     e.preventDefault(); 
                     hiddenInput.focus();
