@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>M4TR1X ARG - FINAL V2 (FIKS SKROLOVANJA)</title>
+    <title>M4TR1X ARG - FINAL V3 (AGRESIVNI FIKS SKROLOVANJA)</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -338,9 +338,16 @@
                     // Pokušaj agresivnog fokusa
                     setTimeout(() => {
                          hiddenInput.focus();
-                         // *** FIKS V2: DODATNO AGRESIVNO SKROLOVANJE NAKON FOKUSA ***
-                         // Ovo rešava problem pomeranja ekrana zbog pojave tastature na mobilnom.
-                         terminalDiv.scrollTop = terminalDiv.scrollHeight; 
+                         
+                         // *** FIKS V3: Korišćenje scrollIntoView na samom redosledu unosa ***
+                         // Ovo prisiljava browser da red unosa postavi na dno vidljivog ekrana.
+                         if (isMobileDevice() || isTelegramApp) {
+                            currentLineDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                         } else {
+                            // Za Desktop: samo osiguravamo da je terminal na dnu
+                            terminalDiv.scrollTop = terminalDiv.scrollHeight;
+                         }
+
                     }, 50); 
                     
                 } else {
